@@ -1,5 +1,3 @@
-# Composer dependencies
-/vendor/
 
 # Environment configurations (Keep secrets private)
 .env
