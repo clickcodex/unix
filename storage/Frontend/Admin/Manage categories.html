@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Categories Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .stat-mini{background:#fff;border-radius:12px;border:1.5px solid #E2E8F0;padding:16px 20px;transition:all .2s ease}
+  .stat-mini:hover{border-color:#2D82FF;box-shadow:0 4px 12px -4px rgba(45,130,255,.1)}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+
+  /* Tree */
+  .tree-children{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+  .tree-children.open{max-height:3000px}
+  .tree-toggle{transition:transform .25s ease;display:inline-flex}
+  .tree-toggle.rotated{transform:rotate(90deg)}
+  .tree-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent}
+  .tree-row:hover{background:#F8FAFC;border-color:#E2E8F0}
+  .tree-row.selected{background:#E8F0FE;border-color:#2D82FF}
+  .tree-row.inactive-row{opacity:.55}
+  .tree-row.inactive-row:hover{opacity:.75}
+
+  /* Depth connector lines */
+  .depth-connector{position:relative}
+  .depth-connector::before{content:'';position:absolute;left:19px;top:0;bottom:12px;width:1.5px;background:#E2E8F0;border-radius:1px}
+  .depth-connector-2::before{left:39px}
+
+  .action-btn{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;color:#94A3B8}
+  .action-btn:hover{background:#F1F5F9;color:#2D82FF}
+  .action-btn.danger:hover{background:#FFE4E6;color:#FF006B}
+
+  .drag-handle{cursor:grab;color:#CBD5E1;transition:color .15s ease;display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+  .drag-handle:hover{color:#64748B}
+  .drag-handle:active{cursor:grabbing}
+
+  /* Toggle */
+  .cat-toggle{width:34px;height:19px;border-radius:10px;background:#E2E8F0;position:relative;cursor:pointer;transition:background .2s ease;flex-shrink:0}
+  .cat-toggle.on{background:#2D82FF}
+  .cat-toggle .cat-thumb{width:15px;height:15px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .cat-toggle.on .cat-thumb{transform:translateX(15px)}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+  .modal-overlay.show{opacity:1;pointer-events:auto}
+  .modal-box{background:#fff;border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+  .modal-overlay.show .modal-box{transform:translateY(0) scale(1)}
+  .form-field{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#1E293B;transition:all .15s ease;background:#fff}
+  .form-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .form-field::placeholder{color:#94A3B8}
+
+  /* Toast */
+  .toast-container{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .toast-item{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;font-size:.875rem;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);animation:toast-in .35s cubic-bezier(.4,0,.2,1) forwards;border:1px solid transparent}
+  .toast-item.removing{animation:toast-out .3s ease forwards}
+  .toast-success{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+  .toast-error{background:#FFF1F2;border-color:#FECDD3;color:#9F1239}
+  .toast-info{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+  @keyframes toast-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes toast-out{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+
+  /* Detail panel field rows */
+  .detail-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #F1F5F9}
+  .detail-row:last-child{border-bottom:none}
+
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">Categories</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search by name, slug, id..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="searchInput" oninput="filterTree()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Categories Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Manage <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">categories</span> table — self-referencing <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">parent_id</span> tree hierarchy</p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button onclick="expandAll()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-slate-50 transition">
+          <span class="material-icons text-[18px]">unfold_more</span> Expand All
+        </button>
+        <button onclick="collapseAll()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-slate-50 transition">
+          <span class="material-icons text-[18px]">unfold_less</span> Collapse All
+        </button>
+        <button onclick="openModal('add', null)" class="flex items-center gap-2 bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-md shadow-cc-blue/20">
+          <span class="material-icons text-[18px]">add</span> Add Root Category
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats — exact COUNT queries -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div class="stat-mini">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[20px]">folder_open</span></div>
+          <div><p class="text-xl font-bold text-slate-800">28</p><p class="text-[11px] text-slate-400">Total Categories</p><p class="text-[10px] text-slate-300 mono mt-0.5">COUNT(categories.id)</p></div>
+        </div>
+      </div>
+      <div class="stat-mini">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[20px]">check_circle</span></div>
+          <div><p class="text-xl font-bold text-slate-800">25</p><p class="text-[11px] text-slate-400">Active</p><p class="text-[10px] text-slate-300 mono mt-0.5">is_active = 1</p></div>
+        </div>
+      </div>
+      <div class="stat-mini">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0"><span class="material-icons text-cc-pink text-[20px]">pause_circle</span></div>
+          <div><p class="text-xl font-bold text-slate-800">3</p><p class="text-[11px] text-slate-400">Inactive</p><p class="text-[10px] text-slate-300 mono mt-0.5">is_active = 0</p></div>
+        </div>
+      </div>
+      <div class="stat-mini">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cc-purple/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-purple text-[20px]">account_tree</span></div>
+          <div><p class="text-xl font-bold text-slate-800">3</p><p class="text-[11px] text-slate-400">Max Depth</p><p class="text-[10px] text-slate-300 mono mt-0.5">parent_id chain</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schema Reference Bar -->
+    <div class="bg-cc-dark rounded-xl px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-white/50 mono">
+      <span class="text-white/70 font-semibold font-sans">Table:</span>
+      <span>id BIGINT PK</span>
+      <span class="text-white/20">|</span>
+      <span>parent_id BIGINT NULL → FK self</span>
+      <span class="text-white/20">|</span>
+      <span>name VARCHAR(120)</span>
+      <span class="text-white/20">|</span>
+      <span>slug VARCHAR(150) UNIQUE</span>
+      <span class="text-white/20">|</span>
+      <span>sort_order SMALLINT</span>
+      <span class="text-white/20">|</span>
+      <span>is_active TINYINT(1)</span>
+      <span class="text-white/20">|</span>
+      <span>ON DELETE SET NULL</span>
+    </div>
+
+    <!-- Tree + Detail Panel -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+      <!-- ===== TREE PANEL ===== -->
+      <div class="xl:col-span-2 section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-blue text-[22px]">account_tree</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Category Tree</h2>
+              <p class="text-xs text-slate-400">parent_id = NULL → root • Drag <span class="material-icons text-[12px] align-middle">drag_indicator</span> to change sort_order</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="filterStatus('all')" class="fbtn text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg" data-f="all">All (28)</button>
+            <button onclick="filterStatus('active')" class="fbtn text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition" data-f="active">Active (25)</button>
+            <button onclick="filterStatus('inactive')" class="fbtn text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition" data-f="inactive">Inactive (3)</button>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 space-y-1" id="treeContainer">
+
+          <!-- ====== ROOT 1: Mobiles & Tablets (id:1, parent_id:NULL, sort_order:1) ====== -->
+          <div class="tree-node" data-status="active" data-name="mobiles tablets smartphones feature phones tablets mobile accessories">
+            <div class="tree-row selected" onclick="selectRow(this, 1)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <button class="tree-toggle rotated" onclick="event.stopPropagation();toggleTree(this)"><span class="material-icons text-[20px] text-slate-400">chevron_right</span></button>
+              <div class="w-8 h-8 rounded-lg bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[18px]">phone_android</span></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">Mobiles & Tablets</p>
+                <p class="text-[11px] text-slate-400 mono">id:1 • parent_id:NULL • sort_order:1 • slug: mobiles-tablets</p>
+              </div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Mobiles & Tablets')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Mobiles & Tablets')" title="Add Subcategory"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Mobiles & Tablets')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Mobiles & Tablets',1)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+            <div class="tree-children open depth-connector pl-9 ml-4 space-y-1">
+              <!-- id:10 Smartphones (parent_id:1, sort_order:1) -->
+              <div class="tree-node" data-status="active" data-name="smartphones">
+                <div class="tree-row" onclick="selectRow(this,10)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">smartphone</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Smartphones</p><p class="text-[10px] text-slate-400 mono">id:10 • parent_id:1 • sort_order:1 • 1,245 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Smartphones')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Smartphones')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Smartphones',10)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+              <!-- id:11 Feature Phones (parent_id:1, sort_order:2) -->
+              <div class="tree-node" data-status="active" data-name="feature phones">
+                <div class="tree-row" onclick="selectRow(this,11)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">phone</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Feature Phones</p><p class="text-[10px] text-slate-400 mono">id:11 • parent_id:1 • sort_order:2 • 312 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Feature Phones')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Feature Phones')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Feature Phones',11)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+              <!-- id:12 Tablets (parent_id:1, sort_order:3) -->
+              <div class="tree-node" data-status="active" data-name="tablets">
+                <div class="tree-row" onclick="selectRow(this,12)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">tablet</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Tablets</p><p class="text-[10px] text-slate-400 mono">id:12 • parent_id:1 • sort_order:3 • 187 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Tablets')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Tablets')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Tablets',12)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+              <!-- id:13 Mobile Accessories (parent_id:1, sort_order:4) — HAS CHILDREN -->
+              <div class="tree-node" data-status="active" data-name="mobile accessories cases covers screen protectors chargers cables">
+                <div class="tree-row" onclick="selectRow(this,13)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <button class="tree-toggle" onclick="event.stopPropagation();toggleTree(this)"><span class="material-icons text-[20px] text-slate-400">chevron_right</span></button>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">headphones</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Mobile Accessories</p><p class="text-[10px] text-slate-400 mono">id:13 • parent_id:1 • sort_order:4 • 3 subcategories</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Mobile Accessories')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Mobile Accessories')" title="Add Subcategory"><span class="material-icons text-[16px]">add</span></button>
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Mobile Accessories')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Mobile Accessories',13)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+                <!-- Depth 3 children -->
+                <div class="tree-children depth-connector depth-connector-2 pl-8 ml-4 space-y-1">
+                  <div class="tree-node" data-status="active" data-name="cases covers">
+                    <div class="tree-row" onclick="selectRow(this,20)">
+                      <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                      <div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">layers</span></div>
+                      <div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Cases & Covers</p><p class="text-[10px] text-slate-400 mono">id:20 • parent_id:13 • sort_order:1</p></div>
+                      <span class="badge badge-green text-[10px]">Active</span>
+                      <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Cases & Covers')"><div class="cat-thumb"></div></div>
+                      <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Cases & Covers')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    </div>
+                  </div>
+                  <div class="tree-node" data-status="active" data-name="screen protectors">
+                    <div class="tree-row" onclick="selectRow(this,21)">
+                      <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                      <div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">filter_none</span></div>
+                      <div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Screen Protectors</p><p class="text-[10px] text-slate-400 mono">id:21 • parent_id:13 • sort_order:2</p></div>
+                      <span class="badge badge-green text-[10px]">Active</span>
+                      <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Screen Protectors')"><div class="cat-thumb"></div></div>
+                      <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Screen Protectors')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    </div>
+                  </div>
+                  <div class="tree-node" data-status="active" data-name="chargers cables">
+                    <div class="tree-row" onclick="selectRow(this,22)">
+                      <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                      <div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">cable</span></div>
+                      <div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Chargers & Cables</p><p class="text-[10px] text-slate-400 mono">id:22 • parent_id:13 • sort_order:3</p></div>
+                      <span class="badge badge-green text-[10px]">Active</span>
+                      <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Chargers & Cables')"><div class="cat-thumb"></div></div>
+                      <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Chargers & Cables')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 2: Electronics (id:2, parent_id:NULL, sort_order:2) ====== -->
+          <div class="tree-node" data-status="active" data-name="electronics laptops desktops monitors audio headphones cameras smart home">
+            <div class="tree-row" onclick="selectRow(this,2)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <button class="tree-toggle rotated" onclick="event.stopPropagation();toggleTree(this)"><span class="material-icons text-[20px] text-slate-400">chevron_right</span></button>
+              <div class="w-8 h-8 rounded-lg bg-cc-purple/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-purple text-[18px]">laptop</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Electronics</p><p class="text-[11px] text-slate-400 mono">id:2 • parent_id:NULL • sort_order:2 • slug: electronics</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Electronics')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Electronics')" title="Add Sub"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Electronics')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Electronics',2)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+            <div class="tree-children open depth-connector pl-9 ml-4 space-y-1">
+              <div class="tree-node" data-status="active" data-name="laptops">
+                <div class="tree-row" onclick="selectRow(this,14)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">laptop_mac</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Laptops</p><p class="text-[10px] text-slate-400 mono">id:14 • parent_id:2 • sort_order:1 • 567 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Laptops')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Laptops')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Laptops',14)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-node" data-status="active" data-name="audio headphones earbuds speakers">
+                <div class="tree-row" onclick="selectRow(this,16)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <button class="tree-toggle" onclick="event.stopPropagation();toggleTree(this)"><span class="material-icons text-[20px] text-slate-400">chevron_right</span></button>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">headphones</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Audio & Headphones</p><p class="text-[10px] text-slate-400 mono">id:16 • parent_id:2 • sort_order:3 • 3 subcategories</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Audio & Headphones')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Audio & Headphones')" title="Add Sub"><span class="material-icons text-[16px]">add</span></button>
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Audio & Headphones')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Audio & Headphones',16)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+                <div class="tree-children depth-connector depth-connector-2 pl-8 ml-4 space-y-1">
+                  <div class="tree-node" data-status="active" data-name="earbuds">
+                    <div class="tree-row" onclick="selectRow(this,23)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">earbuds</span></div><div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Earbuds</p><p class="text-[10px] text-slate-400 mono">id:23 • parent_id:16 • sort_order:1</p></div><span class="badge badge-green text-[10px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Earbuds')"><div class="cat-thumb"></div></div><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Earbuds')"><span class="material-icons text-[16px]">edit</span></button></div>
+                  </div>
+                  <div class="tree-node" data-status="active" data-name="over-ear headphones">
+                    <div class="tree-row" onclick="selectRow(this,24)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">headset</span></div><div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Over-ear Headphones</p><p class="text-[10px] text-slate-400 mono">id:24 • parent_id:16 • sort_order:2</p></div><span class="badge badge-green text-[10px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Over-ear Headphones')"><div class="cat-thumb"></div></div><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Over-ear Headphones')"><span class="material-icons text-[16px]">edit</span></button></div>
+                  </div>
+                  <div class="tree-node" data-status="active" data-name="bluetooth speakers">
+                    <div class="tree-row" onclick="selectRow(this,25)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-5 h-5 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-400 text-[12px]">speaker</span></div><div class="flex-1 min-w-0"><p class="text-sm text-slate-600 truncate">Bluetooth Speakers</p><p class="text-[10px] text-slate-400 mono">id:25 • parent_id:16 • sort_order:3</p></div><span class="badge badge-green text-[10px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Bluetooth Speakers')"><div class="cat-thumb"></div></div><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Bluetooth Speakers')"><span class="material-icons text-[16px]">edit</span></button></div>
+                  </div>
+                </div>
+              </div>
+              <!-- INACTIVE: Smart Home (id:27, parent_id:2, is_active:0) -->
+              <div class="tree-node" data-status="inactive" data-name="smart home">
+                <div class="tree-row inactive-row" onclick="selectRow(this,27)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-300 text-[14px]">home</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-400 truncate line-through">Smart Home</p><p class="text-[10px] text-slate-300 mono">id:27 • parent_id:2 • sort_order:5</p></div>
+                  <span class="badge badge-red text-[11px]">is_active: 0</span>
+                  <div class="cat-toggle" onclick="event.stopPropagation();toggleCat(this,'Smart Home')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Smart Home')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-node" data-status="active" data-name="desktops monitors">
+                <div class="tree-row" onclick="selectRow(this,15)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">monitor</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Desktops & Monitors</p><p class="text-[10px] text-slate-400 mono">id:15 • parent_id:2 • sort_order:2 • 234 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Desktops & Monitors')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Desktops & Monitors')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Desktops & Monitors',15)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-node" data-status="active" data-name="cameras">
+                <div class="tree-row" onclick="selectRow(this,17)">
+                  <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+                  <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">camera_alt</span></div>
+                  <div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Cameras</p><p class="text-[10px] text-slate-400 mono">id:17 • parent_id:2 • sort_order:4 • 98 products</p></div>
+                  <span class="badge badge-green text-[11px]">Active</span>
+                  <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Cameras')"><div class="cat-thumb"></div></div>
+                  <div class="flex items-center gap-0.5">
+                    <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Cameras')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+                    <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Cameras',17)" title="Deactivate"><span class="material-icons text-[16px]">power_settings_new</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 3: Fashion (id:3, sort_order:3) ====== -->
+          <div class="tree-node" data-status="active" data-name="fashion men women footwear">
+            <div class="tree-row" onclick="selectRow(this,3)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <button class="tree-toggle rotated" onclick="event.stopPropagation();toggleTree(this)"><span class="material-icons text-[20px] text-slate-400">chevron_right</span></button>
+              <div class="w-8 h-8 rounded-lg bg-cc-pink/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-pink text-[18px]">checkroom</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Fashion</p><p class="text-[11px] text-slate-400 mono">id:3 • parent_id:NULL • sort_order:3 • slug: fashion</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Fashion')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Fashion')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Fashion')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Fashion',3)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+            <div class="tree-children open depth-connector pl-9 ml-4 space-y-1">
+              <div class="tree-node" data-status="active" data-name="men clothing"><div class="tree-row" onclick="selectRow(this,18)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">male</span></div><div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Men's Clothing</p><p class="text-[10px] text-slate-400 mono">id:18 • parent_id:3 • sort_order:1 • 2,100 products</p></div><span class="badge badge-green text-[11px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Men\'s Clothing')"><div class="cat-thumb"></div></div><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Men\'s Clothing')"><span class="material-icons text-[16px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Men\'s Clothing',18)"><span class="material-icons text-[16px]">power_settings_new</span></button></div></div></div>
+              <div class="tree-node" data-status="active" data-name="women clothing"><div class="tree-row" onclick="selectRow(this,19)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">female</span></div><div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Women's Clothing</p><p class="text-[10px] text-slate-400 mono">id:19 • parent_id:3 • sort_order:2 • 2,847 products</p></div><span class="badge badge-green text-[11px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Women\'s Clothing')"><div class="cat-thumb"></div></div><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Women\'s Clothing')"><span class="material-icons text-[16px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Women\'s Clothing',19)"><span class="material-icons text-[16px]">power_settings_new</span></button></div></div></div>
+              <div class="tree-node" data-status="active" data-name="footwear"><div class="tree-row" onclick="selectRow(this,26)"><div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div><div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[14px]">hiking</span></div><div class="flex-1 min-w-0"><p class="text-sm font-medium text-slate-700 truncate">Footwear</p><p class="text-[10px] text-slate-400 mono">id:26 • parent_id:3 • sort_order:3 • 1,034 products</p></div><span class="badge badge-green text-[11px]">Active</span><div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Footwear')"><div class="cat-thumb"></div></div><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal('edit','Footwear')"><span class="material-icons text-[16px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Footwear',26)"><span class="material-icons text-[16px]">power_settings_new</span></button></div></div></div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 4: Home & Furniture (id:4, sort_order:4) ====== -->
+          <div class="tree-node" data-status="active" data-name="home furniture">
+            <div class="tree-row" onclick="selectRow(this,4)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-cc-orange/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-orange text-[18px]">weekend</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Home & Furniture</p><p class="text-[11px] text-slate-400 mono">id:4 • parent_id:NULL • sort_order:4 • slug: home-furniture</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Home & Furniture')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Home & Furniture')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Home & Furniture')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Home & Furniture',4)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 5: Beauty & Personal Care (id:5, sort_order:5) ====== -->
+          <div class="tree-node" data-status="active" data-name="beauty personal care">
+            <div class="tree-row" onclick="selectRow(this,5)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><span class="material-icons text-pink-500 text-[18px]">spa</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Beauty & Personal Care</p><p class="text-[11px] text-slate-400 mono">id:5 • parent_id:NULL • sort_order:5 • slug: beauty-personal-care</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Beauty & Personal Care')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Beauty & Personal Care')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Beauty & Personal Care')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Beauty & Personal Care',5)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 6: Appliances (id:6, sort_order:6) ====== -->
+          <div class="tree-node" data-status="active" data-name="appliances">
+            <div class="tree-row" onclick="selectRow(this,6)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center shrink-0"><span class="material-icons text-yellow-600 text-[18px]">kitchen</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Appliances</p><p class="text-[11px] text-slate-400 mono">id:6 • parent_id:NULL • sort_order:6 • slug: appliances</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Appliances')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Appliances')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Appliances')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Appliances',6)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 7: Sports & Fitness (id:7, sort_order:7) ====== -->
+          <div class="tree-node" data-status="active" data-name="sports fitness">
+            <div class="tree-row" onclick="selectRow(this,7)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[18px]">sports_cricket</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Sports & Fitness</p><p class="text-[11px] text-slate-400 mono">id:7 • parent_id:NULL • sort_order:7 • slug: sports-fitness</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Sports & Fitness')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Sports & Fitness')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Sports & Fitness')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Sports & Fitness',7)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 8: Toys & Baby Care (id:8, sort_order:8) ====== -->
+          <div class="tree-node" data-status="active" data-name="toys baby care">
+            <div class="tree-row" onclick="selectRow(this,8)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0"><span class="material-icons text-cyan-600 text-[18px]">smart_toy</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Toys & Baby Care</p><p class="text-[11px] text-slate-400 mono">id:8 • parent_id:NULL • sort_order:8 • slug: toys-baby-care</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Toys & Baby Care')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Toys & Baby Care')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Toys & Baby Care')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Toys & Baby Care',8)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== ROOT 9: Grocery & Gourmet (id:9, sort_order:9) ====== -->
+          <div class="tree-node" data-status="active" data-name="grocery gourmet">
+            <div class="tree-row" onclick="selectRow(this,9)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-lime-50 flex items-center justify-center shrink-0"><span class="material-icons text-lime-600 text-[18px]">grocery</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">Grocery & Gourmet</p><p class="text-[11px] text-slate-400 mono">id:9 • parent_id:NULL • sort_order:9 • slug: grocery-gourmet</p></div>
+              <span class="badge badge-green text-[11px]">is_active: 1</span>
+              <div class="cat-toggle on" onclick="event.stopPropagation();toggleCat(this,'Grocery & Gourmet')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('add-child','Grocery & Gourmet')"><span class="material-icons text-[16px]">add</span></button>
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Grocery & Gourmet')"><span class="material-icons text-[16px]">edit</span></button>
+                <button class="action-btn danger" onclick="event.stopPropagation();confirmDeactivate('Grocery & Gourmet',9)"><span class="material-icons text-[16px]">power_settings_new</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== INACTIVE ROOT: Pet Supplies (id:28, parent_id:NULL, is_active:0) ====== -->
+          <div class="tree-node" data-status="inactive" data-name="pet supplies">
+            <div class="tree-row inactive-row" onclick="selectRow(this,28)">
+              <div class="drag-handle"><span class="material-icons text-[14px]">drag_indicator</span></div>
+              <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0"><span class="material-icons text-slate-300 text-[18px]">pets</span></div>
+              <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-400 truncate line-through">Pet Supplies</p><p class="text-[11px] text-slate-300 mono">id:28 • parent_id:NULL • sort_order:10 • slug: pet-supplies</p></div>
+              <span class="badge badge-red text-[11px]">is_active: 0</span>
+              <div class="cat-toggle" onclick="event.stopPropagation();toggleCat(this,'Pet Supplies')"><div class="cat-thumb"></div></div>
+              <div class="flex items-center gap-0.5">
+                <button class="action-btn" onclick="event.stopPropagation();openModal('edit','Pet Supplies')" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== DETAIL PANEL ===== -->
+      <div class="section-card" id="detailPanel">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-purple text-[22px]">info</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Category Record</h2>
+              <p class="text-xs text-slate-400 mono">SELECT * FROM categories WHERE id = <span id="detailId">1</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="p-5 sm:p-6">
+          <div class="flex items-center gap-4 mb-5 pb-5 border-b border-slate-100">
+            <div class="w-14 h-14 rounded-2xl bg-cc-blue/10 flex items-center justify-center" id="detailIcon">
+              <span class="material-icons text-cc-blue text-3xl">phone_android</span>
+            </div>
+            <div>
+              <h3 class="font-heading text-xl font-bold text-slate-800" id="detailName">Mobiles & Tablets</h3>
+              <p class="text-sm text-slate-400 mono mt-0.5" id="detailSlug">slug: mobiles-tablets</p>
+            </div>
+          </div>
+          <div class="space-y-0">
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">id</span><span class="text-sm font-semibold text-slate-700 mono" id="dId">1</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">parent_id</span><span class="text-sm text-slate-700 mono" id="dParent">NULL <span class="text-slate-400 font-sans">(root category)</span></span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">name</span><span class="text-sm text-slate-700" id="dName">Mobiles & Tablets</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">slug</span><span class="text-sm text-cc-blue mono" id="dSlug">mobiles-tablets</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">description</span><span class="text-sm text-slate-600" id="dDesc">Smartphones, feature phones, tablets and all mobile accessories.</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">image_url</span><span class="text-sm text-slate-600 mono break-all" id="dImage">/uploads/categories/mobiles-tablets.webp</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">sort_order</span><span class="text-sm text-slate-700 mono" id="dSort">1 <span class="text-slate-400 font-sans">SMALLINT UNSIGNED</span></span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">is_active</span><span class="badge badge-green text-[11px]" id="dActive">1 (Active)</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">meta_title</span><span class="text-sm text-slate-600" id="dMetaTitle">Buy Mobiles & Tablets Online at Best Prices</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">meta_description</span><span class="text-sm text-slate-600" id="dMetaDesc">Shop from a wide range of mobiles, smartphones, feature phones and tablets...</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">created_at</span><span class="text-sm text-slate-500 mono" id="dCreated">2024-06-01 10:00:00</span></div>
+            <div class="detail-row"><span class="mono text-xs text-slate-400 w-36 shrink-0 pt-0.5">updated_at</span><span class="text-sm text-slate-500 mono" id="dUpdated">2026-02-10 08:30:00</span></div>
+          </div>
+          <div class="mt-5 pt-5 border-t border-slate-100 flex gap-2">
+            <button onclick="openModal('edit', document.getElementById('dName').textContent)" class="flex-1 flex items-center justify-center gap-2 bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+              <span class="material-icons text-[18px]">edit</span> Edit Category
+            </button>
+            <button onclick="openModal('add-child', document.getElementById('dName').textContent)" class="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition">
+              <span class="material-icons text-[18px]">add</span> Add Subcategory
+            </button>
+          </div>
+          <!-- FK Reference -->
+          <div class="mt-4 bg-slate-50 rounded-xl p-3">
+            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Foreign Key References</p>
+            <div class="space-y-1 text-[11px] mono text-slate-400">
+              <p>→ products.category_id = <span class="text-cc-blue" id="dFkProducts">1</span> <span class="text-slate-300 font-sans">(1,245 products linked)</span></p>
+              <p>→ categories.parent_id = <span class="text-cc-blue" id="dFkChildren">NULL</span> <span class="text-slate-300 font-sans">(4 child categories)</span></p>
+              <p>→ ON DELETE SET NULL <span class="text-slate-300 font-sans">(children become root if this is deleted)</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-4"></div>
+  </div>
+</div>
+
+<!-- ================= ADD/EDIT MODAL ================= -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="modalTitle">Add Root Category</h3>
+      <button onclick="closeModal('formModal')" class="text-slate-400 hover:text-slate-600 transition"><span class="material-icons">close</span></button>
+    </div>
+    <form onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+      <input type="hidden" id="formMode" value="add">
+      <input type="hidden" id="formParentName" value="">
+      <div id="parentInfo" class="hidden bg-cc-blue/5 border border-cc-blue/20 rounded-xl p-3 mb-2">
+        <p class="text-xs text-cc-blue font-medium flex items-center gap-1.5">
+          <span class="material-icons text-[14px]">subdirectory_arrow_right</span>
+          Parent: <strong id="parentNameDisplay"></strong>
+          <span class="mono text-cc-blue/60 ml-1">(parent_id will be set)</span>
+        </p>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">name <span class="mono text-slate-400 font-normal">VARCHAR(120) NOT NULL</span></label>
+        <input type="text" id="formName" class="form-field" placeholder="e.g. Mobiles & Tablets" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">slug <span class="mono text-slate-400 font-normal">VARCHAR(150) UNIQUE</span></label>
+        <div class="flex gap-2">
+          <input type="text" id="formSlug" class="form-field" placeholder="e.g. mobiles-tablets (auto-generated from name)" required>
+          <button type="button" onclick="autoSlug()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium px-3 rounded-xl transition whitespace-nowrap shrink-0">Auto</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">description <span class="mono text-slate-400 font-normal">TEXT NULL</span></label>
+        <textarea id="formDesc" rows="3" class="form-field resize-none" placeholder="Category description..."></textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">image_url <span class="mono text-slate-400 font-normal">VARCHAR(500) NULL</span></label>
+        <input type="text" id="formImage" class="form-field" placeholder="/uploads/categories/...">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">sort_order <span class="mono text-slate-400 font-normal">SMALLINT UNSIGNED DEFAULT 0</span></label>
+          <input type="number" id="formSortOrder" class="form-field" value="0" min="0">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">is_active <span class="mono text-slate-400 font-normal">TINYINT(1) DEFAULT 1</span></label>
+          <select id="formIsActive" class="form-field">
+            <option value="1">1 — Active</option>
+            <option value="0">0 — Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 pt-4 mt-2">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">SEO Fields</p>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">meta_title <span class="mono text-slate-400 font-normal">VARCHAR(200) NULL</span></label>
+            <input type="text" id="formMetaTitle" class="form-field" placeholder="SEO title tag...">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">meta_description <span class="mono text-slate-400 font-normal">VARCHAR(500) NULL</span></label>
+            <textarea id="formMetaDesc" rows="2" class="form-field resize-none" placeholder="Meta description..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+          <span class="material-icons text-[18px]" id="formSubmitIcon">save</span>
+          <span id="formSubmitText">Save Category</span>
+        </button>
+        <button type="button" onclick="closeModal('formModal')" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= DEACTIVATE CONFIRM MODAL ================= -->
+<div class="modal-overlay" id="deactivateModal">
+  <div class="modal-box max-w-sm">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-cc-pink text-4xl">power_settings_new</span>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-slate-900 mb-2">Deactivate Category?</h3>
+      <p class="text-sm text-slate-500 mb-1">You are about to set <strong class="text-slate-700" id="deactivateName">—</strong> to inactive.</p>
+      <p class="text-xs text-slate-400 mono mb-5">UPDATE categories SET is_active = 0 WHERE id = <span id="deactivateId">—</span></p>
+      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-5 text-left">
+        <p class="text-xs text-yellow-800 flex items-start gap-2">
+          <span class="material-icons text-yellow-600 text-[16px] mt-0.5 shrink-0">warning</span>
+          <span><strong>Warning:</strong> Products in this category will still exist but won't appear in the storefront. Child categories with <span class="mono">parent_id</span> pointing here will NOT be auto-deactivated (ON DELETE SET NULL does not apply to boolean fields).</span>
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="executeDeactivate()" class="flex-1 bg-cc-pink hover:bg-pink-700 text-white font-bold py-3 rounded-xl transition">Yes, Deactivate</button>
+        <button onclick="closeModal('deactivateModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 rounded-xl transition">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== SIDEBAR =====
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('mobile-open');o.classList.toggle('show');document.body.style.overflow=s.classList.contains('mobile-open')?'hidden':''}
+function collapseSidebar(){const s=document.getElementById('sidebar'),m=document.getElementById('mainArea'),i=document.getElementById('collapseIcon');s.classList.toggle('collapsed');m.classList.toggle('expanded');i.textContent=s.classList.contains('collapsed')?'chevron_right':'menu_open'}
+
+// ===== TREE EXPAND/COLLAPSE =====
+function toggleTree(btn){btn.classList.toggle('rotated');const children=btn.closest('.tree-node').querySelector(':scope > .tree-children');if(children)children.classList.toggle('open')}
+function expandAll(){document.querySelectorAll('.tree-children').forEach(c=>c.classList.add('open'));document.querySelectorAll('.tree-toggle').forEach(t=>t.classList.add('rotated'))}
+function collapseAll(){document.querySelectorAll('.tree-children').forEach(c=>c.classList.remove('open'));document.querySelectorAll('.tree-toggle').forEach(t=>t.classList.remove('rotated'))}
+
+// ===== SELECT ROW =====
+const detailData={
+  1:{id:'1',parent:'NULL <span class="text-slate-400 font-sans">(root category)</span>',name:'Mobiles & Tablets',slug:'mobiles-tablets',desc:'Smartphones, feature phones, tablets and all mobile accessories.',image:'/uploads/categories/mobiles-tablets.webp',sort:'1',active:'1 (Active)',metaTitle:'Buy Mobiles & Tablets Online at Best Prices',metaDesc:'Shop from a wide range of mobiles, smartphones, feature phones and tablets...',created:'2024-06-01 10:00:00',updated:'2026-02-10 08:30:00',fkP:'NULL',fkC:'1',fkPCount:'4'},
+  2:{id:'2',parent:'NULL <span class="text-slate-400 font-sans">(root category)</span>',name:'Electronics',slug:'electronics',desc:'Laptops, desktops, audio, cameras and all electronic gadgets.',image:'/uploads/categories/electronics.webp',sort:'2',active:'1 (Active)',metaTitle:'Buy Electronics Online',metaDesc:'Explore laptops, monitors, cameras, audio equipment...',created:'2024-06-01 10:00:00',updated:'2026-02-10 07:15:00',fkP:'NULL',fkC:'2',fkPCount:'5'},
+  10:{id:'10',parent:'1 <span class="text-slate-400 font-sans">(Mobiles & Tablets)</span>',name:'Smartphones',slug:'smartphones',desc:'All smartphones across brands and price ranges.',image:'/uploads/categories/smartphones.webp',sort:'1',active:'1 (Active)',metaTitle:'Buy Smartphones Online',metaDesc:'Latest 5G smartphones from top brands...',created:'2024-06-01 10:05:00',updated:'2026-02-09 14:00:00',fkP:'1',fkC:'10',fkPCount:'0'},
+  27:{id:'27',parent:'2 <span class="text-slate-400 font-sans">(Electronics)</span>',name:'Smart Home',slug:'smart-home',desc:'Smart speakers, lights, security cameras and home automation.',image:'/uploads/categories/smart-home.webp',sort:'5',active:'0 (Inactive)',metaTitle:'',metaDesc:'',created:'2024-08-15 12:00:00',updated:'2026-01-20 09:00:00',fkP:'2',fkC:'27',fkPCount:'0'},
+  28:{id:'28',parent:'NULL <span class="text-slate-400 font-sans">(root category)</span>',name:'Pet Supplies',slug:'pet-supplies',desc:'Pet food, toys, grooming and healthcare products.',image:'/uploads/categories/pet-supplies.webp',sort:'10',active:'0 (Inactive)',metaTitle:'',metaDesc:'',created:'2024-09-01 08:00:00',updated:'2026-01-15 11:00:00',fkP:'NULL',fkC:'28',fkPCount:'0'}
+};
+function selectRow(row,id){
+  document.querySelectorAll('.tree-row').forEach(r=>r.classList.remove('selected'));
+  row.classList.add('selected');
+  const d=detailData[id]||{id:id,parent:'—',name:row.querySelector('.truncate')?.textContent||'—',slug:'—',desc:'—',image:'—',sort:'—',active:'—',metaTitle:'—',metaDesc:'—',created:'—',updated:'—',fkP:'—',fkC:id,fkPCount:'0'};
+  document.getElementById('detailId').textContent=d.id;
+  document.getElementById('dId').textContent=d.id;
+  document.getElementById('dParent').innerHTML=d.parent;
+  document.getElementById('dName').textContent=d.name;
+  document.getElementById('detailName').textContent=d.name;
+  document.getElementById('dSlug').textContent=d.slug;
+  document.getElementById('detailSlug').textContent='slug: '+d.slug;
+  document.getElementById('dDesc').textContent=d.desc;
+  document.getElementById('dImage').textContent=d.image;
+  document.getElementById('dSort').innerHTML=d.sort+' <span class="text-slate-400 font-sans">SMALLINT UNSIGNED</span>';
+  const actEl=document.getElementById('dActive');
+  actEl.textContent=d.active;
+  actEl.className='badge text-[11px] '+(d.active.startsWith('1')?'badge-green':'badge-red');
+  document.getElementById('dMetaTitle').textContent=d.metaTitle||'NULL';
+  document.getElementById('dMetaDesc').textContent=d.metaDesc||'NULL';
+  document.getElementById('dCreated').textContent=d.created;
+  document.getElementById('dUpdated').textContent=d.updated;
+  document.getElementById('dFkProducts').textContent=d.fkC;
+  document.getElementById('dFkChildren').textContent=d.fkP;
+  document.getElementById('dFkChildren').nextElementSibling.textContent='('+(parseInt(d.fkPCount))+' child categories)';
+}
+
+// ===== TOGGLE is_active =====
+function toggleCat(toggle,name){
+  const isOn=toggle.classList.toggle('on');
+  const row=toggle.closest('.tree-row');
+  const badge=row.querySelector('.badge');
+  if(isOn){
+    row.classList.remove('inactive-row');
+    row.querySelector('.truncate')?.classList.remove('line-through','text-slate-400');
+    row.querySelector('.truncate')?.classList.add('text-slate-800','text-slate-700','text-slate-600');
+    badge.className='badge badge-green text-[11px]';
+    badge.textContent='is_active: 1';
+    row.closest('.tree-node').dataset.status='active';
+    showToast('success','<strong>'+name+'</strong> activated — UPDATE categories SET is_active = 1');
+  }else{
+    row.classList.add('inactive-row');
+    row.querySelector('.truncate')?.classList.add('line-through','text-slate-400');
+    badge.className='badge badge-red text-[11px]';
+    badge.textContent='is_active: 0';
+    row.closest('.tree-node').dataset.status='inactive';
+    showToast('info','<strong>'+name+'</strong> deactivated — UPDATE categories SET is_active = 0');
+  }
+}
+
+// ===== MODAL =====
+function openModal(mode,parentName){
+  const m=document.getElementById('formModal');
+  const ti=document.getElementById('modalTitle');
+  const pi=document.getElementById('parentInfo');
+  const st=document.getElementById('formSubmitText');
+  document.getElementById('formMode').value=mode;
+  document.getElementById('formParentName').value=parentName||'';
+  if(mode==='add'){
+    ti.textContent='Add Root Category';
+    pi.classList.add('hidden');
+    st.textContent='Insert Category';
+    document.getElementById('formName').value='';
+    document.getElementById('formSlug').value='';
+    document.getElementById('formDesc').value='';
+    document.getElementById('formImage').value='';
+    document.getElementById('formSortOrder').value='0';
+    document.getElementById('formIsActive').value='1';
+    document.getElementById('formMetaTitle').value='';
+    document.getElementById('formMetaDesc').value='';
+  }else if(mode==='add-child'){
+    ti.textContent='Add Subcategory';
+    pi.classList.remove('hidden');
+    document.getElementById('parentNameDisplay').textContent=parentName;
+    st.textContent='Insert Category';
+    document.getElementById('formName').value='';
+    document.getElementById('formSlug').value='';
+    document.getElementById('formDesc').value='';
+    document.getElementById('formImage').value='';
+    document.getElementById('formSortOrder').value='0';
+    document.getElementById('formIsActive').value='1';
+    document.getElementById('formMetaTitle').value='';
+    document.getElementById('formMetaDesc').value='';
+  }else{
+    ti.textContent='Edit Category';
+    pi.classList.add('hidden');
+    st.textContent='Update Category';
+    document.getElementById('formName').value=parentName||'';
+    document.getElementById('formSlug').value=(parentName||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    document.getElementById('formDesc').value='';
+    document.getElementById('formImage').value='';
+    document.getElementById('formMetaTitle').value='';
+    document.getElementById('formMetaDesc').value='';
+  }
+  m.classList.add('show');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('formName').focus(),200);
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');document.body.style.overflow=''}
+function autoSlug(){const n=document.getElementById('formName').value;document.getElementById('formSlug').value=n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function handleFormSubmit(e){
+  e.preventDefault();
+  const mode=document.getElementById('formMode').value;
+  const name=document.getElementById('formName').value;
+  const slug=document.getElementById('formSlug').value;
+  const parent=document.getElementById('formParentName').value;
+  closeModal('formModal');
+  if(mode==='add') showToast('success','<strong>'+name+'</strong> created — INSERT INTO categories (name, slug, parent_id=NULL) VALUES ("'+name+'", "'+slug+'", NULL)');
+  else if(mode==='add-child') showToast('success','<strong>'+name+'</strong> created under <strong>'+parent+'</strong> — INSERT INTO categories (name, slug, parent_id) VALUES ("'+name+'", "'+slug+'", (SELECT id FROM categories WHERE name="'+parent+'"))');
+  else showToast('success','<strong>'+name+'</strong> updated — UPDATE categories SET name="'+name+'", slug="'+slug+'" WHERE id = ...');
+}
+function confirmDeactivate(name,id){
+  document.getElementById('deactivateName').textContent=name;
+  document.getElementById('deactivateId').textContent=id;
+  document.getElementById('deactivateModal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function executeDeactivate(){
+  const name=document.getElementById('deactivateName').textContent;
+  closeModal('deactivateModal');
+  showToast('error','<strong>'+name+'</strong> deactivated — UPDATE categories SET is_active = 0 WHERE id = '+document.getElementById('deactivateId').textContent);
+}
+
+// ===== FILTER =====
+function filterStatus(f){
+  document.querySelectorAll('.fbtn').forEach(b=>{b.className='fbtn text-xs '+(b.dataset.f===f?'bg-cc-blue/10 text-cc-blue font-semibold':'bg-slate-100 text-slate-500 font-medium hover:bg-slate-200')+' px-3 py-1.5 rounded-lg transition'});
+  document.querySelectorAll('.tree-node').forEach(n=>{
+    if(f==='all')n.style.display='';
+    else n.style.display=n.dataset.status===f?'':'none';
+  });
+}
+function filterTree(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.tree-node').forEach(n=>{
+    n.style.display=n.dataset.name.includes(q)?'':'none';
+  });
+}
+
+// ===== TOAST =====
+function showToast(type,msg){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  const icons={success:'check_circle',error:'error',info:'info'};
+  const cls={success:'toast-success',error:'toast-error',info:'toast-info'};
+  t.className='toast-item '+cls[type];
+  t.innerHTML='<span class="material-icons text-[20px]">'+icons[type]+'</span><span>'+msg+'</span><button onclick="this.closest(\'.toast-item\').classList.add(\'removing\');setTimeout(()=>this.closest(\'.toast-item\').remove(),300)" class="text-current opacity-50 hover:opacity-100 transition ml-2"><span class="material-icons text-[16px]">close</span></button>';
+  c.appendChild(t);
+  setTimeout(()=>{if(t.parentNode){t.classList.add('removing');setTimeout(()=>t.remove(),300)}},5000);
+}
+
+// ===== ESCAPE =====
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('formModal');closeModal('deactivateModal')}});
+</script>
+</body>
+</html>

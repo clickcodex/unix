@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout: Payment — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B', purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A', light: '#F8FAFC', ice: '#F1F5F9' }
+        },
+        fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  .scrollbar-none::-webkit-scrollbar{display:none}
+  .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+  input:focus,select:focus,textarea:focus{outline:none}
+  ::selection{background:#FF5100;color:#fff}
+
+  .step-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;transition:all .3s ease;position:relative;z-index:2;flex-shrink:0}
+  .step-circle.completed{background:#2D82FF;color:#fff}
+  .step-circle.active{background:#2D82FF;color:#fff;box-shadow:0 0 0 6px rgba(45,130,255,.15)}
+  .step-circle.upcoming{background:#E2E8F0;color:#94A3B8}
+  .step-line{height:3px;flex:1;border-radius:2px;transition:background .3s ease}
+  .step-line.completed{background:#2D82FF}
+  .step-line.upcoming{background:#E2E8F0}
+
+  .pay-method-card{border:2px solid #E2E8F0;border-radius:16px;transition:all .2s ease;cursor:pointer;background:#fff;overflow:hidden}
+  .pay-method-card:hover{border-color:#94A3B8}
+  .pay-method-card.selected{border-color:#2D82FF;box-shadow:0 0 0 4px rgba(45,130,255,.1)}
+  .pay-method-card.selected .pm-radio-dot{background:#2D82FF;box-shadow:inset 0 0 0 3px #fff}
+  .pay-method-card.disabled{opacity:.5;pointer-events:none}
+
+  .pm-radio{width:22px;height:22px;border-radius:50%;border:2px solid #CBD5E1;display:flex;align-items:center;justify-content:center;transition:all .2s ease;flex-shrink:0}
+  .pm-radio-dot{width:10px;height:10px;border-radius:50%;background:transparent;transition:all .2s ease}
+
+  .upi-app-btn{border:1.5px solid #E2E8F0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;transition:all .15s ease;cursor:pointer;background:#fff}
+  .upi-app-btn:hover{border-color:#2D82FF;background:#F0F6FF}
+  .upi-app-btn.active{border-color:#2D82FF;background:#EFF6FF;box-shadow:0 0 0 2px rgba(45,130,255,.1)}
+
+  .bank-btn{border:1.5px solid #E2E8F0;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;transition:all .15s ease;cursor:pointer;background:#fff;font-size:13px;color:#475569}
+  .bank-btn:hover{border-color:#2D82FF;background:#F0F6FF}
+  .bank-btn.active{border-color:#2D82FF;background:#EFF6FF;color:#2D82FF;font-weight:600}
+
+  .wallet-btn{border:1.5px solid #E2E8F0;border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;transition:all .15s ease;cursor:pointer;background:#fff}
+  .wallet-btn:hover{border-color:#2D82FF;background:#F0F6FF}
+  .wallet-btn.active{border-color:#2D82FF;background:#EFF6FF;box-shadow:0 0 0 2px rgba(45,130,255,.1)}
+
+  .form-input{width:100%;border:1.5px solid #E2E8F0;border-radius:12px;padding:12px 14px;font-size:14px;color:#1E293B;background:#fff;transition:all .15s ease}
+  .form-input:focus{border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.08)}
+  .form-input.error{border-color:#EF4444;box-shadow:0 0 0 3px rgba(239,68,68,.08)}
+  .form-input::placeholder{color:#94A3B8}
+  .form-label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+  .form-error{font-size:11px;color:#EF4444;margin-top:4px;display:none}
+  .form-error.show{display:block}
+
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .35s ease-out forwards}
+
+  @keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+  .scale-in{animation:scaleIn .25s ease-out forwards}
+
+  @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  .cart-badge{animation:pulseBadge 2s ease-in-out infinite}
+
+  @keyframes spinLoader{to{transform:rotate(360deg)}}
+  .spin-loader{animation:spinLoader .8s linear infinite}
+
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  .shimmer{background:linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+
+  .card-input-group{position:relative}
+  .card-input-group .card-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#94A3B8}
+  .card-input-group input{padding-right:48px}
+
+  .pay-section-body{max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .25s ease,padding .3s ease;opacity:0;padding-top:0;padding-bottom:0}
+  .pay-section-body.open{max-height:600px;opacity:1;padding-top:16px;padding-bottom:4px}
+
+  .secure-badge{background:linear-gradient(135deg,rgba(45,130,255,.08),rgba(140,48,245,.08));border:1px solid rgba(45,130,255,.15)}
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<!-- TOP BAR -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Secure Checkout — 256-bit SSL Encrypted</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <!-- Stepper: Step 2 active -->
+    <div class="flex-1 max-w-md mx-auto hidden sm:flex items-center gap-0 px-4">
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle completed"><span class="material-icons text-[18px]">check</span></div>
+        <span class="text-[10px] font-semibold text-cc-blue">Address</span>
+      </div>
+      <div class="step-line completed"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle active"><span class="material-icons text-[18px]">payment</span></div>
+        <span class="text-[10px] font-semibold text-cc-blue">Payment</span>
+      </div>
+      <div class="step-line upcoming"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle upcoming" id="step-circle-3"><span class="material-icons text-[18px]">check_circle</span></div>
+        <span class="text-[10px] font-medium text-slate-400" id="step-label-3">Confirm</span>
+      </div>
+    </div>
+    <div class="sm:hidden flex-1 text-center">
+      <p class="text-white/60 text-[10px] font-medium uppercase tracking-wider">Step 2 of 3</p>
+      <p class="text-white text-xs font-bold">Select Payment</p>
+    </div>
+    <div class="flex items-center gap-3 text-white shrink-0">
+      <a href="#" class="relative flex items-center gap-1.5 text-xs hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[20px]">shopping_cart</span>
+        <span class="hidden md:inline">Cart</span>
+        <span class="cart-badge bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">6</span>
+      </a>
+      <span class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10">
+        <span class="material-icons text-[18px]">lock</span>
+        <span class="hidden md:inline">Secure</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">Cart</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">Address</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">Payment</span>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- LEFT: Payment Methods -->
+    <div class="flex-1 min-w-0 space-y-4">
+
+      <!-- Delivery Address Summary -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+              <span class="material-icons text-green-600 text-xl">check_circle</span>
+            </div>
+            <div>
+              <p class="text-[10px] text-green-600 font-bold uppercase tracking-wider">Delivering to</p>
+              <p class="font-semibold text-sm text-slate-800 mt-0.5">Rahul Sharma</p>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">42, Shri Nagar Colony, Near Railway Station, <span class="font-medium text-slate-700">Ratlam, Madhya Pradesh 457001</span></p>
+              <p class="text-xs text-slate-400 mt-1">Phone: +91 98765 43210</p>
+            </div>
+          </div>
+          <a href="#" class="text-xs text-cc-blue hover:text-blue-700 font-semibold flex items-center gap-1 shrink-0 transition">Change <span class="material-icons text-[14px]">edit</span></a>
+        </div>
+      </div>
+
+      <!-- Payment Methods Container -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-cc-orange/10 flex items-center justify-center">
+            <span class="material-icons text-cc-orange text-xl">payment</span>
+          </div>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Choose Payment Method</h2>
+            <p class="text-xs text-slate-500 mt-0.5">All transactions are secure and encrypted</p>
+          </div>
+        </div>
+
+        <div id="payment-methods-list" class="space-y-3">
+          <!-- UPI -->
+          <div class="pay-method-card" data-method="upi" onclick="selectPaymentMethod('upi')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                <span class="material-icons text-cc-purple text-xl">account_balance_wallet</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-slate-800">UPI</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Google Pay, PhonePe, Paytm, BHIM & more</p>
+              </div>
+              <span class="material-icons text-slate-300 text-xl">expand_more</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-upi">
+              <!-- UPI Apps -->
+              <p class="text-xs font-semibold text-slate-600 mb-2.5">Popular UPI Apps</p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <button class="upi-app-btn" data-upi-app="gpay" onclick="event.stopPropagation();selectUpiApp(this)">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#4285F4">G</div>
+                  <span class="text-xs font-medium text-slate-700">Google Pay</span>
+                </button>
+                <button class="upi-app-btn" data-upi-app="phonepe" onclick="event.stopPropagation();selectUpiApp(this)">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#5F259F">P</div>
+                  <span class="text-xs font-medium text-slate-700">PhonePe</span>
+                </button>
+                <button class="upi-app-btn" data-upi-app="paytm" onclick="event.stopPropagation();selectUpiApp(this)">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#00BAF2">PT</div>
+                  <span class="text-xs font-medium text-slate-700">Paytm</span>
+                </button>
+                <button class="upi-app-btn" data-upi-app="bhim" onclick="event.stopPropagation();selectUpiApp(this)">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#097939">B</div>
+                  <span class="text-xs font-medium text-slate-700">BHIM</span>
+                </button>
+              </div>
+              <!-- UPI ID Input -->
+              <p class="text-xs font-semibold text-slate-600 mb-2">Or enter UPI ID</p>
+              <div class="flex gap-2">
+                <input type="text" id="upi-id-input" class="form-input flex-1" placeholder="yourname@upi" onclick="event.stopPropagation()">
+                <button onclick="event.stopPropagation();verifyUpi()" class="bg-cc-purple hover:bg-purple-700 text-white px-5 rounded-xl text-sm font-semibold transition shrink-0">Verify</button>
+              </div>
+              <p id="upi-verify-status" class="text-[11px] mt-2 hidden"></p>
+              <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><span class="material-icons text-[12px]">info</span> You'll receive a payment request on your UPI app</p>
+            </div>
+          </div>
+
+          <!-- Cards -->
+          <div class="pay-method-card" data-method="card" onclick="selectPaymentMethod('card')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <span class="material-icons text-cc-blue text-xl">credit_card</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-slate-800">Credit / Debit Card</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Visa, Mastercard, RuPay, Amex</p>
+              </div>
+              <div class="hidden sm:flex items-center gap-1.5 shrink-0">
+                <div class="w-8 h-5 rounded bg-blue-600 flex items-center justify-center text-[8px] text-white font-bold">VISA</div>
+                <div class="w-8 h-5 rounded bg-red-500 flex items-center justify-center text-[7px] text-white font-bold">MC</div>
+                <div class="w-8 h-5 rounded bg-green-600 flex items-center justify-center text-[7px] text-white font-bold">RuPay</div>
+              </div>
+              <span class="material-icons text-slate-300 text-xl sm:hidden">expand_more</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-card">
+              <div class="space-y-3">
+                <div>
+                  <label class="form-label">Card Number <span class="text-red-400">*</span></label>
+                  <div class="card-input-group">
+                    <input type="text" id="card-number" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" onclick="event.stopPropagation()" oninput="formatCardNumber(this)">
+                    <span class="card-icon material-icons text-xl" id="card-brand-icon">credit_card</span>
+                  </div>
+                  <p class="form-error" id="err-card-number">Please enter a valid card number</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="form-label">Expiry Date <span class="text-red-400">*</span></label>
+                    <input type="text" id="card-expiry" class="form-input" placeholder="MM/YY" maxlength="5" onclick="event.stopPropagation()" oninput="formatExpiry(this)">
+                    <p class="form-error" id="err-card-expiry">Enter valid expiry</p>
+                  </div>
+                  <div>
+                    <label class="form-label">CVV <span class="text-red-400">*</span></label>
+                    <div class="card-input-group">
+                      <input type="password" id="card-cvv" class="form-input" placeholder="***" maxlength="4" onclick="event.stopPropagation()">
+                      <span class="card-icon material-icons text-[18px]">lock</span>
+                    </div>
+                    <p class="form-error" id="err-card-cvv">Enter CVV</p>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Name on Card <span class="text-red-400">*</span></label>
+                  <input type="text" id="card-name" class="form-input" placeholder="As printed on card" maxlength="120" onclick="event.stopPropagation()">
+                  <p class="form-error" id="err-card-name">Enter cardholder name</p>
+                </div>
+                <div class="flex items-start gap-2 bg-cc-ice rounded-xl p-3">
+                  <span class="material-icons text-cc-blue text-[16px] mt-0.5">info</span>
+                  <p class="text-[11px] text-slate-500 leading-relaxed">Your card details are encrypted end-to-end. ClickCodex never stores your full card number or CVV.</p>
+                </div>
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" id="save-card-cb" class="w-4 h-4 rounded accent-cc-blue cursor-pointer" onclick="event.stopPropagation()">
+                  <span class="text-xs text-slate-600">Securely save this card for faster checkout</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Net Banking -->
+          <div class="pay-method-card" data-method="netbanking" onclick="selectPaymentMethod('netbanking')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                <span class="material-icons text-teal-600 text-xl">account_balance</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-slate-800">Net Banking</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">All major Indian banks supported</p>
+              </div>
+              <span class="material-icons text-slate-300 text-xl">expand_more</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-netbanking">
+              <p class="text-xs font-semibold text-slate-600 mb-2.5">Popular Banks</p>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3" id="popular-banks-grid"></div>
+              <p class="text-xs font-semibold text-slate-600 mb-2 mt-3">Other Banks</p>
+              <select id="other-bank-select" class="form-input cursor-pointer" onclick="event.stopPropagation()">
+                <option value="">Select your bank</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Wallets -->
+          <div class="pay-method-card" data-method="wallet" onclick="selectPaymentMethod('wallet')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                <span class="material-icons text-amber-600 text-xl">wallet</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-slate-800">Wallets</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Paytm Wallet, Amazon Pay, Mobikwik & more</p>
+              </div>
+              <span class="material-icons text-slate-300 text-xl">expand_more</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-wallet">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="wallets-grid"></div>
+            </div>
+          </div>
+
+          <!-- EMI -->
+          <div class="pay-method-card" data-method="emi" onclick="selectPaymentMethod('emi')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                <span class="material-icons text-indigo-600 text-xl">calendar_month</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <p class="font-semibold text-sm text-slate-800">EMI</p>
+                  <span class="text-[9px] bg-cc-yellow/20 text-cc-yellow font-bold px-2 py-0.5 rounded-full">NO COST</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Pay in easy monthly installments</p>
+              </div>
+              <span class="material-icons text-slate-300 text-xl">expand_more</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-emi">
+              <p class="text-xs font-semibold text-slate-600 mb-2.5">Available EMI Options</p>
+              <div id="emi-options-list" class="space-y-2"></div>
+              <p class="text-[10px] text-slate-400 mt-3 flex items-center gap-1"><span class="material-icons text-[12px]">info</span> EMI is processed by your credit card issuing bank. No-cost EMI available on select banks.</p>
+            </div>
+          </div>
+
+          <!-- COD -->
+          <div class="pay-method-card" data-method="cod" onclick="selectPaymentMethod('cod')">
+            <div class="p-4 flex items-center gap-4">
+              <div class="pm-radio"><div class="pm-radio-dot"></div></div>
+              <div class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                <span class="material-icons text-slate-600 text-xl">payments</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-slate-800">Cash on Delivery</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Pay when your order is delivered</p>
+              </div>
+              <span class="text-xs text-slate-400 font-medium shrink-0">₹40 extra</span>
+            </div>
+            <div class="pay-section-body px-4 pb-4" id="body-cod">
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+                <span class="material-icons text-amber-600 text-xl mt-0.5">info</span>
+                <div>
+                  <p class="text-xs font-semibold text-amber-800">Cash on Delivery Terms</p>
+                  <ul class="text-[11px] text-amber-700 mt-1.5 space-y-1 leading-relaxed">
+                    <li class="flex items-start gap-1.5"><span class="material-icons text-[12px] mt-0.5">check</span> An additional fee of ₹40 applies for COD orders</li>
+                    <li class="flex items-start gap-1.5"><span class="material-icons text-[12px] mt-0.5">check</span> Please keep exact change ready at the time of delivery</li>
+                    <li class="flex items-start gap-1.5"><span class="material-icons text-[12px] mt-0.5">check</span> OTP verification is required before handover</li>
+                    <li class="flex items-start gap-1.5"><span class="material-icons text-[12px] mt-0.5">check</span> Maximum COD order value is ₹50,000</li>
+                  </ul>
+                </div>
+              </div>
+              <label class="flex items-center gap-2.5 cursor-pointer select-none mt-3">
+                <input type="checkbox" id="cod-terms-cb" class="w-4 h-4 rounded accent-cc-orange cursor-pointer" onclick="event.stopPropagation()">
+                <span class="text-xs text-slate-600">I agree to the Cash on Delivery terms & conditions</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secure Badges -->
+      <div class="secure-badge rounded-2xl p-4 flex flex-wrap items-center justify-center gap-6">
+        <div class="flex items-center gap-2 text-xs text-slate-500"><span class="material-icons text-cc-blue text-lg">shield</span> SSL Secured</div>
+        <div class="flex items-center gap-2 text-xs text-slate-500"><span class="material-icons text-cc-blue text-lg">verified_user</span> PCI DSS Compliant</div>
+        <div class="flex items-center gap-2 text-xs text-slate-500"><span class="material-icons text-cc-blue text-lg">lock</span> 256-bit Encryption</div>
+        <div class="flex items-center gap-2 text-xs text-slate-500"><span class="material-icons text-cc-blue text-lg">encrypted</span> No Data Stored</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div class="lg:w-[380px] shrink-0">
+      <div class="lg:sticky lg:top-[80px] space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="bg-gradient-to-r from-cc-dark to-slate-800 text-white px-5 py-4">
+            <h3 class="font-heading font-bold text-sm flex items-center gap-2">
+              <span class="material-icons text-cc-yellow text-lg">receipt_long</span> Order Summary
+            </h3>
+          </div>
+          <div id="sidebar-cart-items" class="p-4 space-y-3 max-h-[220px] overflow-y-auto scrollbar-none"></div>
+          <div class="border-t border-slate-100 px-5 py-4 space-y-2" id="summary-breakdown">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Delivery Estimate -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+          <h4 class="font-heading font-semibold text-sm text-slate-800 flex items-center gap-2 mb-3">
+            <span class="material-icons text-cc-blue text-lg">local_shipping</span> Delivery Details
+          </h4>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-500">Est. Delivery</span><span class="font-semibold text-slate-800" id="est-delivery-date"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Shipping</span><span class="font-semibold text-green-600">FREE</span></div>
+          </div>
+        </div>
+
+        <!-- Pay Button -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+          <button id="pay-now-btn" onclick="initiatePayment()" disabled class="w-full bg-cc-orange hover:bg-orange-600 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition shadow-lg text-base flex items-center justify-center gap-2">
+            <span id="pay-btn-icon"><span class="material-icons text-xl">lock</span></span>
+            <span id="pay-btn-text">Select a payment method</span>
+          </button>
+          <p class="text-[10px] text-center text-slate-400 mt-3 flex items-center justify-center gap-1">
+            <span class="material-icons text-[12px]">lock</span> Secured by 256-bit SSL encryption
+          </p>
+        </div>
+
+        <!-- Refund Policy -->
+        <div class="bg-cc-ice rounded-2xl p-4">
+          <p class="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-2"><span class="material-icons text-[16px] text-cc-blue">autorenew</span> Easy Refund Policy</p>
+          <p class="text-[11px] text-slate-500 leading-relaxed">If payment fails or is debited twice, your money will be refunded to your source account within 5-7 business days. No action needed from your end.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
+  <div class="px-4 py-3 flex items-center justify-between">
+    <div>
+      <p class="text-[10px] text-slate-400 font-medium uppercase">Pay Amount</p>
+      <p class="font-heading font-extrabold text-xl text-cc-orange" id="mobile-pay-amount">₹13,329</p>
+    </div>
+    <button id="pay-now-btn-mobile" onclick="initiatePayment()" disabled class="bg-cc-orange hover:bg-orange-600 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2 shadow-md">
+      <span class="material-icons text-[18px]">lock</span> Pay Now
+    </button>
+  </div>
+</div>
+
+<!-- ===== PAYMENT PROCESSING MODAL ===== -->
+<div id="processing-modal" class="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden hidden">
+  <div class="absolute inset-0 bg-black/60 modal-backdrop"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-8 text-center scale-in">
+    <div id="processing-spinner" class="w-20 h-20 mx-auto rounded-full border-4 border-cc-ice border-t-cc-blue spin-loader mb-5"></div>
+    <div id="processing-success" class="hidden w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-5">
+      <span class="material-icons text-green-600 text-5xl">check_circle</span>
+    </div>
+    <div id="processing-fail" class="hidden w-20 h-20 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-5">
+      <span class="material-icons text-red-500 text-5xl">error</span>
+    </div>
+    <h3 id="processing-title" class="font-heading font-bold text-xl text-slate-800">Processing Payment...</h3>
+    <p id="processing-desc" class="text-sm text-slate-500 mt-2">Please do not close this window or press back.</p>
+    <div id="processing-txn" class="hidden mt-4 bg-slate-50 rounded-xl p-3 text-left">
+      <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Transaction ID</p>
+      <p class="text-sm font-mono font-bold text-slate-700 mt-0.5" id="txn-id-text"></p>
+      <p class="text-[10px] text-slate-400 mt-1">Gateway: <span id="txn-gateway-text" class="font-medium text-slate-600"></span></p>
+      <p class="text-[10px] text-slate-400">Status: <span id="txn-status-text" class="font-medium"></span></p>
+    </div>
+    <button id="processing-close-btn" class="hidden w-full mt-5 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm" onclick="closeProcessingModal()">Continue to Confirmation</button>
+    <button id="processing-retry-btn" class="hidden w-full mt-5 bg-cc-orange hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition text-sm" onclick="retryPayment()">Retry Payment</button>
+  </div>
+</div>
+
+
+<script>
+// ==================== MOCK DATA ====================
+// Maps to payment_transactions table structure
+const ORDER_DATA = {
+  id: 1,
+  uuid: 'ord-a1b2c3d4',
+  order_number: 'ORD-20260118-0001',
+  user_id: 1,
+  subtotal: 18492,
+  discount_amount: 7195,
+  shipping_charge: 0,
+  tax_amount: 2032,
+  total_amount: 13329,
+  currency: 'INR',
+  coupon_code: 'SAVE20'
+};
+
+const CART_ITEMS = [
+  { name: 'TrueSound Pro Wireless Earbuds', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=100&auto=format&fit=crop&q=80', qty: 1, price: 1499 },
+  { name: 'FitTrack AMOLED Smart Watch', image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=100&auto=format&fit=crop&q=80', qty: 1, price: 2799 },
+  { name: 'Urban Trail Laptop Backpack', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100&auto=format&fit=crop&q=80', qty: 2, price: 899 },
+  { name: 'Cotton Luxe Casual Shirt (L, Navy)', image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=100&auto=format&fit=crop&q=80', qty: 3, price: 599 },
+  { name: 'HomeChef Digital Air Fryer 4.5L', image: 'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=100&auto=format&fit=crop&q=80', qty: 1, price: 3199 },
+  { name: 'SwiftCharge 65W GaN Charger', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=100&auto=format&fit=crop&q=80', qty: 1, price: 999 },
+];
+
+const POPULAR_BANKS = [
+  { name: 'State Bank of India', code: 'SBI', color: '#0033A0' },
+  { name: 'HDFC Bank', code: 'HDFC', color: '#004B87' },
+  { name: 'ICICI Bank', code: 'ICICI', color: '#F37921' },
+  { name: 'Axis Bank', code: 'AXIS', color: '#800020' },
+  { name: 'Kotak Mahindra', code: 'KOTAK', color: '#ED1C24' },
+  { name: 'Punjab National Bank', code: 'PNB', color: '#0066B3' },
+];
+
+const OTHER_BANKS = [
+  'Bank of Baroda','Canara Bank','Union Bank of India','Indian Bank','Bank of India',
+  'Central Bank of India','Indian Overseas Bank','UCO Bank','Yes Bank','IndusInd Bank',
+  'Federal Bank','RBL Bank','IDFC First Bank','Bandhan Bank','South Indian Bank',
+  'Dhanlaxmi Bank','Jammu & Kashmir Bank','Nainital Bank','AU Small Finance Bank','Fincare Small Finance Bank'
+];
+
+const WALLETS = [
+  { name: 'Paytm Wallet', code: 'paytm', color: '#00BAF2', letter: 'PT' },
+  { name: 'Amazon Pay', code: 'amazon', color: '#FF9900', letter: 'A' },
+  { name: 'Mobikwik', code: 'mobikwik', color: '#EF4123', letter: 'M' },
+  { name: 'Freecharge', code: 'freecharge', color: '#F4511E', letter: 'FC' },
+  { name: 'PhonePe Wallet', code: 'phonepe_wallet', color: '#5F259F', letter: 'PP' },
+  { name: 'Jio Money', code: 'jio', color: '#0A2885', letter: 'J' },
+];
+
+const EMI_OPTIONS = [
+  { months: 3, rate: 0, label: '3 Months', bank: 'All Major Banks' },
+  { months: 6, rate: 0, label: '6 Months', bank: 'HDFC, ICICI, SBI, Axis' },
+  { months: 9, rate: 13, label: '9 Months', bank: 'HDFC, ICICI' },
+  { months: 12, rate: 13, label: '12 Months', bank: 'HDFC, ICICI, SBI' },
+  { months: 18, rate: 15, label: '18 Months', bank: 'HDFC, ICICI' },
+  { months: 24, rate: 15, label: '24 Months', bank: 'HDFC, ICICI' },
+];
+
+// ==================== STATE ====================
+let selectedMethod = null;
+let selectedUpiApp = null;
+let selectedBank = null;
+let selectedWallet = null;
+let selectedEmi = null;
+let upiVerified = false;
+let processingResult = null;
+
+// ==================== HELPERS ====================
+function formatPrice(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function generateTxnId() { return 'TXN' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase(); }
+
+// ==================== TOAST ====================
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const colors = { success:'bg-green-600', error:'bg-red-500', info:'bg-cc-blue', warning:'bg-amber-500' };
+  const icons = { success:'check_circle', error:'error', info:'info', warning:'warning' };
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${colors[type]||colors.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${icons[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.replace('toast-in','toast-out'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ==================== RENDER SIDEBAR ====================
+function renderSidebar() {
+  const grid = document.getElementById('sidebar-cart-items');
+  grid.innerHTML = CART_ITEMS.map(item => `
+    <div class="flex gap-3">
+      <img src="${item.image}" class="w-12 h-12 rounded-lg object-contain bg-slate-50 p-1 shrink-0 border border-slate-100" alt="${item.name}">
+      <div class="flex-1 min-w-0">
+        <p class="text-[11px] font-medium text-slate-700 line-clamp-1">${item.name}</p>
+        <p class="text-[11px] text-slate-400">Qty: ${item.qty}</p>
+      </div>
+      <p class="text-xs font-semibold text-slate-800 shrink-0">${formatPrice(item.price * item.qty)}</p>
+    </div>
+  `).join('');
+
+  const codExtra = selectedMethod === 'cod' ? 40 : 0;
+  const total = ORDER_DATA.total_amount + codExtra;
+
+  document.getElementById('summary-breakdown').innerHTML = `
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Price (${CART_ITEMS.reduce((s,i)=>s+i.qty,0)} items)</span><span class="font-medium text-slate-800">${formatPrice(ORDER_DATA.subtotal)}</span></div>
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Discount</span><span class="font-medium text-green-600">−${formatPrice(ORDER_DATA.discount_amount)}</span></div>
+    ${ORDER_DATA.coupon_code ? `<div class="flex justify-between text-sm"><span class="text-slate-500 flex items-center gap-1"><span class="material-icons text-[12px] text-cc-purple">local_offer</span> Coupon (${ORDER_DATA.coupon_code})</span><span class="font-medium text-green-600">included</span></div>` : ''}
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Delivery</span><span class="font-medium ${ORDER_DATA.shipping_charge === 0 ? 'text-green-600' : 'text-slate-800'}">${ORDER_DATA.shipping_charge === 0 ? 'FREE' : formatPrice(ORDER_DATA.shipping_charge)}</span></div>
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Tax (GST)</span><span class="font-medium text-slate-800">${formatPrice(ORDER_DATA.tax_amount)}</span></div>
+    ${codExtra > 0 ? `<div class="flex justify-between text-sm"><span class="text-slate-500">COD Fee</span><span class="font-medium text-slate-800">${formatPrice(codExtra)}</span></div>` : ''}
+    <div class="border-t border-dashed border-slate-200 pt-3 flex justify-between items-baseline">
+      <span class="font-heading font-bold text-slate-900">Total</span>
+      <span class="font-heading font-extrabold text-xl text-cc-orange">${formatPrice(total)}</span>
+    </div>
+    <div class="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
+      <span class="material-icons text-green-600 text-[16px]">savings</span>
+      <p class="text-[11px] text-green-700 font-medium">You save ${formatPrice(ORDER_DATA.discount_amount)} on this order</p>
+    </div>
+  `;
+  document.getElementById('mobile-pay-amount').textContent = formatPrice(total);
+
+  // Delivery date
+  const est = new Date(); est.setDate(est.getDate() + 3);
+  document.getElementById('est-delivery-date').textContent = est.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// ==================== PAYMENT METHOD SELECTION ====================
+function selectPaymentMethod(method) {
+  selectedMethod = method;
+  // Reset sub-selections
+  selectedBank = null; selectedWallet = null; selectedEmi = null; upiVerified = false;
+  document.getElementById('upi-verify-status').classList.add('hidden');
+
+  // Update card UI
+  document.querySelectorAll('.pay-method-card').forEach(card => {
+    const m = card.dataset.method;
+    const isSelected = m === method;
+    card.classList.toggle('selected', isSelected);
+    const body = document.getElementById('body-' + m);
+    if (body) body.classList.toggle('open', isSelected);
+  });
+
+  updatePayButton();
+  renderSidebar();
+}
+
+// ==================== UPI ====================
+function selectUpiApp(btn) {
+  document.querySelectorAll('.upi-app-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedUpiApp = btn.dataset.upiApp;
+  document.getElementById('upi-id-input').value = '';
+  upiVerified = false;
+  document.getElementById('upi-verify-status').classList.add('hidden');
+  updatePayButton();
+}
+
+function verifyUpi() {
+  const input = document.getElementById('upi-id-input');
+  const val = input.value.trim();
+  const statusEl = document.getElementById('upi-verify-status');
+  statusEl.classList.remove('hidden');
+
+  if (!val || !val.includes('@') || val.length < 5) {
+    statusEl.innerHTML = '<span class="text-red-500 flex items-center gap-1"><span class="material-icons text-[14px]">error</span> Please enter a valid UPI ID (e.g. name@bank)</span>';
+    upiVerified = false;
+    updatePayButton();
+    return;
+  }
+
+  statusEl.innerHTML = '<span class="text-slate-400 flex items-center gap-1"><span class="material-icons text-[14px] spin-loader">sync</span> Verifying...</span>';
+  setTimeout(() => {
+    upiVerified = true;
+    statusEl.innerHTML = '<span class="text-green-600 flex items-center gap-1"><span class="material-icons text-[14px]">check_circle</span> UPI ID verified successfully</span>';
+    selectedUpiApp = 'custom';
+    document.querySelectorAll('.upi-app-btn').forEach(b => b.classList.remove('active'));
+    updatePayButton();
+  }, 1200);
+}
+
+// ==================== CARD FORMATTING ====================
+function formatCardNumber(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 16);
+  let formatted = v.replace(/(.{4})/g, '$1 ').trim();
+  input.value = formatted;
+  // Detect brand
+  const icon = document.getElementById('card-brand-icon');
+  if (/^4/.test(v)) { icon.textContent = 'credit_card'; icon.style.color = '#1A1F71'; }
+  else if (/^5[1-5]/.test(v)) { icon.textContent = 'credit_card'; icon.style.color = '#EB001B'; }
+  else if (/^6/.test(v)) { icon.textContent = 'credit_card'; icon.style.color = '#0066B3'; }
+  else if (/^3[47]/.test(v)) { icon.textContent = 'credit_card'; icon.style.color = '#006FCF'; }
+  else { icon.textContent = 'credit_card'; icon.style.color = '#94A3B8'; }
+}
+
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2);
+  input.value = v;
+}
+
+// ==================== NET BANKING ====================
+function selectBank(btn, code) {
+  selectedBank = code;
+  document.querySelectorAll('.bank-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('other-bank-select').value = '';
+  updatePayButton();
+}
+
+function selectOtherBank() {
+  const val = document.getElementById('other-bank-select').value;
+  if (val) {
+    selectedBank = val;
+    document.querySelectorAll('.bank-btn').forEach(b => b.classList.remove('active'));
+  } else { selectedBank = null; }
+  updatePayButton();
+}
+
+// ==================== WALLETS ====================
+function selectWallet(btn, code) {
+  selectedWallet = code;
+  document.querySelectorAll('.wallet-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePayButton();
+}
+
+// ==================== EMI ====================
+function selectEmi(btn, months) {
+  selectedEmi = months;
+  document.querySelectorAll('.emi-opt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePayButton();
+}
+
+// ==================== UPDATE PAY BUTTON ====================
+function updatePayButton() {
+  const btn = document.getElementById('pay-now-btn');
+  const btnMobile = document.getElementById('pay-now-btn-mobile');
+  const textEl = document.getElementById('pay-btn-text');
+  const iconEl = document.getElementById('pay-btn-icon');
+  let canPay = false;
+  let label = 'Select a payment method';
+
+  const codExtra = selectedMethod === 'cod' ? 40 : 0;
+  const total = ORDER_DATA.total_amount + codExtra;
+
+  switch (selectedMethod) {
+    case 'upi':
+      if (selectedUpiApp) { canPay = true; label = `Pay ${formatPrice(total)} via UPI`; }
+      else if (upiVerified) { canPay = true; label = `Pay ${formatPrice(total)} via UPI`; }
+      else { label = 'Select a UPI app or verify UPI ID'; }
+      break;
+    case 'card':
+      canPay = false; label = 'Fill card details to continue';
+      // We validate on click, so just show placeholder
+      label = `Pay ${formatPrice(total)} with Card`;
+      iconEl.innerHTML = '<span class="material-icons text-xl">credit_card</span>';
+      canPay = true; // Will validate on click
+      break;
+    case 'netbanking':
+      if (selectedBank) { canPay = true; label = `Pay ${formatPrice(total)} via Net Banking`; }
+      else { label = 'Select a bank to continue'; }
+      break;
+    case 'wallet':
+      if (selectedWallet) { canPay = true; label = `Pay ${formatPrice(total)} via Wallet`; }
+      else { label = 'Select a wallet to continue'; }
+      break;
+    case 'emi':
+      if (selectedEmi) {
+        const opt = EMI_OPTIONS.find(e => e.months === selectedEmi);
+        const monthly = total / selectedEmi;
+        canPay = true;
+        label = `Pay ${formatPrice(total)} — ${formatPrice(Math.ceil(monthly))}/mo × ${selectedEmi}mo`;
+      } else { label = 'Select an EMI option'; }
+      break;
+    case 'cod':
+      const cb = document.getElementById('cod-terms-cb');
+      if (cb && cb.checked) { canPay = true; label = `Pay ${formatPrice(total)} on Delivery`; }
+      else { label = 'Accept COD terms to continue'; }
+      break;
+  }
+
+  if (selectedMethod !== 'card') {
+    iconEl.innerHTML = '<span class="material-icons text-xl">lock</span>';
+  }
+
+  textEl.textContent = label;
+  btn.disabled = !canPay;
+  btnMobile.disabled = !canPay;
+  btnMobile.querySelector('span:last-child') || null;
+  // Update mobile button text
+  const mobileText = btnMobile.childNodes[btnMobile.childNodes.length - 1];
+  if (mobileText && mobileText.nodeType === 3) {
+    // skip
+  }
+}
+
+// COD terms checkbox listener
+document.addEventListener('DOMContentLoaded', () => {
+  const codCb = document.getElementById('cod-terms-cb');
+  if (codCb) codCb.addEventListener('change', () => { if (selectedMethod === 'cod') updatePayButton(); });
+});
+
+// ==================== CARD VALIDATION ====================
+function validateCardForm() {
+  let valid = true;
+  const num = document.getElementById('card-number').value.replace(/\s/g, '');
+  const exp = document.getElementById('card-expiry').value;
+  const cvv = document.getElementById('card-cvv').value;
+  const name = document.getElementById('card-name').value.trim();
+
+  // Reset errors
+  ['card-number','card-expiry','card-cvv','card-name'].forEach(id => {
+    document.getElementById(id).classList.remove('error');
+    document.getElementById('err-' + id).classList.remove('show');
+  });
+
+  if (num.length < 13 || num.length > 16 || !/^\d+$/.test(num)) {
+    document.getElementById('card-number').classList.add('error');
+    document.getElementById('err-card-number').classList.add('show');
+    valid = false;
+  }
+  if (!/^\d{2}\/\d{2}$/.test(exp)) {
+    document.getElementById('card-expiry').classList.add('error');
+    document.getElementById('err-card-expiry').classList.add('show');
+    valid = false;
+  } else {
+    const [mm, yy] = exp.split('/').map(Number);
+    if (mm < 1 || mm > 12 || yy < 25) {
+      document.getElementById('card-expiry').classList.add('error');
+      document.getElementById('err-card-expiry').classList.add('show');
+      valid = false;
+    }
+  }
+  if (cvv.length < 3 || !/^\d+$/.test(cvv)) {
+    document.getElementById('card-cvv').classList.add('error');
+    document.getElementById('err-card-cvv').classList.add('show');
+    valid = false;
+  }
+  if (name.length < 2) {
+    document.getElementById('card-name').classList.add('error');
+    document.getElementById('err-card-name').classList.add('show');
+    valid = false;
+  }
+  return valid;
+}
+
+// ==================== INITIATE PAYMENT ====================
+function initiatePayment() {
+  // Card validation
+  if (selectedMethod === 'card' && !validateCardForm()) {
+    showToast('Please fill in all card details correctly', 'error');
+    return;
+  }
+
+  // Determine gateway (maps to payment_transactions.gateway)
+  let gateway = 'cod';
+  switch (selectedMethod) {
+    case 'upi': gateway = 'razorpay'; break;
+    case 'card': gateway = 'razorpay'; break;
+    case 'netbanking': gateway = 'razorpay'; break;
+    case 'wallet': gateway = 'razorpay'; break;
+    case 'emi': gateway = 'razorpay'; break;
+    case 'cod': gateway = 'cod'; break;
+  }
+
+  const codExtra = selectedMethod === 'cod' ? 40 : 0;
+  const amount = ORDER_DATA.total_amount + codExtra;
+
+  // Show processing modal
+  const modal = document.getElementById('processing-modal');
+  modal.classList.remove('hidden');
+  document.getElementById('processing-spinner').classList.remove('hidden');
+  document.getElementById('processing-success').classList.add('hidden');
+  document.getElementById('processing-fail').classList.add('hidden');
+  document.getElementById('processing-txn').classList.add('hidden');
+  document.getElementById('processing-close-btn').classList.add('hidden');
+  document.getElementById('processing-retry-btn').classList.add('hidden');
+  document.getElementById('processing-title').textContent = 'Processing Payment...';
+  document.getElementById('processing-desc').textContent = 'Please do not close this window or press back.';
+
+  const txnId = generateTxnId();
+  document.getElementById('txn-id-text').textContent = txnId;
+  document.getElementById('txn-gateway-text').textContent = gateway === 'cod' ? 'Cash on Delivery' : 'Razorpay';
+  document.getElementById('txn-status-text').textContent = 'Processing...';
+  document.getElementById('txn-status-text').className = 'font-medium text-amber-600';
+
+  // Simulate payment processing (maps to payment_transactions flow)
+  setTimeout(() => {
+    // Simulate: 85% success, 15% failure
+    const success = Math.random() > 0.15;
+    document.getElementById('processing-txn').classList.remove('hidden');
+
+    if (success) {
+      // payment_transactions: status = 'success'
+      document.getElementById('processing-spinner').classList.add('hidden');
+      document.getElementById('processing-success').classList.remove('hidden');
+      document.getElementById('processing-title').textContent = 'Payment Successful!';
+      document.getElementById('processing-desc').textContent = `Your payment of ${formatPrice(amount)} has been processed successfully.`;
+      document.getElementById('txn-status-text').textContent = 'Success';
+      document.getElementById('txn-status-text').className = 'font-medium text-green-600 font-bold';
+      document.getElementById('processing-close-btn').classList.remove('hidden');
+      processingResult = 'success';
+
+      // Simulate the DB record that would be created:
+      // INSERT INTO payment_transactions (order_id, gateway, gateway_txn_id, amount, currency, status, payload, processed_at)
+      // VALUES (1, 'razorpay', 'TXN...', 13329.00, 'INR', 'success', '{...}', NOW())
+    } else {
+      // payment_transactions: status = 'failed'
+      document.getElementById('processing-spinner').classList.add('hidden');
+      document.getElementById('processing-fail').classList.remove('hidden');
+      document.getElementById('processing-title').textContent = 'Payment Failed';
+      document.getElementById('processing-desc').textContent = 'Your payment could not be processed. Please try again or use a different payment method.';
+      document.getElementById('txn-status-text').textContent = 'Failed';
+      document.getElementById('txn-status-text').className = 'font-medium text-red-600 font-bold';
+      document.getElementById('processing-retry-btn').classList.remove('hidden');
+      processingResult = 'failed';
+    }
+  }, 2500);
+}
+
+function retryPayment() {
+  closeProcessingModal();
+  showToast('Please try a different payment method', 'warning');
+}
+
+function closeProcessingModal() {
+  document.getElementById('processing-modal').classList.add('hidden');
+  if (processingResult === 'success') {
+    // In real app: redirect to /checkout/confirm
+    showToast('Redirecting to order confirmation...', 'success');
+    // Advance stepper visually
+    setTimeout(() => {
+      document.getElementById('step-line-2').classList.replace('upcoming', 'completed');
+      const c3 = document.getElementById('step-circle-3');
+      c3.classList.replace('upcoming', 'completed');
+      c3.innerHTML = '<span class="material-icons text-[18px]">check_circle</span>';
+      document.getElementById('step-label-3').textContent = 'Confirm';
+      document.getElementById('step-label-3').className = 'text-[10px] font-semibold text-cc-blue';
+      showToast('Order placed successfully! Order #ORD-20260118-0001', 'success');
+    }, 500);
+  }
+}
+
+// ==================== INIT: POPULATE DYNAMIC SECTIONS ====================
+function init() {
+  renderSidebar();
+
+  // Popular Banks
+  const bankGrid = document.getElementById('popular-banks-grid');
+  bankGrid.innerHTML = POPULAR_BANKS.map(b => `
+    <button class="bank-btn" onclick="event.stopPropagation();selectBank(this,'${b.code}')">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[10px] font-bold shrink-0" style="background:${b.color}">${b.code.substring(0,2)}</div>
+      <span class="truncate">${b.name}</span>
+    </button>
+  `).join('');
+
+  // Other Banks dropdown
+  const otherSelect = document.getElementById('other-bank-select');
+  OTHER_BANKS.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.replace(/\s+/g, '_');
+    opt.textContent = b;
+    otherSelect.appendChild(opt);
+  });
+  otherSelect.addEventListener('change', selectOtherBank);
+
+  // Wallets
+  const walletGrid = document.getElementById('wallets-grid');
+  walletGrid.innerHTML = WALLETS.map(w => `
+    <button class="wallet-btn" onclick="event.stopPropagation();selectWallet(this,'${w.code}')">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:${w.color}">${w.letter}</div>
+      <span class="text-xs font-medium text-slate-700">${w.name}</span>
+    </button>
+  `).join('');
+
+  // EMI Options
+  const emiList = document.getElementById('emi-options-list');
+  const codExtra = 0; // EMI doesn't have COD extra
+  const total = ORDER_DATA.total_amount;
+  emiList.innerHTML = EMI_OPTIONS.map(e => {
+    const monthly = Math.ceil(total / e.months);
+    const interest = e.rate > 0 ? Math.ceil((total * e.rate / 100) / e.months) : 0;
+    const totalEmi = e.rate > 0 ? monthly + interest : monthly;
+    const noCost = e.rate === 0;
+    return `
+    <button class="emi-opt-btn w-full text-left border ${noCost ? 'border-green-200 bg-green-50/50 hover:border-green-400' : 'border-slate-200 hover:border-cc-blue'} rounded-xl p-3.5 flex items-center gap-3 transition" onclick="event.stopPropagation();selectEmi(this,${e.months})">
+      <div class="pm-radio shrink-0"><div class="pm-radio-dot"></div></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <p class="text-sm font-semibold text-slate-800">${e.label}</p>
+          ${noCost ? '<span class="text-[9px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">NO COST</span>' : `<span class="text-[9px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full">@ ${e.rate}% p.a.</span>`}
+        </div>
+        <p class="text-[11px] text-slate-400 mt-0.5">${e.bank}</p>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="text-sm font-bold ${noCost ? 'text-green-600' : 'text-cc-orange'}">${formatPrice(totalEmi)}/mo</p>
+        ${!noCost ? `<p class="text-[10px] text-slate-400">Total: ${formatPrice(totalEmi * e.months)}</p>` : ''}
+      </div>
+    </button>`;
+  }).join('');
+
+  // UPI input enter key
+  document.getElementById('upi-id-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); verifyUpi(); }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compare Products — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B',
+            purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A',
+            light: '#F8FAFC', ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  ::selection { background: #FF5100; color: #fff; }
+  .price-strike { text-decoration: line-through; color: #94A3B8; }
+  .stars { color: #FFB800; }
+
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+  @keyframes pulse-badge { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+
+  .section-heading { position: relative; display: inline-block; }
+  .section-heading::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 48px; height: 3px; border-radius: 2px; background: #FF5100;
+  }
+
+  /* Comparison table */
+  .compare-table { border-collapse: separate; border-spacing: 0; }
+  .compare-table th, .compare-table td {
+    border-bottom: 1px solid #E2E8F0;
+    vertical-align: top;
+  }
+  .spec-row-label {
+    position: sticky; left: 0; z-index: 5; background: #F8FAFC;
+  }
+  .compare-col { min-width: 220px; }
+  .best-value-cell {
+    background: #ECFDF5 !important;
+  }
+  .diff-highlight { background: #FFF7ED; }
+
+  .add-slot {
+    border: 2px dashed #CBD5E1;
+    transition: all .2s ease;
+  }
+  .add-slot:hover { border-color: #2D82FF; background: #E8F0FE; }
+
+  /* Product search modal */
+  .picker-item:hover { background: #F1F5F9; }
+
+  .table-scroll::-webkit-scrollbar { height: 8px; }
+  .table-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 8px; }
+  .table-scroll::-webkit-scrollbar-track { background: #F1F5F9; }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= TOP UTILITY BAR ================= -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Welcome to ClickCodex — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN HEADER ================= -->
+<header class="bg-cc-blue sticky top-0 z-40 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button class="lg:hidden text-white hover:text-cc-yellow" aria-label="Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="index.html" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search for products, brands and more..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl" />
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span class="mt-0.5">Login</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+      </button>
+      <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.435M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.913-4.223 2.24-5.5H5.106M7.5 14.25L5.106 5.272M7.5 14.25L6.75 17.25m9.75-3h-9.75" /></svg>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span id="cart-badge" class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- ================= BREADCRUMB + HEADING ================= -->
+  <nav class="text-xs text-slate-500 mb-3 flex items-center gap-1.5">
+    <a href="#" class="hover:text-cc-blue">Home</a> <span>/</span>
+    <span class="text-slate-700 font-medium">Compare Products</span>
+  </nav>
+
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <div>
+      <h1 class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900">Compare Products</h1>
+      <p class="text-sm text-slate-500 mt-2">Add up to 4 products to compare specs, prices and ratings side by side.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-lg cursor-pointer hover:border-cc-blue transition">
+        <input type="checkbox" id="diff-toggle" onchange="renderComparisonTable()" class="accent-cc-blue">
+        Highlight differences
+      </label>
+      <button onclick="clearAll()" class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-lg hover:border-red-300 hover:text-red-500 transition flex items-center gap-1">
+        <span class="material-icons text-sm">delete_sweep</span> Clear All
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= PRODUCT SLOTS ROW ================= -->
+  <section class="mb-6 overflow-x-auto table-scroll pb-2">
+    <div class="flex gap-4 min-w-max" id="slots-row"></div>
+  </section>
+
+  <!-- ================= COMPARISON TABLE (products + product_specifications) ================= -->
+  <section id="comparison-wrap" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-10 hidden">
+    <div class="overflow-x-auto table-scroll">
+      <table class="compare-table w-full text-sm">
+        <thead>
+          <tr id="table-head-row"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= EMPTY STATE ================= -->
+  <section id="empty-compare-state" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center mb-10">
+    <span class="material-icons text-slate-300 text-6xl mb-3">compare_arrows</span>
+    <p class="font-heading font-bold text-lg text-slate-700">Add products to start comparing</p>
+    <p class="text-sm text-slate-500 mt-1">Pick at least 2 products from the slots above to see a full spec comparison.</p>
+  </section>
+
+  <!-- ================= SUGGESTED PRODUCTS TO COMPARE ================= -->
+  <section class="mb-12">
+    <h2 class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900 mb-5">Popular Comparisons</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="suggested-grid"></div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-cc-dark text-white/80 text-sm">
+  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div>
+      <span class="font-heading font-bold text-white text-lg">Click<span class="text-cc-yellow">Codex</span></span>
+      <p class="text-xs text-white/50 mt-3">India's fastest growing online marketplace for electronics, fashion & more.</p>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Help</h4>
+      <ul class="space-y-2 text-xs">
+        <li><a href="#" class="hover:text-cc-orange transition">Shipping</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Returns</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Policy</h4>
+      <ul class="space-y-2 text-xs">
+        <li><a href="#" class="hover:text-cc-orange transition">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Terms of Use</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Get in Touch</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[16px]">phone</span>1800-233-4555</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[16px]">email</span>support@clickcodex.in</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-4 text-center text-xs text-white/40">
+    © 2026 ClickCodex Retail Pvt. Ltd. All rights reserved.
+  </div>
+</footer>
+
+<!-- ================= SHOPPING CART DRAWER ================= -->
+<div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-orange">shopping_basket</span> Shopping Cart
+      </h3>
+      <button onclick="toggleCartDrawer(false)" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+    <div class="border-t border-slate-100 p-5 bg-slate-50 space-y-4">
+      <div class="flex justify-between text-base font-bold text-slate-800"><span>Grand Total:</span><span id="cart-grandtotal">₹0</span></div>
+      <button onclick="checkoutCart()" class="w-full text-center bg-cc-pink hover:bg-pink-700 text-white text-base font-bold py-3.5 rounded-xl transition shadow-md">Proceed to Secure Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PRODUCT PICKER MODAL ================= -->
+<div id="picker-modal" class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closePicker()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-lg w-[92%] max-h-[80vh] shadow-2xl relative z-10 flex flex-col">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800">Add a Product to Compare</h3>
+      <button onclick="closePicker()" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div class="p-4 border-b border-slate-100">
+      <input type="text" id="picker-search" oninput="renderPickerList()" placeholder="Search products..." class="w-full border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-cc-blue">
+    </div>
+    <div class="flex-1 overflow-y-auto p-2" id="picker-list"></div>
+  </div>
+</div>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <button class="flex flex-col items-center justify-center text-cc-blue py-1">
+    <span class="material-icons text-2xl">compare_arrows</span><span class="text-[10px] font-semibold">Compare</span>
+  </button>
+  <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span>
+    <span id="cart-badge-mobile" class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">person_outline</span><span class="text-[10px] font-semibold">Profile</span>
+  </button>
+</div>
+
+<script>
+  // =============================================================
+  // MOCK DATA — modeled on products + product_specifications
+  // =============================================================
+
+  const PRODUCTS = [
+    {
+      id: 1, title: "TrueSound Pro Wireless Earbuds with ANC", category: "Audio",
+      price: 1499, strikePrice: 2999, rating: 4.3, reviews: 2341,
+      image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "TrueSound Audio", "Color": "Midnight Black", "Warranty": "1 Year" },
+        "Audio": { "Driver Size": "12mm Dynamic", "Noise Cancellation": "Active (35dB)", "Bluetooth Version": "5.3" },
+        "Battery": { "Earbud Battery": "6 hours", "Total with Case": "40 hours", "Fast Charge": "10 min = 2 hrs" },
+        "Build": { "Water Resistance": "IPX5", "Weight": "4.5g / bud" }
+      }
+    },
+    {
+      id: 4, title: "BoomBox Mini Portable Bluetooth Speaker", category: "Audio",
+      price: 799, strikePrice: 1599, rating: 4.5, reviews: 3004,
+      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "ClickCodex Audio", "Color": "Charcoal Grey", "Warranty": "6 Months" },
+        "Audio": { "Driver Size": "40mm Dual Driver", "Noise Cancellation": "N/A", "Bluetooth Version": "5.0" },
+        "Battery": { "Earbud Battery": "N/A", "Total with Case": "12 hours", "Fast Charge": "N/A" },
+        "Build": { "Water Resistance": "IPX6", "Weight": "310g" }
+      }
+    },
+    {
+      id: 9, title: "RapidClick Wireless Gaming Mouse", category: "Electronics",
+      price: 899, strikePrice: 1499, rating: 4.6, reviews: 1532,
+      image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "RapidClick", "Color": "Black/RGB", "Warranty": "1 Year" },
+        "Performance": { "DPI Range": "800–4800", "Polling Rate": "1000Hz", "Buttons": "6 Programmable" },
+        "Battery": { "Earbud Battery": "N/A", "Total with Case": "60 hours", "Fast Charge": "N/A" },
+        "Build": { "Water Resistance": "Splash Resistant", "Weight": "95g" }
+      }
+    },
+    {
+      id: 2, title: "ClickCodex FitTrack Smart Watch, AMOLED", category: "Electronics",
+      price: 2799, strikePrice: 3999, rating: 4.8, reviews: 5120,
+      image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "ClickCodex", "Color": "Space Grey", "Warranty": "1 Year" },
+        "Display": { "Screen Type": "AMOLED", "Screen Size": "1.43\"", "Always-On Display": "Yes" },
+        "Battery": { "Earbud Battery": "N/A", "Total with Case": "336 hours (14 days)", "Fast Charge": "N/A" },
+        "Build": { "Water Resistance": "IP68", "Weight": "45g" }
+      }
+    },
+    {
+      id: 7, title: "VisionMax 43\" 4K Smart LED TV", category: "Electronics",
+      price: 21499, strikePrice: 29999, rating: 4.7, reviews: 12987,
+      image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "VisionMax", "Color": "Black", "Warranty": "2 Years" },
+        "Display": { "Screen Type": "4K UHD LED", "Screen Size": "43\"", "Always-On Display": "N/A" },
+        "Smart Features": { "OS": "Android TV 13", "Apps": "Netflix, Prime, Hotstar" },
+        "Build": { "Water Resistance": "N/A", "Weight": "7.8kg" }
+      }
+    },
+    {
+      id: 16, title: "ChargeUp 20000mAh Power Bank", category: "Mobiles",
+      price: 1399, strikePrice: 2499, rating: 4.6, reviews: 4410,
+      image: "https://images.unsplash.com/photo-1609592424109-dd77366b26ec?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "ChargeUp", "Color": "Matte Black", "Warranty": "1 Year" },
+        "Power": { "Capacity": "20000mAh", "Output Ports": "2 (Type-C + USB-A)", "Fast Charge": "22.5W" },
+        "Build": { "Water Resistance": "N/A", "Weight": "410g" }
+      }
+    },
+    {
+      id: 12, title: "PixelPro DSLR Camera Kit 24MP", category: "Electronics",
+      price: 34999, strikePrice: 42999, rating: 4.9, reviews: 842,
+      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "PixelPro", "Color": "Black", "Warranty": "2 Years" },
+        "Camera": { "Resolution": "24MP", "Lens Kit": "18-55mm IS", "Video": "Full HD 1080p" },
+        "Build": { "Water Resistance": "N/A", "Weight": "650g" }
+      }
+    },
+    {
+      id: 13, title: "ErgoComfort Mesh Office Chair", category: "Furniture",
+      price: 6499, strikePrice: 9999, rating: 4.7, reviews: 1204,
+      image: "https://images.unsplash.com/photo-1580481072645-022f9a6dbf27?w=500&auto=format&fit=crop&q=80",
+      specs: {
+        "General": { "Brand": "ErgoComfort", "Color": "Black Mesh", "Warranty": "3 Years" },
+        "Ergonomics": { "Recline": "Up to 135°", "Lumbar Support": "Adjustable", "Armrests": "3D Adjustable" },
+        "Build": { "Water Resistance": "N/A", "Weight": "14kg" }
+      }
+    }
+  ];
+
+  const MAX_SLOTS = 4;
+  let compareList = [PRODUCTS[0], PRODUCTS[1]]; // pre-seed 2 for demo
+  let activeSlotIndex = null;
+  let cart = [];
+
+  window.onload = function () {
+    renderSlots();
+    renderComparisonTable();
+    renderSuggested();
+    updateCartDOM();
+  };
+
+  // ---------- Slots ----------
+  function renderSlots() {
+    const row = document.getElementById('slots-row');
+    row.innerHTML = "";
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const p = compareList[i];
+      if (p) {
+        row.innerHTML += `
+          <div class="compare-col bg-white rounded-2xl border border-slate-100 shadow-sm p-4 relative">
+            <button onclick="removeFromCompare(${p.id})" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition">
+              <span class="material-icons text-lg">cancel</span>
+            </button>
+            <div class="rounded-xl overflow-hidden aspect-square bg-slate-50 flex items-center justify-center mb-3">
+              <img src="${p.image}" class="w-full h-full object-cover" alt="${p.title}">
+            </div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">${p.category}</p>
+            <p class="text-sm font-bold text-slate-800 leading-snug line-clamp-2 h-10 mt-0.5">${p.title}</p>
+            <div class="flex items-center gap-1 text-xs stars mt-1.5">
+              ${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5 - Math.round(p.rating))}
+              <span class="text-slate-400">(${p.reviews.toLocaleString('en-IN')})</span>
+            </div>
+            <p class="font-heading font-extrabold text-lg text-slate-900 mt-2">₹${p.price.toLocaleString('en-IN')}</p>
+            <p class="price-strike text-xs">₹${p.strikePrice.toLocaleString('en-IN')}</p>
+            <button onclick="addToCart(${p.id})" class="mt-3 w-full bg-cc-blue hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">
+              <span class="material-icons text-sm">add_shopping_cart</span> Add to Cart
+            </button>
+          </div>`;
+      } else {
+        row.innerHTML += `
+          <div class="add-slot compare-col rounded-2xl flex flex-col items-center justify-center p-4 cursor-pointer min-h-[280px]" onclick="openPicker(${i})">
+            <span class="material-icons text-slate-400 text-4xl mb-2">add_circle_outline</span>
+            <p class="text-sm font-bold text-slate-500">Add Product</p>
+            <p class="text-[11px] text-slate-400 mt-1">Slot ${i + 1} of ${MAX_SLOTS}</p>
+          </div>`;
+      }
+    }
+  }
+
+  function removeFromCompare(id) {
+    compareList = compareList.filter(p => p.id !== id);
+    renderSlots();
+    renderComparisonTable();
+  }
+
+  function clearAll() {
+    compareList = [];
+    renderSlots();
+    renderComparisonTable();
+    showToast("Comparison cleared.", "success");
+  }
+
+  // ---------- Picker modal ----------
+  function openPicker(slotIndex) {
+    activeSlotIndex = slotIndex;
+    document.getElementById('picker-search').value = "";
+    renderPickerList();
+    document.getElementById('picker-modal').classList.remove('hidden');
+  }
+
+  function closePicker() {
+    document.getElementById('picker-modal').classList.add('hidden');
+  }
+
+  function renderPickerList() {
+    const kw = document.getElementById('picker-search').value.toLowerCase();
+    const list = document.getElementById('picker-list');
+    const alreadyIds = compareList.map(p => p.id);
+    const filtered = PRODUCTS.filter(p => !alreadyIds.includes(p.id) && p.title.toLowerCase().includes(kw));
+
+    list.innerHTML = "";
+    if (filtered.length === 0) {
+      list.innerHTML = `<p class="text-center text-sm text-slate-400 py-10">No matching products found.</p>`;
+      return;
+    }
+    filtered.forEach(p => {
+      list.innerHTML += `
+        <div class="picker-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition" onclick="selectProductForSlot(${p.id})">
+          <img src="${p.image}" class="w-12 h-12 object-cover rounded-lg" alt="">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-slate-800 line-clamp-1">${p.title}</p>
+            <p class="text-xs text-slate-500 mt-0.5">₹${p.price.toLocaleString('en-IN')} • ${p.category}</p>
+          </div>
+          <span class="material-icons text-cc-blue">add_circle</span>
+        </div>`;
+    });
+  }
+
+  function selectProductForSlot(id) {
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p) return;
+    if (activeSlotIndex !== null && activeSlotIndex < MAX_SLOTS) {
+      compareList[activeSlotIndex] = p;
+      compareList = compareList.filter(Boolean);
+    } else if (compareList.length < MAX_SLOTS) {
+      compareList.push(p);
+    }
+    closePicker();
+    renderSlots();
+    renderComparisonTable();
+    showToast(`${p.title.slice(0, 24)}... added to comparison`, "success");
+  }
+
+  // ---------- Comparison table ----------
+  function renderComparisonTable() {
+    const wrap = document.getElementById('comparison-wrap');
+    const emptyState = document.getElementById('empty-compare-state');
+    const headRow = document.getElementById('table-head-row');
+    const body = document.getElementById('table-body');
+    const highlightDiff = document.getElementById('diff-toggle').checked;
+
+    if (compareList.length < 2) {
+      wrap.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      return;
+    }
+    wrap.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+
+    // Header row: product cards
+    headRow.innerHTML = `<th class="spec-row-label text-left p-4 bg-slate-50 font-heading font-bold text-slate-700 text-sm min-w-[160px]">Specification</th>`;
+    compareList.forEach(p => {
+      headRow.innerHTML += `
+        <th class="compare-col p-4 bg-slate-50 text-left">
+          <div class="flex items-center gap-3">
+            <img src="${p.image}" class="w-14 h-14 object-cover rounded-lg shrink-0" alt="${p.title}">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-slate-800 line-clamp-2 leading-snug">${p.title}</p>
+              <p class="font-heading font-extrabold text-cc-blue text-sm mt-1">₹${p.price.toLocaleString('en-IN')}</p>
+            </div>
+          </div>
+        </th>`;
+    });
+
+    // Price / Rating summary rows first
+    body.innerHTML = "";
+    body.innerHTML += buildSummaryRow("Price", compareList.map(p => `₹${p.price.toLocaleString('en-IN')}`), compareList.map(p => p.price), 'min');
+    body.innerHTML += buildSummaryRow("Rating", compareList.map(p => `${p.rating} ★ (${p.reviews.toLocaleString('en-IN')})`), compareList.map(p => p.rating), 'max');
+    body.innerHTML += buildSummaryRow("Category", compareList.map(p => p.category), null, null);
+
+    // Gather all spec_group -> spec_key combos across the compared products
+    const groupOrder = [];
+    const groupKeys = {};
+    compareList.forEach(p => {
+      Object.keys(p.specs).forEach(group => {
+        if (!groupOrder.includes(group)) { groupOrder.push(group); groupKeys[group] = []; }
+        Object.keys(p.specs[group]).forEach(key => {
+          if (!groupKeys[group].includes(key)) groupKeys[group].push(key);
+        });
+      });
+    });
+
+    groupOrder.forEach(group => {
+      body.innerHTML += `
+        <tr>
+          <td colspan="${compareList.length + 1}" class="bg-cc-ice px-4 py-2 font-heading font-bold text-xs uppercase tracking-wider text-slate-500">${group}</td>
+        </tr>`;
+      groupKeys[group].forEach(key => {
+        const values = compareList.map(p => (p.specs[group] && p.specs[group][key]) || "—");
+        const allSame = values.every(v => v === values[0]);
+        body.innerHTML += `
+          <tr>
+            <td class="spec-row-label p-4 text-sm font-semibold text-slate-600">${key}</td>
+            ${values.map(v => `<td class="compare-col p-4 text-sm text-slate-700 ${highlightDiff && !allSame ? 'diff-highlight' : ''}">${v}</td>`).join('')}
+          </tr>`;
+      });
+    });
+  }
+
+  function buildSummaryRow(label, displayValues, rawValues, bestMode) {
+    let bestIdx = -1;
+    if (rawValues) {
+      if (bestMode === 'min') bestIdx = rawValues.indexOf(Math.min(...rawValues));
+      if (bestMode === 'max') bestIdx = rawValues.indexOf(Math.max(...rawValues));
+    }
+    const cells = displayValues.map((v, i) => `<td class="compare-col p-4 text-sm font-bold text-slate-800 ${i === bestIdx ? 'best-value-cell' : ''}">${v}${i === bestIdx ? ' <span class=\"material-icons text-green-600 text-sm align-middle\">check_circle</span>' : ''}</td>`).join('');
+    return `<tr>
+      <td class="spec-row-label p-4 text-sm font-bold text-slate-700">${label}</td>
+      ${cells}
+    </tr>`;
+  }
+
+  // ---------- Suggested comparisons ----------
+  function renderSuggested() {
+    const grid = document.getElementById('suggested-grid');
+    grid.innerHTML = "";
+    PRODUCTS.forEach(p => {
+      const inCompare = compareList.some(cp => cp.id === p.id);
+      grid.innerHTML += `
+        <div class="bg-white rounded-2xl p-3 border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all">
+          <div class="rounded-xl overflow-hidden aspect-square bg-slate-50 mb-3">
+            <img src="${p.image}" class="w-full h-full object-cover" alt="${p.title}">
+          </div>
+          <p class="text-xs sm:text-sm font-semibold line-clamp-2 h-10 text-slate-800 leading-snug">${p.title}</p>
+          <p class="font-bold text-sm text-slate-900 mt-2">₹${p.price.toLocaleString('en-IN')}</p>
+          <button onclick="quickAddToCompare(${p.id})" ${inCompare ? 'disabled' : ''}
+            class="mt-2 w-full text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1 ${inCompare ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-cc-purple hover:bg-purple-700 text-white'}">
+            <span class="material-icons text-sm">${inCompare ? 'check' : 'compare_arrows'}</span> ${inCompare ? 'Added' : 'Compare'}
+          </button>
+        </div>`;
+    });
+  }
+
+  function quickAddToCompare(id) {
+    if (compareList.length >= MAX_SLOTS) {
+      showToast("Comparison is full — remove a product first.", "error");
+      return;
+    }
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p || compareList.some(cp => cp.id === id)) return;
+    compareList.push(p);
+    renderSlots();
+    renderComparisonTable();
+    renderSuggested();
+    showToast(`${p.title.slice(0, 24)}... added to comparison`, "success");
+  }
+
+  // ---------- Cart ----------
+  function addToCart(id) {
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p) return;
+    const existing = cart.find(item => item.id === id);
+    if (existing) existing.qty += 1;
+    else cart.push({ ...p, qty: 1 });
+    updateCartDOM();
+    showToast(`${p.title.slice(0, 24)}... added to cart!`, "success");
+  }
+
+  function modifyCartQty(id, change) {
+    const item = cart.find(item => item.id === id);
+    if (!item) return;
+    item.qty += change;
+    if (item.qty <= 0) cart = cart.filter(item => item.id !== id);
+    updateCartDOM();
+  }
+
+  function updateCartDOM() {
+    const container = document.getElementById('cart-drawer-items');
+    container.innerHTML = "";
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center py-20">
+          <span class="material-icons text-slate-300 text-6xl">shopping_cart</span>
+          <p class="text-sm text-slate-500 font-semibold mt-4">Your shopping cart is empty</p>
+        </div>`;
+    } else {
+      cart.forEach(item => {
+        container.innerHTML += `
+          <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <img src="${item.image}" class="w-16 h-16 object-cover rounded-lg" alt="">
+            <div class="flex-1">
+              <p class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</p>
+              <p class="text-xs text-slate-500 mt-0.5">₹${item.price.toLocaleString('en-IN')} each</p>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center border border-slate-200 rounded-lg bg-white overflow-hidden">
+                  <button onclick="modifyCartQty(${item.id}, -1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">-</button>
+                  <span class="px-3 py-0.5 text-xs font-bold">${item.qty}</span>
+                  <button onclick="modifyCartQty(${item.id}, 1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">+</button>
+                </div>
+                <span class="text-xs font-bold text-cc-dark">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    const badgeCount = cart.reduce((acc, item) => acc + item.qty, 0);
+    document.getElementById('cart-grandtotal').innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+    document.getElementById('cart-badge').innerText = badgeCount;
+    document.getElementById('cart-badge-mobile').innerText = badgeCount;
+  }
+
+  function toggleCartDrawer(show) {
+    const drawer = document.getElementById('cart-drawer');
+    drawer.classList.toggle('translate-x-full', !show);
+  }
+
+  function checkoutCart() {
+    if (cart.length === 0) { showToast("Your cart is empty!", "error"); return; }
+    showToast("Secure order initiated! Thank you for choosing ClickCodex.", "success");
+    cart = [];
+    updateCartDOM();
+    toggleCartDrawer(false);
+  }
+
+  // ---------- Toasts ----------
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-3.5 rounded-xl shadow-xl font-medium text-sm text-white flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto max-w-xs`;
+    toast.classList.add(type === "success" ? 'bg-slate-900' : 'bg-cc-pink');
+    if (type === "success") toast.classList.add('border-l-4', 'border-cc-orange');
+    toast.innerHTML = `<span class="material-icons text-sm">${type === 'success' ? 'check_circle' : 'error'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => { toast.classList.add('translate-y-2', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

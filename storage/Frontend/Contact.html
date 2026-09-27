@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us — ClickCodex | We're Here to Help</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', 'sans-serif'; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  input:focus, textarea:focus, select:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+
+  .section-heading {
+    position: relative;
+    display: inline-block;
+  }
+  .section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 48px; height: 3px;
+    border-radius: 2px;
+    background: #FF5100;
+  }
+
+  .marquee-track { animation: cc-marquee 35s linear infinite; }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes cc-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.7s cubic-bezier(.4,0,.2,1) forwards;
+    opacity: 0;
+  }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+
+  .hero-pattern {
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(45,130,255,0.08) 0%, transparent 40%),
+                      radial-gradient(circle at 60% 80%, rgba(255,81,0,0.06) 0%, transparent 40%);
+  }
+
+  .contact-method-card {
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s cubic-bezier(.4,0,.2,1), border-color 0.3s ease;
+    border: 1.5px solid #E2E8F0;
+    cursor: pointer;
+  }
+  .contact-method-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08);
+  }
+  .contact-method-card.active-method {
+    border-color: #2D82FF;
+    background: #EFF6FF;
+    box-shadow: 0 0 0 3px rgba(45,130,255,0.15);
+  }
+
+  .faq-item {
+    transition: all 0.25s ease;
+    border: 1.5px solid #E2E8F0;
+  }
+  .faq-item:hover {
+    border-color: #CBD5E1;
+  }
+  .faq-item.open {
+    border-color: #2D82FF;
+    box-shadow: 0 0 0 3px rgba(45,130,255,0.08);
+  }
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(.4,0,.2,1), padding 0.35s ease;
+  }
+  .faq-item.open .faq-answer {
+    max-height: 300px;
+  }
+  .faq-chevron {
+    transition: transform 0.3s ease;
+  }
+  .faq-item.open .faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .form-input {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .form-input:focus {
+    border-color: #2D82FF;
+    box-shadow: 0 0 0 3px rgba(45,130,255,0.12);
+  }
+  .form-input.error {
+    border-color: #EF4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+  }
+
+  .office-card {
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+  }
+  .office-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1);
+    border-color: #8C30F5;
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .live-pulse::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #22C55E;
+    animation: pulse-ring 1.5s ease-out infinite;
+  }
+
+  .map-grid {
+    background-image:
+      linear-gradient(rgba(45,130,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,130,255,0.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .float-anim { animation: float 3s ease-in-out infinite; }
+  .float-anim-delay { animation: float 3s ease-in-out infinite 1s; }
+
+  .toast-enter {
+    animation: toast-in 0.4s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes toast-in {
+    0% { opacity: 0; transform: translateX(40px) scale(0.95); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .toast-exit {
+    animation: toast-out 0.3s ease forwards;
+  }
+  @keyframes toast-out {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(40px); }
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- ================= TOAST ================= -->
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= TOP UTILITY BAR ================= -->
+<div class="bg-cc-dark text-white text-xs relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between relative">
+    <p class="hidden sm:block text-white/80">Welcome to ClickCodex — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <span class="hover:text-white cursor-pointer transition flex items-center gap-1">
+        <span class="material-icons text-xs">location_on</span> Track Order
+      </span>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN HEADER ================= -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow focus:outline-none" aria-label="Open Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="hidden lg:flex flex-col text-white text-xs leading-tight px-3 border-x border-white/20 shrink-0 select-none hover:bg-white/10 py-1 rounded-lg transition cursor-pointer">
+      <span class="text-white/60 flex items-center gap-1">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+        Deliver to
+      </span>
+      <span class="font-semibold text-white">Ratlam, MP 457001</span>
+    </div>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <select class="hidden sm:block bg-white text-slate-600 text-sm px-3 border-r border-slate-200 font-medium focus:ring-0 cursor-pointer">
+        <option value="All">All Categories</option>
+        <option value="Mobiles">Mobiles</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Home & Kitchen">Home & Furniture</option>
+        <option value="Beauty">Beauty</option>
+      </select>
+      <input type="text" placeholder="Search for products, brands and more..."
+        class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white sm:rounded-none rounded-l-xl" />
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span class="mt-0.5">Login</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.435M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.913-4.223 2.24-5.5H5.106M7.5 14.25L5.106 5.272M7.5 14.25L6.75 17.25m9.75-3h-9.75" /></svg>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span class="absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+  <nav class="border-t border-white/10 bg-black/10">
+    <ul class="max-w-7xl mx-auto px-4 flex items-center gap-5 overflow-x-auto scrollbar-none text-white text-sm py-2.5 whitespace-nowrap">
+      <li><a href="#" class="flex items-center gap-1.5 font-semibold hover:text-cc-yellow transition bg-white/10 px-3 py-1 rounded-lg">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        All
+      </a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Mobiles</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Electronics</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Fashion</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Home & Furniture</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Appliances</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Beauty & Toys</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Grocery</a></li>
+      <li><a href="#" class="bg-cc-orange text-white font-semibold px-3 py-1 rounded-lg hover:bg-orange-600 transition text-xs uppercase tracking-wide">Contact Us</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ================= ANNOUNCEMENT MARQUEE ================= -->
+<div class="bg-cc-orange text-white text-xs sm:text-sm py-2 overflow-hidden font-medium">
+  <div class="flex marquee-track whitespace-nowrap">
+    <div class="flex gap-12 pr-12">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>Flash Sale LIVE now!</span>
+    </div>
+    <div class="flex gap-12 pr-12" aria-hidden="true">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>Flash Sale LIVE now!</span>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-4">
+
+  <!-- ================= HERO BANNER ================= -->
+  <section class="rounded-2xl overflow-hidden relative text-white mt-6 mb-10 min-h-[380px] sm:min-h-[420px] flex items-center bg-cc-blue hero-pattern">
+    <div class="absolute inset-0">
+      <img src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1400&auto=format&fit=crop&q=80" alt="Customer support" class="w-full h-full object-cover opacity-25">
+      <div class="absolute inset-0 bg-gradient-to-r from-cc-blue via-cc-blue/90 to-cc-blue/50"></div>
+    </div>
+    <div class="absolute top-10 right-10 w-64 h-64 rounded-full bg-cc-yellow/10 blur-3xl"></div>
+    <div class="absolute bottom-10 left-1/3 w-48 h-48 rounded-full bg-white/5 blur-3xl"></div>
+
+    <div class="relative z-10 px-8 sm:px-14 py-12 max-w-2xl">
+      <div class="animate-fade-up">
+        <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-cc-yellow text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider mb-6 border border-white/10">
+          <span class="material-icons text-[16px]">support_agent</span>
+          We're Here for You
+        </span>
+      </div>
+      <h1 class="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white animate-fade-up delay-100">
+        How Can We<br>
+        <span class="bg-gradient-to-r from-cc-yellow via-cc-orange to-cc-pink bg-clip-text text-transparent">Help You?</span>
+      </h1>
+      <p class="mt-5 text-white/75 text-base sm:text-lg leading-relaxed max-w-lg animate-fade-up delay-200">
+        Our dedicated support team is available 24/7 to assist you. Choose your preferred way to reach us — we respond fast.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4 animate-fade-up delay-300">
+        <a href="#contact-form" class="bg-white text-cc-blue font-bold px-7 py-3.5 rounded-xl hover:bg-cc-yellow hover:text-cc-dark transition shadow-lg flex items-center gap-2">
+          <span class="material-icons text-[20px]">edit_note</span> Send a Message
+        </a>
+        <a href="tel:18002334555" class="border-2 border-white/25 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition flex items-center gap-2">
+          <span class="material-icons text-[20px]">call</span> Call Now
+        </a>
+      </div>
+    </div>
+
+    <!-- Right side floating cards -->
+    <div class="hidden lg:flex flex-col gap-4 absolute right-14 top-1/2 -translate-y-1/2">
+      <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl px-5 py-4 flex items-center gap-3 min-w-[200px] animate-fade-up delay-400 float-anim">
+        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center relative live-pulse shrink-0">
+          <span class="material-icons text-green-400 text-xl">circle</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-bold">Live Chat</p>
+          <p class="text-white/50 text-xs">Avg. reply: 30 sec</p>
+        </div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl px-5 py-4 flex items-center gap-3 min-w-[200px] animate-fade-up delay-500 float-anim-delay">
+        <div class="w-10 h-10 rounded-full bg-cc-yellow/20 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-yellow text-xl">headset_mic</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-bold">24/7 Support</p>
+          <p class="text-white/50 text-xs">Always available</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BREADCRUMB ================= -->
+  <nav class="mb-8 text-sm text-slate-400 flex items-center gap-2">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+    <span class="text-slate-700 font-semibold">Contact Us</span>
+  </nav>
+
+  <!-- ================= QUICK CONTACT METHODS ================= -->
+  <section class="mb-14">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center active-method" onclick="selectMethod(this, 'chat')" data-method="chat">
+        <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-green-600 text-2xl">chat</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">Live Chat</h4>
+        <p class="text-xs text-green-600 font-semibold mt-1 flex items-center justify-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Online Now
+        </p>
+      </div>
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center" onclick="selectMethod(this, 'phone')" data-method="phone">
+        <div class="w-14 h-14 rounded-2xl bg-cc-blue/10 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-cc-blue text-2xl">call</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">Call Us</h4>
+        <p class="text-xs text-slate-400 mt-1">1800-233-4555</p>
+      </div>
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center" onclick="selectMethod(this, 'email')" data-method="email">
+        <div class="w-14 h-14 rounded-2xl bg-cc-orange/10 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-cc-orange text-2xl">email</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">Email</h4>
+        <p class="text-xs text-slate-400 mt-1">Reply in 2 hrs</p>
+      </div>
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center" onclick="selectMethod(this, 'whatsapp')" data-method="whatsapp">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-emerald-600 text-2xl">forum</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">WhatsApp</h4>
+        <p class="text-xs text-slate-400 mt-1">Quick replies</p>
+      </div>
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center" onclick="selectMethod(this, 'social')" data-method="social">
+        <div class="w-14 h-14 rounded-2xl bg-cc-pink/10 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-cc-pink text-2xl">share</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">Social Media</h4>
+        <p class="text-xs text-slate-400 mt-1">DM us anytime</p>
+      </div>
+      <div class="contact-method-card bg-white rounded-2xl p-5 text-center" onclick="selectMethod(this, 'visit')" data-method="visit">
+        <div class="w-14 h-14 rounded-2xl bg-cc-purple/10 flex items-center justify-center mx-auto mb-3">
+          <span class="material-icons text-cc-purple text-2xl">location_on</span>
+        </div>
+        <h4 class="font-heading font-bold text-sm text-slate-800">Visit Us</h4>
+        <p class="text-xs text-slate-400 mt-1">3 office locations</p>
+      </div>
+    </div>
+
+    <!-- Method detail panels -->
+    <div id="method-detail-chat" class="method-detail-panel mt-5 bg-white rounded-2xl border border-cc-blue shadow-sm p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+      <div class="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center shrink-0">
+        <span class="material-icons text-green-600 text-4xl">chat_bubble</span>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">Live Chat Support <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Available 24/7</span></h3>
+        <p class="text-sm text-slate-500 mt-1">Connect with a real human support agent in under 30 seconds. No bots, no waiting queues. Available in 10+ Indian languages including Hindi, Tamil, Bengali, and Marathi.</p>
+      </div>
+      <button onclick="showToast('Live chat would open in a widget. This is a demo page.', 'info')" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition shrink-0 flex items-center gap-2">
+        <span class="material-icons text-[20px]">chat</span> Start Chat
+      </button>
+    </div>
+
+    <div id="method-detail-phone" class="method-detail-panel mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 hidden">
+      <div class="w-16 h-16 rounded-2xl bg-cc-blue/10 flex items-center justify-center shrink-0">
+        <span class="material-icons text-cc-blue text-4xl">phone_in_talk</span>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-heading font-bold text-lg text-slate-800">Call Our Support Team</h3>
+        <p class="text-sm text-slate-500 mt-1">Toll-free across India. Our average wait time is under 90 seconds. For seller support, call our dedicated partner helpline.</p>
+        <div class="mt-3 flex flex-wrap gap-3">
+          <div class="bg-slate-50 rounded-lg px-4 py-2">
+            <p class="text-xs text-slate-400 font-medium">Customer Support</p>
+            <p class="font-bold text-cc-blue">1800-233-4555</p>
+          </div>
+          <div class="bg-slate-50 rounded-lg px-4 py-2">
+            <p class="text-xs text-slate-400 font-medium">Seller Support</p>
+            <p class="font-bold text-cc-purple">1800-233-4566</p>
+          </div>
+        </div>
+      </div>
+      <a href="tel:18002334555" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl transition shrink-0 flex items-center gap-2">
+        <span class="material-icons text-[20px]">call</span> Call Now
+      </a>
+    </div>
+
+    <div id="method-detail-email" class="method-detail-panel mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 hidden">
+      <div class="w-16 h-16 rounded-2xl bg-cc-orange/10 flex items-center justify-center shrink-0">
+        <span class="material-icons text-cc-orange text-4xl">mail</span>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-heading font-bold text-lg text-slate-800">Email Support</h3>
+        <p class="text-sm text-slate-500 mt-1">We respond to all emails within 2 hours during business hours. For urgent issues, use Live Chat or Call instead.</p>
+        <div class="mt-3 flex flex-wrap gap-3">
+          <div class="bg-slate-50 rounded-lg px-4 py-2">
+            <p class="text-xs text-slate-400 font-medium">General Queries</p>
+            <p class="font-bold text-cc-orange">support@clickcodex.in</p>
+          </div>
+          <div class="bg-slate-50 rounded-lg px-4 py-2">
+            <p class="text-xs text-slate-400 font-medium">Business / Partnership</p>
+            <p class="font-bold text-cc-purple">partners@clickcodex.in</p>
+          </div>
+          <div class="bg-slate-50 rounded-lg px-4 py-2">
+            <p class="text-xs text-slate-400 font-medium">Press & Media</p>
+            <p class="font-bold text-cc-pink">press@clickcodex.in</p>
+          </div>
+        </div>
+      </div>
+      <a href="mailto:support@clickcodex.in" class="bg-cc-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition shrink-0 flex items-center gap-2">
+        <span class="material-icons text-[20px]">send</span> Send Email
+      </a>
+    </div>
+
+    <div id="method-detail-whatsapp" class="method-detail-panel mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 hidden">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+        <span class="material-icons text-emerald-600 text-4xl">forum</span>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-heading font-bold text-lg text-slate-800">WhatsApp Support</h3>
+        <p class="text-sm text-slate-500 mt-1">Send us a WhatsApp message for quick resolution. Share screenshots, order IDs, and photos directly. Available 8 AM to 11 PM IST.</p>
+        <div class="mt-3 bg-slate-50 rounded-lg px-4 py-2 inline-block">
+          <p class="text-xs text-slate-400 font-medium">WhatsApp Number</p>
+          <p class="font-bold text-emerald-600">+91 98765 43210</p>
+        </div>
+      </div>
+      <button onclick="showToast('Opening WhatsApp chat... (Demo)', 'info')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition shrink-0 flex items-center gap-2">
+        <span class="material-icons text-[20px]">forum</span> Open WhatsApp
+      </button>
+    </div>
+
+    <div id="method-detail-social" class="method-detail-panel mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 hidden">
+      <div class="flex items-center gap-4 mb-5">
+        <div class="w-16 h-16 rounded-2xl bg-cc-pink/10 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-pink text-4xl">share</span>
+        </div>
+        <div>
+          <h3 class="font-heading font-bold text-lg text-slate-800">Reach Us on Social Media</h3>
+          <p class="text-sm text-slate-500 mt-0.5">DM us on any platform — we monitor all channels actively.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <a href="#" class="flex items-center gap-3 bg-blue-50 hover:bg-blue-100 rounded-xl px-4 py-3 transition group">
+          <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">f</div>
+          <div>
+            <p class="font-bold text-sm text-slate-800 group-hover:text-blue-700 transition">Facebook</p>
+            <p class="text-[10px] text-slate-400">@clickcodex</p>
+          </div>
+        </a>
+        <a href="#" class="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 rounded-xl px-4 py-3 transition group">
+          <div class="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white font-bold text-xs">𝕏</div>
+          <div>
+            <p class="font-bold text-sm text-slate-800 group-hover:text-slate-900 transition">Twitter / X</p>
+            <p class="text-[10px] text-slate-400">@clickcodex</p>
+          </div>
+        </a>
+        <a href="#" class="flex items-center gap-3 bg-pink-50 hover:bg-pink-100 rounded-xl px-4 py-3 transition group">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center">
+            <span class="material-icons text-white text-xl">photo_camera</span>
+          </div>
+          <div>
+            <p class="font-bold text-sm text-slate-800 group-hover:text-pink-600 transition">Instagram</p>
+            <p class="text-[10px] text-slate-400">@clickcodex.in</p>
+          </div>
+        </a>
+        <a href="#" class="flex items-center gap-3 bg-red-50 hover:bg-red-100 rounded-xl px-4 py-3 transition group">
+          <div class="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold text-xs">yt</div>
+          <div>
+            <p class="font-bold text-sm text-slate-800 group-hover:text-red-600 transition">YouTube</p>
+            <p class="text-[10px] text-slate-400">ClickCodex TV</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div id="method-detail-visit" class="method-detail-panel mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 hidden">
+      <div class="flex items-center gap-4 mb-5">
+        <div class="w-16 h-16 rounded-2xl bg-cc-purple/10 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-purple text-4xl">domain</span>
+        </div>
+        <div>
+          <h3 class="font-heading font-bold text-lg text-slate-800">Visit Our Offices</h3>
+          <p class="text-sm text-slate-500 mt-0.5">Walk-ins welcome during business hours. Please carry a valid ID.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-purple-50 rounded-xl p-4">
+          <p class="font-bold text-sm text-cc-purple">Head Office</p>
+          <p class="text-xs text-slate-500 mt-1">ClickCodex Tower, Station Road, Ratlam, MP 457001</p>
+          <p class="text-xs text-slate-400 mt-1">Mon-Sat: 9 AM – 7 PM</p>
+        </div>
+        <div class="bg-blue-50 rounded-xl p-4">
+          <p class="font-bold text-sm text-cc-blue">Mumbai Office</p>
+          <p class="text-xs text-slate-500 mt-1">WeWork BKC, Bandra Kurla Complex, Mumbai 400051</p>
+          <p class="text-xs text-slate-400 mt-1">Mon-Fri: 10 AM – 6 PM</p>
+        </div>
+        <div class="bg-orange-50 rounded-xl p-4">
+          <p class="font-bold text-sm text-cc-orange">Bengaluru Office</p>
+          <p class="text-xs text-slate-500 mt-1">Prestige Tech Park, Marathahalli, Bengaluru 560103</p>
+          <p class="text-xs text-slate-400 mt-1">Mon-Fri: 10 AM – 6 PM</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT FORM + INFO ================= -->
+  <section id="contact-form" class="mb-14">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <!-- Form -->
+      <div class="lg:col-span-3">
+        <h2 class="section-heading font-heading text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Send Us a Message</h2>
+        <p class="text-slate-500 text-sm mb-6">Fill out the form below and we'll get back to you within 2 hours.</p>
+
+        <form id="contact-form-el" onsubmit="handleContactSubmit(event)" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+              <input type="text" id="c-name" required placeholder="e.g. Rahul Kumar" class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700">
+              <p id="c-name-err" class="text-xs text-red-500 mt-1 hidden">Please enter your full name</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email Address <span class="text-red-500">*</span></label>
+              <input type="email" id="c-email" required placeholder="rahul@example.com" class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700">
+              <p id="c-email-err" class="text-xs text-red-500 mt-1 hidden">Please enter a valid email address</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Phone Number <span class="text-red-500">*</span></label>
+              <div class="flex">
+                <span class="bg-slate-100 border border-r-0 border-slate-200 px-3 py-3 rounded-l-xl text-sm text-slate-500 font-medium flex items-center">+91</span>
+                <input type="tel" id="c-phone" required placeholder="98765 43210" maxlength="10" class="form-input w-full border border-slate-200 px-4 py-3 rounded-r-xl text-sm text-slate-700">
+              </div>
+              <p id="c-phone-err" class="text-xs text-red-500 mt-1 hidden">Please enter a valid 10-digit number</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Order ID (Optional)</label>
+              <input type="text" id="c-order" placeholder="e.g. CC-2024-78432" class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Category <span class="text-red-500">*</span></label>
+            <select id="c-category" required class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700 bg-white cursor-pointer">
+              <option value="" disabled selected>Select a topic</option>
+              <option value="order">Order Related Issue</option>
+              <option value="return">Return / Refund</option>
+              <option value="payment">Payment Issue</option>
+              <option value="delivery">Delivery Delay</option>
+              <option value="product">Product Query</option>
+              <option value="seller">Seller Partnership</option>
+              <option value="feedback">Feedback / Suggestion</option>
+              <option value="complaint">Complaint</option>
+              <option value="other">Other</option>
+            </select>
+            <p id="c-category-err" class="text-xs text-red-500 mt-1 hidden">Please select a category</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Subject <span class="text-red-500">*</span></label>
+            <input type="text" id="c-subject" required placeholder="Brief description of your issue" class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700">
+            <p id="c-subject-err" class="text-xs text-red-500 mt-1 hidden">Please enter a subject</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Message <span class="text-red-500">*</span></label>
+            <textarea id="c-message" required rows="5" placeholder="Describe your issue in detail. Include order IDs, screenshots info, or any relevant details..." class="form-input w-full border border-slate-200 px-4 py-3 rounded-xl text-sm text-slate-700 resize-none"></textarea>
+            <div class="flex justify-between items-center mt-1">
+              <p id="c-message-err" class="text-xs text-red-500 hidden">Please enter your message (min 20 characters)</p>
+              <p id="char-count" class="text-xs text-slate-400 ml-auto">0 / 2000</p>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-2">Attach Screenshot (Optional)</label>
+            <div id="file-drop-zone" onclick="document.getElementById('c-file').click()" class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-cc-blue hover:bg-blue-50/30 transition">
+              <span class="material-icons text-slate-300 text-4xl">cloud_upload</span>
+              <p class="text-sm text-slate-400 mt-2">Click to upload or drag & drop</p>
+              <p class="text-xs text-slate-300 mt-1">PNG, JPG up to 5MB</p>
+              <input type="file" id="c-file" accept="image/*" class="hidden" onchange="handleFileSelect(this)">
+            </div>
+            <div id="file-preview" class="hidden mt-2 flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
+              <span class="material-icons text-cc-blue text-xl">attach_file</span>
+              <span id="file-name" class="text-sm text-slate-600 flex-1 truncate"></span>
+              <button type="button" onclick="removeFile()" class="text-slate-400 hover:text-red-500 transition">
+                <span class="material-icons text-lg">close</span>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <input type="checkbox" id="c-consent" required class="mt-1 w-4 h-4 rounded border-slate-300 text-cc-blue focus:ring-cc-blue cursor-pointer">
+            <label for="c-consent" class="text-xs text-slate-500 leading-relaxed">I agree to ClickCodex's <a href="#" class="text-cc-blue hover:underline">Privacy Policy</a> and consent to my data being processed to resolve my query.</label>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <button type="submit" id="submit-btn" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+              <span class="material-icons text-[20px]">send</span> Submit Message
+            </button>
+            <button type="button" onclick="resetForm()" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold px-8 py-3.5 rounded-xl transition flex items-center justify-center gap-2">
+              <span class="material-icons text-[20px]">restart_alt</span> Reset Form
+            </button>
+          </div>
+        </form>
+
+        <!-- Success State -->
+        <div id="contact-success" class="hidden bg-white rounded-2xl border border-green-200 shadow-sm p-10 sm:p-14 text-center">
+          <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
+            <span class="material-icons text-green-600 text-5xl">check_circle</span>
+          </div>
+          <h3 class="font-heading text-2xl font-bold text-slate-800">Message Sent Successfully!</h3>
+          <p class="text-slate-500 mt-3 max-w-md mx-auto">Thank you for reaching out. We've received your message and our team will respond within 2 hours. A confirmation email has been sent to your inbox.</p>
+          <div class="mt-5 inline-flex items-center gap-2 bg-blue-50 text-cc-blue text-sm font-semibold px-5 py-2.5 rounded-xl">
+            <span class="material-icons text-[18px]">tag</span>
+            Ticket ID: <span id="ticket-id" class="font-mono">CC-000000</span>
+          </div>
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <button onclick="resetForm()" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl transition flex items-center gap-2">
+              <span class="material-icons text-[18px]">add</span> Send Another Message
+            </button>
+            <a href="#" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2">
+              <span class="material-icons text-[18px]">home</span> Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Info Panel -->
+      <div class="lg:col-span-2 space-y-5">
+        <!-- Business Hours -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <h3 class="font-heading font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span class="material-icons text-cc-blue">schedule</span> Business Hours
+          </h3>
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-slate-600">Monday – Friday</span>
+              <span class="font-semibold text-slate-800 bg-green-50 text-green-700 px-3 py-1 rounded-lg text-xs">8 AM – 11 PM</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-slate-600">Saturday</span>
+              <span class="font-semibold text-slate-800 bg-green-50 text-green-700 px-3 py-1 rounded-lg text-xs">9 AM – 9 PM</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-slate-600">Sunday</span>
+              <span class="font-semibold text-slate-800 bg-yellow-50 text-yellow-700 px-3 py-1 rounded-lg text-xs">10 AM – 6 PM</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-slate-600">Live Chat & Call</span>
+              <span class="font-semibold text-slate-800 bg-blue-50 text-cc-blue px-3 py-1 rounded-lg text-xs">24/7</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-green-500 relative live-pulse"></div>
+            <p class="text-xs text-green-600 font-semibold" id="live-status-text">We're currently online</p>
+          </div>
+        </div>
+
+        <!-- Quick Help Links -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <h3 class="font-heading font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span class="material-icons text-cc-orange">bolt</span> Quick Self-Help
+          </h3>
+          <div class="space-y-2">
+            <a href="#" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400 group-hover:text-cc-blue transition">local_shipping</span>
+                <span class="text-sm text-slate-700 group-hover:text-cc-blue transition">Track My Order</span>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-cc-blue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400 group-hover:text-cc-blue transition">autorenew</span>
+                <span class="text-sm text-slate-700 group-hover:text-cc-blue transition">Initiate a Return</span>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-cc-blue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400 group-hover:text-cc-blue transition">receipt_long</span>
+                <span class="text-sm text-slate-700 group-hover:text-cc-blue transition">Download Invoice</span>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-cc-blue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400 group-hover:text-cc-blue transition">lock_reset</span>
+                <span class="text-sm text-slate-700 group-hover:text-cc-blue transition">Reset Password</span>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-cc-blue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400 group-hover:text-cc-blue transition">payments</span>
+                <span class="text-sm text-slate-700 group-hover:text-cc-blue transition">Payment Issues</span>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-cc-blue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Response Time -->
+        <div class="bg-gradient-to-br from-cc-dark to-slate-800 rounded-2xl p-6 text-white relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-cc-blue/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <h3 class="font-heading font-bold mb-3 flex items-center gap-2">
+            <span class="material-icons text-cc-yellow">speed</span> Avg. Response Times
+          </h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-white/70">Live Chat</span>
+                <span class="text-cc-yellow font-bold">~30 sec</span>
+              </div>
+              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" style="width: 95%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-white/70">Phone Call</span>
+                <span class="text-cc-yellow font-bold">~90 sec</span>
+              </div>
+              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-cc-blue to-blue-400 rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-white/70">WhatsApp</span>
+                <span class="text-cc-yellow font-bold">~5 min</span>
+              </div>
+              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full" style="width: 75%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-white/70">Email</span>
+                <span class="text-cc-yellow font-bold">~2 hrs</span>
+              </div>
+              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-cc-orange to-orange-400 rounded-full" style="width: 55%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAP / OFFICE LOCATIONS ================= -->
+  <section class="mb-14">
+    <div class="text-center mb-8">
+      <h2 class="section-heading font-heading text-2xl sm:text-3xl font-bold text-slate-900 inline-block">Our Office Locations</h2>
+      <p class="text-slate-500 mt-5 max-w-xl mx-auto">Visit us at any of our three offices across India. Walk-ins welcome during business hours.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Head Office -->
+      <div class="office-card bg-white rounded-2xl overflow-hidden">
+        <div class="h-48 relative overflow-hidden map-grid bg-slate-50">
+          <img src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=500&auto=format&fit=crop&q=80" alt="Ratlam Office" class="w-full h-full object-cover opacity-40">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="bg-cc-purple text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+              <span class="material-icons">location_on</span>
+            </div>
+          </div>
+          <div class="absolute top-3 left-3">
+            <span class="bg-cc-purple text-white text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">Head Office</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <h4 class="font-heading font-bold text-lg text-slate-800">Ratlam, Madhya Pradesh</h4>
+          <p class="text-sm text-slate-500 mt-2 leading-relaxed">ClickCodex Tower, Station Road, Near Railway Station, Ratlam, MP 457001</p>
+          <div class="mt-4 flex items-center gap-4 text-xs text-slate-400">
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">schedule</span> Mon-Sat: 9-7</span>
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">phone</span> 07412-234567</span>
+          </div>
+          <a href="#" class="mt-4 inline-flex items-center gap-1 text-cc-purple text-sm font-semibold hover:underline">
+            Get Directions <span class="material-icons text-[16px]">open_in_new</span>
+          </a>
+        </div>
+      </div>
+      <!-- Mumbai Office -->
+      <div class="office-card bg-white rounded-2xl overflow-hidden">
+        <div class="h-48 relative overflow-hidden map-grid bg-slate-50">
+          <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=500&auto=format&fit=crop&q=80" alt="Mumbai Office" class="w-full h-full object-cover opacity-40">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="bg-cc-blue text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+              <span class="material-icons">location_on</span>
+            </div>
+          </div>
+          <div class="absolute top-3 left-3">
+            <span class="bg-cc-blue text-white text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">Regional Office</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <h4 class="font-heading font-bold text-lg text-slate-800">Mumbai, Maharashtra</h4>
+          <p class="text-sm text-slate-500 mt-2 leading-relaxed">WeWork BKC, 8th Floor, Tower A, Bandra Kurla Complex, Mumbai 400051</p>
+          <div class="mt-4 flex items-center gap-4 text-xs text-slate-400">
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">schedule</span> Mon-Fri: 10-6</span>
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">phone</span> 022-45678900</span>
+          </div>
+          <a href="#" class="mt-4 inline-flex items-center gap-1 text-cc-blue text-sm font-semibold hover:underline">
+            Get Directions <span class="material-icons text-[16px]">open_in_new</span>
+          </a>
+        </div>
+      </div>
+      <!-- Bengaluru Office -->
+      <div class="office-card bg-white rounded-2xl overflow-hidden">
+        <div class="h-48 relative overflow-hidden map-grid bg-slate-50">
+          <img src="https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=500&auto=format&fit=crop&q=80" alt="Bengaluru Office" class="w-full h-full object-cover opacity-40">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="bg-cc-orange text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+              <span class="material-icons">location_on</span>
+            </div>
+          </div>
+          <div class="absolute top-3 left-3">
+            <span class="bg-cc-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">Tech Hub</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <h4 class="font-heading font-bold text-lg text-slate-800">Bengaluru, Karnataka</h4>
+          <p class="text-sm text-slate-500 mt-2 leading-relaxed">Prestige Tech Park, Building 4, 3rd Floor, Marathahalli, Bengaluru 560103</p>
+          <div class="mt-4 flex items-center gap-4 text-xs text-slate-400">
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">schedule</span> Mon-Fri: 10-6</span>
+            <span class="flex items-center gap-1"><span class="material-icons text-[14px]">phone</span> 080-45678901</span>
+          </div>
+          <a href="#" class="mt-4 inline-flex items-center gap-1 text-cc-orange text-sm font-semibold hover:underline">
+            Get Directions <span class="material-icons text-[16px]">open_in_new</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ SECTION ================= -->
+  <section class="mb-14">
+    <div class="text-center mb-8">
+      <h2 class="section-heading font-heading text-2xl sm:text-3xl font-bold text-slate-900 inline-block">Frequently Asked Questions</h2>
+      <p class="text-slate-500 mt-5 max-w-xl mx-auto">Quick answers to common questions. Still need help? Use the contact form above.</p>
+    </div>
+    <div class="max-w-3xl mx-auto space-y-3" id="faq-container">
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">How do I track my order?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">You can track your order by clicking on "Track Order" in the top utility bar, or by visiting your Order History under My Account. Enter your order ID (e.g., CC-2024-78432) or the tracking number sent to your email/SMS. You'll see real-time updates including pickup, in-transit, and delivery status.</p>
+        </div>
+      </div>
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">What is your return and refund policy?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">We offer a 7-day easy return policy on most products. To initiate a return, go to My Orders → Select the item → Click "Return". Our delivery partner will pick up the item from your doorstep at no extra cost. Refunds are processed within 5-7 business days to your original payment method or ClickCodex Wallet.</p>
+        </div>
+      </div>
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">How long does delivery take?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">Delivery times vary by location and product: <strong>Same-day delivery</strong> in 15+ metro cities (order before 12 PM), <strong>2-day delivery</strong> in 200+ cities, and <strong>standard delivery</strong> (3-7 business days) across all other pincodes. Orders above ₹999 qualify for free standard delivery.</p>
+        </div>
+      </div>
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">My payment was deducted but order failed. What should I do?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">Don't worry — if the amount was deducted but the order didn't go through, the amount will be automatically refunded to your source (bank/UPI/wallet) within 5-7 business days. If you don't receive the refund after 7 days, contact us with your transaction ID and we'll resolve it within 24 hours.</p>
+        </div>
+      </div>
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">How can I become a seller on ClickCodex?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">We welcome sellers of all sizes! Register at sellers.clickcodex.in with your GSTIN, PAN, and bank details. Our onboarding team will verify your documents within 48 hours. Once approved, you can list products, set prices, and start selling to our 50 lakh+ customer base. We charge a competitive commission with no hidden fees.</p>
+        </div>
+      </div>
+      <div class="faq-item bg-white rounded-2xl overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
+          <span class="font-heading font-semibold text-slate-800 text-sm sm:text-base pr-4">Is Cash on Delivery (COD) available?</span>
+          <span class="material-icons faq-chevron text-slate-400 shrink-0">expand_more</span>
+        </button>
+        <div class="faq-answer px-5 pb-5">
+          <p class="text-sm text-slate-500 leading-relaxed">Yes! COD is available on most products up to ₹50,000 across 400+ cities. A nominal COD fee of ₹49 may apply on orders below ₹999. For a seamless experience, we recommend using UPI — you get an extra 10% off on all UPI payments.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NEWSLETTER ================= -->
+  <section class="bg-cc-blue rounded-2xl px-6 py-10 sm:py-14 text-center text-white mb-12 relative">
+    <div class="relative z-10">
+      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+        <span class="material-icons text-cc-yellow text-[18px]">star</span>
+        Stay Connected
+      </div>
+      <h2 class="font-heading text-2xl sm:text-3xl font-bold mb-3 text-white">Get ₹100 Off Your First Order</h2>
+      <p class="text-white/80 mb-6 text-sm sm:text-base max-w-md mx-auto">Subscribe to our newsletter for exclusive deals, new launches, and early access to sales.</p>
+      <form class="max-w-lg mx-auto flex flex-col sm:flex-row rounded-xl overflow-hidden shadow-md bg-white p-1" onsubmit="handleSubscribe(event)">
+        <input id="newsletter-email" type="email" required placeholder="Enter your email address" class="flex-1 px-5 py-3 text-slate-700 text-sm focus:outline-none">
+        <button type="submit" class="bg-cc-orange hover:bg-orange-600 text-white px-6 py-3 font-bold text-sm transition whitespace-nowrap rounded-xl mt-1 sm:mt-0">Subscribe</button>
+      </form>
+      <div id="sub-success-msg" class="hidden text-cc-yellow text-sm mt-3 font-medium">✓ You're subscribed! Check your inbox for the coupon.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-cc-dark text-white/80 text-sm relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 relative z-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 100 100">
+            <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+            <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <span class="font-heading font-bold text-white text-lg">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">About Us</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Careers</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Press</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">ClickCodex Stories</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Help</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition font-semibold text-white">Contact Us</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Shipping</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Cancellation & Returns</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Policy</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Return Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Terms of Use</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Sitemap</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Sell With Us</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Register as Seller</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Seller Dashboard</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Advertise</a></li>
+      </ul>
+    </div>
+    <div class="col-span-2 sm:col-span-1">
+      <h4 class="font-heading font-semibold text-white mb-4">Get in Touch</h4>
+      <ul class="space-y-2.5 text-white/60">
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">phone</span>1800-233-4555</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">email</span>support@clickcodex.in</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">location_on</span>Ratlam, Madhya Pradesh</li>
+      </ul>
+      <div class="flex gap-2.5 mt-5">
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">f</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">𝕏</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">in</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-orange flex items-center justify-center transition text-white text-sm font-bold">yt</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-5 text-center text-xs text-white/40 relative z-10 pb-24 md:pb-5">
+    © 2026 ClickCodex Retail Pvt. Ltd. All rights reserved. &nbsp;|&nbsp; Made with <span class="material-icons text-red-500 text-[14px] align-middle select-none">favorite</span> in India
+  </div>
+</footer>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">home</span>
+    <span class="text-[10px] font-semibold">Home</span>
+  </button>
+  <button onclick="toggleMobileSidebar(true)" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">grid_view</span>
+    <span class="text-[10px] font-semibold">Categories</span>
+  </button>
+  <button class="relative flex flex-col items-center justify-center text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">support_agent</span>
+    <span class="text-[10px] font-semibold text-cc-blue font-bold">Support</span>
+  </button>
+  <button class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">favorite_border</span>
+    <span class="text-[10px] font-semibold">Wishlist</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">person_outline</span>
+    <span class="text-[10px] font-semibold">Profile</span>
+  </button>
+</div>
+
+<!-- ================= MOBILE SIDEBAR ================= -->
+<div id="mobile-sidebar" class="fixed inset-0 z-50 overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons">account_circle</span>
+        <span class="font-heading font-bold text-white">Hello, Sign In</span>
+      </div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Shop Categories</p>
+      <div class="grid grid-cols-1 gap-1">
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">phone_android</span>Mobiles & Tablets</button>
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">laptop</span>Laptops & Computers</button>
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">headphones</span>Audio & Headphones</button>
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">checkroom</span>Fashion & Apparel</button>
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">weekend</span>Home & Furniture</button>
+        <button class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-blue-50 hover:text-cc-blue transition flex items-center gap-3"><span class="material-icons text-[18px] text-slate-400">kitchen</span>Appliances</button>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 p-4 bg-slate-50 space-y-2">
+      <button class="w-full text-center bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg">My Account / Login</button>
+      <p class="text-[10px] text-center text-slate-400">ClickCodex India v2.6</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mobile Sidebar Toggle
+  function toggleMobileSidebar(open) {
+    const sidebar = document.getElementById('mobile-sidebar');
+    if (open) {
+      sidebar.classList.remove('translate-x-[-100%]', 'pointer-events-none');
+      sidebar.classList.add('translate-x-0', 'pointer-events-auto');
+      document.body.style.overflow = 'hidden';
+    } else {
+      sidebar.classList.add('translate-x-[-100%]', 'pointer-events-none');
+      sidebar.classList.remove('translate-x-0', 'pointer-events-auto');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Toast Notifications
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    const colors = {
+      success: 'bg-green-600',
+      error: 'bg-red-600',
+      info: 'bg-cc-blue'
+    };
+    const icons = {
+      success: 'check_circle',
+      error: 'error',
+      info: 'info'
+    };
+    toast.className = `pointer-events-auto ${colors[type]} text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
+    toast.innerHTML = `<span class="material-icons text-xl shrink-0">${icons[type]}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.remove('toast-enter');
+      toast.classList.add('toast-exit');
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // Contact Method Selector
+  function selectMethod(card, method) {
+    // Remove active from all cards
+    document.querySelectorAll('.contact-method-card').forEach(c => {
+      c.classList.remove('active-method');
+      c.style.borderColor = '';
+    });
+    card.classList.add('active-method');
+
+    // Hide all panels, show selected
+    document.querySelectorAll('.method-detail-panel').forEach(p => {
+      p.classList.add('hidden');
+      p.style.borderColor = '#E2E8F0';
+    });
+    const panel = document.getElementById('method-detail-' + method);
+    if (panel) {
+      panel.classList.remove('hidden');
+      panel.style.borderColor = '#2D82FF';
+    }
+  }
+
+  // FAQ Toggle
+  function toggleFaq(button) {
+    const item = button.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+
+    // Toggle clicked
+    if (!wasOpen) {
+      item.classList.add('open');
+    }
+  }
+
+  // Character count for message
+  document.getElementById('c-message').addEventListener('input', function() {
+    const count = this.value.length;
+    document.getElementById('char-count').textContent = count + ' / 2000';
+    if (count > 2000) {
+      this.value = this.value.substring(0, 2000);
+      document.getElementById('char-count').textContent = '2000 / 2000';
+    }
+  });
+
+  // File upload handler
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size must be under 5MB', 'error');
+        input.value = '';
+        return;
+      }
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-preview').classList.remove('hidden');
+      document.getElementById('file-drop-zone').classList.add('hidden');
+    }
+  }
+
+  function removeFile() {
+    document.getElementById('c-file').value = '';
+    document.getElementById('file-preview').classList.add('hidden');
+    document.getElementById('file-drop-zone').classList.remove('hidden');
+  }
+
+  // Form Validation & Submit
+  function handleContactSubmit(e) {
+    e.preventDefault();
+    let valid = true;
+
+    // Clear previous errors
+    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('error'));
+    document.querySelectorAll('[id$="-err"]').forEach(e => e.classList.add('hidden'));
+
+    // Validate name
+    const name = document.getElementById('c-name');
+    if (!name.value.trim() || name.value.trim().length < 2) {
+      name.classList.add('error');
+      document.getElementById('c-name-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    // Validate email
+    const email = document.getElementById('c-email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+      email.classList.add('error');
+      document.getElementById('c-email-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    // Validate phone
+    const phone = document.getElementById('c-phone');
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone.value.replace(/\s/g, ''))) {
+      phone.classList.add('error');
+      document.getElementById('c-phone-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    // Validate category
+    const category = document.getElementById('c-category');
+    if (!category.value) {
+      category.classList.add('error');
+      document.getElementById('c-category-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    // Validate subject
+    const subject = document.getElementById('c-subject');
+    if (!subject.value.trim()) {
+      subject.classList.add('error');
+      document.getElementById('c-subject-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    // Validate message
+    const message = document.getElementById('c-message');
+    if (!message.value.trim() || message.value.trim().length < 20) {
+      message.classList.add('error');
+      document.getElementById('c-message-err').classList.remove('hidden');
+      valid = false;
+    }
+
+    if (!valid) {
+      showToast('Please fix the highlighted fields', 'error');
+      // Scroll to first error
+      const firstError = document.querySelector('.form-input.error');
+      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Simulate submission
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-icons text-[20px] animate-spin">refresh</span> Sending...';
+
+    setTimeout(() => {
+      // Generate ticket ID
+      const ticketId = 'CC-' + Date.now().toString().slice(-6);
+      document.getElementById('ticket-id').textContent = ticketId;
+
+      // Show success, hide form
+      document.getElementById('contact-form-el').classList.add('hidden');
+      document.getElementById('contact-success').classList.remove('hidden');
+
+      // Reset button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-icons text-[20px]">send</span> Submit Message';
+
+      showToast('Your message has been sent successfully!', 'success');
+
+      // Scroll to success
+      document.getElementById('contact-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 1800);
+  }
+
+  // Reset form
+  function resetForm() {
+    document.getElementById('contact-form-el').reset();
+    document.getElementById('contact-form-el').classList.remove('hidden');
+    document.getElementById('contact-success').classList.add('hidden');
+    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('error'));
+    document.querySelectorAll('[id$="-err"]').forEach(e => e.classList.add('hidden'));
+    document.getElementById('char-count').textContent = '0 / 2000';
+    removeFile();
+    document.getElementById('contact-form-el').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Newsletter Subscribe
+  function handleSubscribe(e) {
+    e.preventDefault();
+    const email = document.getElementById('newsletter-email').value;
+    if (email) {
+      document.getElementById('sub-success-msg').classList.remove('hidden');
+      document.getElementById('newsletter-email').value = '';
+      showToast('Welcome! Check your inbox for ₹100 coupon.', 'success');
+      setTimeout(() => {
+        document.getElementById('sub-success-msg').classList.add('hidden');
+      }, 5000);
+    }
+  }
+
+  // Live status based on time
+  function updateLiveStatus() {
+    const now = new Date();
+    const hour = now.getHours();
+    const day = now.getDay();
+    const statusEl = document.getElementById('live-status-text');
+    let isOnline = false;
+
+    if (day === 0) {
+      isOnline = hour >= 10 && hour < 18;
+    } else if (day === 6) {
+      isOnline = hour >= 9 && hour < 21;
+    } else {
+      isOnline = hour >= 8 && hour < 23;
+    }
+
+    if (isOnline) {
+      statusEl.textContent = "We're currently online";
+      statusEl.className = 'text-xs text-green-600 font-semibold';
+    } else {
+      statusEl.textContent = "We're offline — use Live Chat for 24/7 support";
+      statusEl.className = 'text-xs text-yellow-600 font-semibold';
+    }
+  }
+  updateLiveStatus();
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Drag and drop for file upload
+  const dropZone = document.getElementById('file-drop-zone');
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-cc-blue', 'bg-blue-50/30');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-cc-blue', 'bg-blue-50/30');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        document.getElementById('c-file').files = files;
+        handleFileSelect(document.getElementById('c-file'));
+      }
+    });
+  }
+
+  // Scroll-triggered animations
+  const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.office-card').forEach((card, i) => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          card.style.transition = `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`;
+          requestAnimationFrame(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          });
+        });
+        scrollObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('section').forEach(s => scrollObserver.observe(s));
+</script>
+</body>
+</html>

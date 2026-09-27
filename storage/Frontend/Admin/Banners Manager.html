@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banners Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+  .banner-thumb{width:88px;height:52px;border-radius:8px;object-fit:cover;border:1.5px solid #E2E8F0;flex-shrink:0;transition:transform .2s}
+  .banner-thumb:hover{transform:scale(1.08)}
+  .type-card{border:1.5px solid #E2E8F0;border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+  .type-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(0,0,0,.08)}
+  .type-card.selected{border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.15)}
+  .sort-handle{cursor:grab;color:#CBD5E1;transition:color .15s}
+  .sort-handle:hover{color:#475569}
+  .sort-handle:active{cursor:grabbing}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .fade-slide-in{animation:fadeSlideIn .2s ease}
+  .hero-preview{aspect-ratio:21/9;border-radius:12px;overflow:hidden;position:relative;background:#0F172A}
+  .hero-preview img{width:100%;height:100%;object-fit:cover;opacity:.7}
+  .hero-preview .overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.6),transparent);display:flex;flex-direction:column;justify-content:center;padding:24px 32px}
+  .placement-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  @keyframes slidePreview{0%,30%{transform:translateX(0)}35%,65%{transform:translateX(-100%)}70%,100%{transform:translateX(-200%)}}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">tune</span><span class="nav-label">Attributes & Units</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Tags Manager</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_offer</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">confirmation_number</span><span class="nav-label">Coupons</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Banners</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search banners..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="renderTable()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block"><p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p><p class="text-[11px] text-slate-400">Super Admin</p></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Banners Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Hero sliders, offer/category banners, scheduling &mdash; <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">banners</span></p>
+      </div>
+      <button class="btn-primary text-sm" onclick="openBannerModal()">
+        <span class="material-icons text-[18px]">add_circle</span> Create Banner
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Banners</p><p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiTotal">0</p><p class="text-[11px] text-slate-400 mt-1 mono">COUNT(banners)</p></div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center"><span class="material-icons text-cc-blue text-[22px]">wallpaper</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active</p><p class="font-heading text-2xl sm:text-3xl font-extrabold text-green-600 mt-1" id="kpiActive">0</p><p class="text-[11px] text-slate-400 mt-1 mono">is_active=1 AND valid dates</p></div>
+          <div class="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center"><span class="material-icons text-green-600 text-[22px]">check_circle</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#22C55E;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">With Schedule</p><p class="font-heading text-2xl sm:text-3xl font-extrabold text-cc-purple mt-1" id="kpiScheduled">0</p><p class="text-[11px] text-slate-400 mt-1 mono">starts_at IS NOT NULL</p></div>
+          <div class="w-11 h-11 rounded-xl bg-cc-purple/10 flex items-center justify-center"><span class="material-icons text-cc-purple text-[22px]">schedule</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#8C30F5;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Placements Used</p><p class="font-heading text-2xl sm:text-3xl font-extrabold text-cc-orange mt-1" id="kpiPlacements">0</p><p class="text-[11px] text-slate-400 mt-1 mono">COUNT(DISTINCT placement)</p></div>
+          <div class="w-11 h-11 rounded-xl bg-cc-orange/10 flex items-center justify-center"><span class="material-icons text-cc-orange text-[22px]">place</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF5100;border-radius:0 0 16px 16px"></div>
+      </div>
+    </div>
+
+    <!-- Type Distribution -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-icons text-cc-yellow text-[22px]">donut_large</span>
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900">Banner Type Distribution</h2>
+          <p class="text-xs text-slate-400 mono">banners.banner_type ENUM: 'hero_slider' | 'offer_banner' | 'category_banner' | 'custom'</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="typeBreakdown"></div>
+      <div class="mt-4 flex rounded-full overflow-hidden h-3" id="typeBar"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1.5 w-fit">
+      <button class="tab-btn active" id="tabList" onclick="switchTab('list')"><span class="material-icons text-[16px] align-middle mr-1">list</span>All Banners</button>
+      <button class="tab-btn" id="tabHero" onclick="switchTab('hero')"><span class="material-icons text-[16px] align-middle mr-1">view_carousel</span>Hero Preview</button>
+    </div>
+
+    <!-- TABLE -->
+    <div id="listSection">
+      <div class="section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-blue text-[22px]">wallpaper</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">All Banners</h2>
+              <p class="text-xs text-slate-400 mono">SELECT * FROM banners ORDER BY sort_order ASC, created_at DESC</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg bf-btn" data-f="all" onclick="setFilter('all',this)">All</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="active" onclick="setFilter('active',this)">Active</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="inactive" onclick="setFilter('inactive',this)">Inactive</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="hero_slider" onclick="setFilter('hero_slider',this)">Hero</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="offer_banner" onclick="setFilter('offer_banner',this)">Offer</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="category_banner" onclick="setFilter('category_banner',this)">Category</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn" data-f="custom" onclick="setFilter('custom',this)">Custom</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:40px"></th>
+                <th>Banner</th>
+                <th>Type <span class="text-slate-300 font-normal normal-case">(banner_type)</span></th>
+                <th>Link</th>
+                <th>Placement <span class="text-slate-300 font-normal normal-case">(placement)</span></th>
+                <th>Sort <span class="text-slate-300 font-normal normal-case">(sort_order)</span></th>
+                <th>Schedule</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bannersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO PREVIEW -->
+    <div id="heroSection" class="hidden">
+      <div class="section-card p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="material-icons text-cc-purple text-[22px]">view_carousel</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Hero Slider Preview</h2>
+            <p class="text-xs text-slate-400 mono">banners WHERE banner_type = 'hero_slider' AND is_active = 1 ORDER BY sort_order ASC</p>
+          </div>
+        </div>
+        <div id="heroPreviewContainer" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BANNER CRUD -->
+<div class="modal-backdrop" id="bannerModal">
+  <div class="modal-panel w-full max-w-2xl mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="modalTitle">Create Banner</h3>
+      <button class="btn-icon" onclick="closeModal('bannerModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editId">
+
+      <!-- Type Selector Cards -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Banner Type <span class="text-slate-400 font-normal mono text-xs">(banner_type ENUM)</span></label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="typeCards">
+          <div class="type-card" data-type="hero_slider" onclick="selectType('hero_slider')">
+            <span class="material-icons text-cc-blue text-[28px]">view_carousel</span>
+            <p class="text-xs font-bold text-slate-700 mt-1">Hero Slider</p>
+            <p class="text-[10px] text-slate-400 mono">homepage_top</p>
+          </div>
+          <div class="type-card" data-type="offer_banner" onclick="selectType('offer_banner')">
+            <span class="material-icons text-cc-orange text-[28px]">local_offer</span>
+            <p class="text-xs font-bold text-slate-700 mt-1">Offer Banner</p>
+            <p class="text-[10px] text-slate-400 mono">promo sections</p>
+          </div>
+          <div class="type-card" data-type="category_banner" onclick="selectType('category_banner')">
+            <span class="material-icons text-cc-purple text-[28px]">category</span>
+            <p class="text-xs font-bold text-slate-700 mt-1">Category</p>
+            <p class="text-[10px] text-slate-400 mono">cat headers</p>
+          </div>
+          <div class="type-card" data-type="custom" onclick="selectType('custom')">
+            <span class="material-icons text-cc-pink text-[28px]">dashboard_customize</span>
+            <p class="text-xs font-bold text-slate-700 mt-1">Custom</p>
+            <p class="text-[10px] text-slate-400 mono">any placement</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Title <span class="text-slate-400 font-normal mono text-xs">(banners.title)</span></label>
+          <input type="text" class="input-field" id="bTitle" placeholder="e.g. Diwali Mega Sale">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Subtitle <span class="text-slate-400 font-normal mono text-xs">(banners.subtitle)</span></label>
+          <input type="text" class="input-field" id="bSubtitle" placeholder="e.g. Up to 50% off on all electronics">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Image URL <span class="text-slate-400 font-normal mono text-xs">(image_url)</span></label>
+          <input type="text" class="input-field" id="bImage" placeholder="https://..." oninput="refreshThumb()">
+          <p class="text-[11px] text-slate-400 mt-1">Desktop image — recommended 1920x600 for hero</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Mobile Image URL <span class="text-slate-400 font-normal mono text-xs">(mobile_image_url)</span></label>
+          <input type="text" class="input-field" id="bMobileImage" placeholder="https://... (optional)">
+          <p class="text-[11px] text-slate-400 mt-1">Separate mobile-optimized image. Falls back to desktop.</p>
+        </div>
+      </div>
+
+      <!-- Thumbnail Preview -->
+      <div id="thumbPreview" class="hidden">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Image Preview</p>
+        <div class="hero-preview">
+          <img id="thumbImg" src="" alt="" onerror="this.src='';this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-slate-500 text-sm\'>Image could not be loaded</div>'">
+          <div class="overlay">
+            <p class="text-white font-heading font-bold text-lg" id="thumbTitle"></p>
+            <p class="text-white/70 text-sm" id="thumbSubtitle"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Link URL <span class="text-slate-400 font-normal mono text-xs">(link_url)</span></label>
+          <input type="text" class="input-field" id="bLink" placeholder="https://example.com/deals">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Link Target <span class="text-slate-400 font-normal mono text-xs">(link_target)</span></label>
+          <select class="input-field" id="bTarget">
+            <option value="_self">Same Window (_self)</option>
+            <option value="_blank">New Tab (_blank)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Placement <span class="text-slate-400 font-normal mono text-xs">(placement)</span></label>
+          <input type="text" class="input-field" id="bPlacement" placeholder="e.g. homepage_top">
+          <p class="text-[11px] text-slate-400 mt-1">Logical slot name for frontend rendering</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Sort Order <span class="text-slate-400 font-normal mono text-xs">(sort_order)</span></label>
+          <input type="number" class="input-field" id="bSort" placeholder="0" min="0" value="0">
+          <p class="text-[11px] text-slate-400 mt-1">Lower = shown first</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Starts At <span class="text-slate-400 font-normal mono text-xs">(starts_at)</span></label>
+          <input type="datetime-local" class="input-field" id="bStart">
+          <p class="text-[11px] text-slate-400 mt-1">Null = immediately active</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Ends At <span class="text-slate-400 font-normal mono text-xs">(ends_at)</span></label>
+          <input type="datetime-local" class="input-field" id="bEnd">
+          <p class="text-[11px] text-slate-400 mt-1">Null = no expiry</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div><p class="text-sm font-semibold text-slate-700">Active</p><p class="text-[11px] text-slate-400">banners.is_active</p></div>
+        <label class="toggle-switch"><input type="checkbox" id="bActive" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('bannerModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveBanner()" id="saveBtn">Create Banner</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DELETE -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4"><span class="material-icons text-red-500 text-[28px]">delete_forever</span></div>
+      <h3 class="font-heading text-lg font-bold text-slate-900">Delete Banner?</h3>
+      <p class="text-sm text-slate-500 mt-2" id="delMsg"></p>
+      <p class="text-xs text-slate-400 mt-1 mono" id="delSql"></p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger text-sm" onclick="confirmDel()" style="background:#DC2626;color:#fff;border-color:#DC2626"><span class="material-icons text-[16px]">delete</span> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETAIL -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal-panel w-full max-w-2xl mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Banner Details</h3>
+      <button class="btn-icon" onclick="closeModal('detailModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6" id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+let nextId = 11;
+let filterMode = 'all';
+let delCb = null;
+let selectedType = 'hero_slider';
+
+function now(){return new Date()}
+function daysAgo(d){const t=new Date();t.setDate(t.getDate()-d);return t}
+function daysFromNow(d){const t=new Date();t.setDate(t.getDate()+d);return t}
+function fmt(dt){if(!dt)return '—';const d=new Date(dt);return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}
+function fmtD(dt){if(!dt)return '—';return new Date(dt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}
+function toLocal(dt){if(!dt)return'';const d=new Date(dt);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+
+const typeConfig = {
+  hero_slider: { label:'Hero Slider', icon:'view_carousel', color:'#2D82FF', bg:'#DBEAFE', badge:'badge-blue' },
+  offer_banner: { label:'Offer Banner', icon:'local_offer', color:'#FF5100', bg:'#FFF7ED', badge:'badge-orange' },
+  category_banner: { label:'Category Banner', icon:'category', color:'#8C30F5', bg:'#F3E8FF', badge:'badge-purple' },
+  custom: { label:'Custom', icon:'dashboard_customize', color:'#FF006B', bg:'#FFE4E6', badge:'badge-red' }
+};
+
+let banners = [
+  {id:1,title:'Diwali Mega Sale 2024',subtitle:'Up to 50% off on all electronics — Limited time!',image_url:'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/offers/diwali-sale',link_target:'_self',banner_type:'hero_slider',placement:'homepage_top',sort_order:0,starts_at:daysAgo(5),ends_at:daysFromNow(10),is_active:true,created_at:daysAgo(10),updated_at:daysAgo(5)},
+  {id:2,title:'New Arrivals — Winter Collection',subtitle:'Discover the latest trends in winter wear',image_url:'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/categories/winter-wear',link_target:'_self',banner_type:'hero_slider',placement:'homepage_top',sort_order:1,starts_at:daysAgo(3),ends_at:daysFromNow(20),is_active:true,created_at:daysAgo(8),updated_at:daysAgo(3)},
+  {id:3,title:'Flash Deal — TrueSound Earbuds',subtitle:'₹1,499 ₹999 for next 24 hours only',image_url:'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/products/true-sound-pro',link_target:'_self',banner_type:'offer_banner',placement:'homepage_mid',sort_order:0,starts_at:daysAgo(1),ends_at:daysFromNow(1),is_active:true,created_at:daysAgo(2),updated_at:daysAgo(1)},
+  {id:4,title:'Electronics Category',subtitle:'Best deals on phones, laptops & accessories',image_url:'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/categories/electronics',link_target:'_self',banner_type:'category_banner',placement:'category_header',sort_order:0,starts_at:daysAgo(30),ends_at:null,is_active:true,created_at:daysAgo(30),updated_at:daysAgo(10)},
+  {id:5,title:'Free Shipping Weekend',subtitle:'Free shipping on all orders above ₹499',image_url:'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/offers/free-shipping',link_target:'_self',banner_type:'offer_banner',placement:'homepage_mid',sort_order:1,starts_at:daysFromNow(1),ends_at:daysFromNow(3),is_active:true,created_at:daysAgo(1),updated_at:daysAgo(1)},
+  {id:6,title:'Clothing & Fashion',subtitle:'Style that speaks — curated for you',image_url:'https://images.unsplash.com/photo-1445205170230-053b83016050?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/categories/clothing',link_target:'_self',banner_type:'category_banner',placement:'category_header',sort_order:1,starts_at:daysAgo(25),ends_at:null,is_active:true,created_at:daysAgo(25),updated_at:daysAgo(5)},
+  {id:7,title:'Premium Audio Experience',subtitle:'Immerse yourself in crystal-clear sound',image_url:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/categories/audio',link_target:'_blank',banner_type:'hero_slider',placement:'homepage_top',sort_order:2,starts_at:null,ends_at:null,is_active:true,created_at:daysAgo(15),updated_at:daysAgo(15)},
+  {id:8,title:'Refer & Earn ₹500',subtitle:'Invite friends, both get ₹500 credit',image_url:'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/referral',link_target:'_self',banner_type:'custom',placement:'sidebar_top',sort_order:0,starts_at:daysAgo(60),ends_at:null,is_active:true,created_at:daysAgo(60),updated_at:daysAgo(30)},
+  {id:9,title:'Summer Sale 2024 (Expired)',subtitle:'Flat 40% off — summer collection clearance',image_url:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/offers/summer-sale',link_target:'_self',banner_type:'offer_banner',placement:'homepage_mid',sort_order:2,starts_at:daysAgo(45),ends_at:daysAgo(10),is_active:false,created_at:daysAgo(50),updated_at:daysAgo(10)},
+  {id:10,title:'App Download Banner',subtitle:'Get the app for exclusive deals',image_url:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=960&auto=format&fit=crop&q=80',mobile_image_url:null,link_url:'/app-download',link_target:'_blank',banner_type:'custom',placement:'footer_above',sort_order:0,starts_at:daysAgo(90),ends_at:null,is_active:true,created_at:daysAgo(90),updated_at:daysAgo(20)},
+];
+
+// ============ HELPERS ============
+function getStatus(b){
+  if(!b.is_active) return 'inactive';
+  const n=now();
+  if(b.starts_at&&new Date(b.starts_at)>n) return 'scheduled';
+  if(b.ends_at&&new Date(b.ends_at)<n) return 'expired';
+  return 'active';
+}
+function statusBadge(s){
+  const m={active:'<span class="badge badge-green"><span class="material-icons text-[11px]">check_circle</span>Active</span>',scheduled:'<span class="badge badge-blue"><span class="material-icons text-[11px]">schedule</span>Scheduled</span>',expired:'<span class="badge badge-slate"><span class="material-icons text-[11px]">event_busy</span>Expired</span>',inactive:'<span class="badge badge-red"><span class="material-icons text-[11px]">cancel</span>Inactive</span>'};
+  return m[s]||'';
+}
+function typeBadge(t){const c=typeConfig[t];return c?`<span class="badge ${c.badge}"><span class="material-icons text-[11px]">${c.icon}</span>${c.label}</span>`:'';}
+function placementDot(p){const colors={'homepage_top':'#2D82FF','homepage_mid':'#FF5100','category_header':'#8C30F5','sidebar_top':'#22C55E','footer_above':'#F59E0B'};return `<span class="flex items-center gap-1.5"><span class="placement-dot" style="background:${colors[p]||'#94A3B8'}"></span><span class="mono text-xs text-slate-600">${p||'—'}</span></span>`;}
+
+// ============ SIDEBAR ============
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('sidebarOverlay').classList.toggle('show')}
+function collapseSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');document.getElementById('mainArea').classList.toggle('expanded');document.getElementById('collapseIcon').textContent=document.getElementById('sidebar').classList.contains('collapsed')?'menu':'menu_open'}
+
+// ============ MODAL ============
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',()=>closeModal(m.id)));
+
+// ============ TOAST ============
+function showToast(msg,type='success'){const c={success:'#16A34A',error:'#DC2626',info:'#2D82FF',warning:'#D97706'};const i={success:'check_circle',error:'error',info:'info',warning:'warning'};const t=document.createElement('div');t.className='toast';t.style.background=c[type];t.innerHTML=`<span class="material-icons text-[20px]">${i[type]}</span> ${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+// ============ TABS ============
+function switchTab(tab){document.getElementById('tabList').classList.toggle('active',tab==='list');document.getElementById('tabHero').classList.toggle('active',tab==='hero');document.getElementById('listSection').classList.toggle('hidden',tab!=='list');document.getElementById('heroSection').classList.toggle('hidden',tab!=='hero');if(tab==='hero')renderHeroPreview();}
+
+// ============ KPIs ============
+function updateKPIs(){
+  document.getElementById('kpiTotal').textContent=banners.length;
+  document.getElementById('kpiActive').textContent=banners.filter(b=>getStatus(b)==='active').length;
+  document.getElementById('kpiScheduled').textContent=banners.filter(b=>b.starts_at!==null).length;
+  const placements=new Set(banners.map(b=>b.placement).filter(Boolean));
+  document.getElementById('kpiPlacements').textContent=placements.size;
+}
+
+// ============ TYPE BREAKDOWN ============
+function renderTypeBreakdown(){
+  const types=['hero_slider','offer_banner','category_banner','custom'];
+  const total=banners.length||1;
+  let html='',barHtml='';
+  types.forEach(t=>{
+    const c=typeConfig[t];const count=banners.filter(b=>b.banner_type===t).length;const pct=((count/total)*100).toFixed(0);
+    html+=`<div class="type-card" style="border-color:${c.color}30;background:${c.color}05" onclick="setFilter('${t}',document.querySelector('.bf-btn[data-f=${t}]'))">
+      <span class="material-icons text-[28px]" style="color:${c.color}">${c.icon}</span>
+      <p class="text-xl font-bold text-slate-800 font-heading mt-1">${count}</p>
+      <p class="text-xs font-semibold" style="color:${c.color}">${c.label}</p>
+      <p class="text-[10px] text-slate-400 mono mt-0.5">${pct}%</p>
+    </div>`;
+    if(count>0)barHtml+=`<div style="width:${pct}%;background:${c.color}" title="${c.label}: ${count}"></div>`;
+  });
+  document.getElementById('typeBreakdown').innerHTML=html;
+  document.getElementById('typeBar').innerHTML=barHtml;
+}
+
+// ============ TABLE ============
+function renderTable(){
+  const tbody=document.getElementById('bannersBody');
+  let filtered=[...banners].sort((a,b)=>a.sort_order-b.sort_order||new Date(b.created_at)-new Date(a.created_at));
+  const search=(document.getElementById('globalSearch')?.value||'').toLowerCase();
+  if(search)filtered=filtered.filter(b=>b.title.toLowerCase().includes(search)||b.subtitle?.toLowerCase().includes(search)||b.placement?.toLowerCase().includes(search));
+  const sf=['active','inactive'];const tf=['hero_slider','offer_banner','category_banner','custom'];
+  if(sf.includes(filterMode))filtered=filtered.filter(b=>getStatus(b)===filterMode);
+  else if(tf.includes(filterMode))filtered=filtered.filter(b=>b.banner_type===filterMode);
+
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9" class="text-center py-10"><span class="material-icons text-slate-300 text-[40px]">wallpaper</span><p class="text-slate-500 mt-2 font-medium">No banners found</p></td></tr>`;return;}
+
+  let html='';
+  filtered.forEach(b=>{
+    const s=getStatus(b);
+    html+=`<tr class="fade-slide-in">
+      <td><span class="sort-handle material-icons text-[18px]" title="Drag to reorder">drag_indicator</span></td>
+      <td>
+        <div class="flex items-center gap-3">
+          <img src="${b.image_url}" alt="" class="banner-thumb" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2288%22 height=%2252%22><rect fill=%22%23F1F5F9%22 width=%2288%22 height=%2252%22 rx=%228%22/><text x=%2244%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%23CBD5E1%22 font-size=%2212%22>No img</text></svg>'">
+          <div class="min-w-0">
+            <p class="font-semibold text-slate-800 text-sm truncate max-w-[200px]">${b.title}</p>
+            <p class="text-[11px] text-slate-400 truncate max-w-[200px]">${b.subtitle||'—'}</p>
+            <p class="text-[10px] text-slate-400 mono">id: ${b.id}</p>
+          </div>
+        </div>
+      </td>
+      <td>${typeBadge(b.banner_type)}</td>
+      <td>
+        ${b.link_url?`<a href="${b.link_url}" target="_blank" class="text-xs text-cc-blue hover:underline font-medium truncate block max-w-[140px]">${b.link_url.replace('https://','').substring(0,30)}${b.link_url.length>30?'...':''}</a>
+        <p class="text-[10px] text-slate-400 mono">${b.link_target}</p>`:'<span class="text-xs text-slate-400">—</span>'}
+      </td>
+      <td>${placementDot(b.placement)}</td>
+      <td><span class="mono text-sm font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">${b.sort_order}</span></td>
+      <td>
+        <p class="text-xs text-slate-600 font-medium">${fmtD(b.starts_at)}</p>
+        <p class="text-[10px] text-slate-400 flex items-center gap-0.5"><span class="material-icons text-[10px]">arrow_downward</span>${b.ends_at?fmtD(b.ends_at):'No end'}</p>
+      </td>
+      <td>
+        <div class="flex items-center gap-2">
+          <label class="toggle-switch" style="transform:scale(.75)"><input type="checkbox" ${b.is_active?'checked':''} onchange="toggleBanner(${b.id})"><span class="slider"></span></label>
+          ${statusBadge(s)}
+        </div>
+      </td>
+      <td>
+        <div class="flex items-center gap-1">
+          <button class="btn-icon" style="width:30px;height:30px" onclick="viewBanner(${b.id})" title="View"><span class="material-icons text-[16px]">visibility</span></button>
+          <button class="btn-icon" style="width:30px;height:30px" onclick="editBanner(${b.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+          <button class="btn-icon" style="width:30px;height:30px" onclick="dupBanner(${b.id})" title="Duplicate"><span class="material-icons text-[16px]">content_copy</span></button>
+          <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteBanner(${b.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+  updateKPIs();
+}
+
+function setFilter(f,btn){filterMode=f;document.querySelectorAll('.bf-btn').forEach(b=>b.className='text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition bf-btn');if(btn)btn.className='text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg bf-btn';renderTable();}
+function toggleBanner(id){const b=banners.find(x=>x.id===id);if(b){b.is_active=!b.is_active;b.updated_at=now();showToast(`"${b.title}" ${b.is_active?'activated':'deactivated'}`,'info');renderTable();}}
+
+// ============ TYPE SELECTOR ============
+function selectType(t){selectedType=t;document.querySelectorAll('.type-card').forEach(c=>c.classList.toggle('selected',c.dataset.type===t));}
+
+// ============ THUMBNAIL ============
+function refreshThumb(){
+  const url=document.getElementById('bImage').value.trim();
+  const title=document.getElementById('bTitle').value.trim();
+  const sub=document.getElementById('bSubtitle').value.trim();
+  const container=document.getElementById('thumbPreview');
+  const img=document.getElementById('thumbImg');
+  if(url){img.src=url;container.classList.remove('hidden');}else{container.classList.add('hidden');}
+  document.getElementById('thumbTitle').textContent=title||'Banner Title';
+  document.getElementById('thumbSubtitle').textContent=sub||'Subtitle goes here';
+}
+
+// ============ MODAL ============
+function openBannerModal(editId){
+  if(editId){
+    const b=banners.find(x=>x.id===editId);if(!b)return;
+    document.getElementById('modalTitle').textContent='Edit Banner';
+    document.getElementById('saveBtn').textContent='Update Banner';
+    document.getElementById('editId').value=b.id;
+    document.getElementById('bTitle').value=b.title;
+    document.getElementById('bSubtitle').value=b.subtitle||'';
+    document.getElementById('bImage').value=b.image_url;
+    document.getElementById('bMobileImage').value=b.mobile_image_url||'';
+    document.getElementById('bLink').value=b.link_url||'';
+    document.getElementById('bTarget').value=b.link_target;
+    document.getElementById('bPlacement').value=b.placement||'';
+    document.getElementById('bSort').value=b.sort_order;
+    document.getElementById('bStart').value=toLocal(b.starts_at);
+    document.getElementById('bEnd').value=b.ends_at?toLocal(b.ends_at):'';
+    document.getElementById('bActive').checked=b.is_active;
+    selectType(b.banner_type);
+  } else {
+    document.getElementById('modalTitle').textContent='Create Banner';
+    document.getElementById('saveBtn').textContent='Create Banner';
+    document.getElementById('editId').value='';
+    document.getElementById('bTitle').value='';
+    document.getElementById('bSubtitle').value='';
+    document.getElementById('bImage').value='';
+    document.getElementById('bMobileImage').value='';
+    document.getElementById('bLink').value='';
+    document.getElementById('bTarget').value='_self';
+    document.getElementById('bPlacement').value=selectedType==='hero_slider'?'homepage_top':selectedType==='offer_banner'?'homepage_mid':selectedType==='category_banner'?'category_header':'';
+    document.getElementById('bSort').value=banners.length;
+    document.getElementById('bStart').value=toLocal(now());
+    document.getElementById('bEnd').value='';
+    document.getElementById('bActive').checked=true;
+    selectType('hero_slider');
+  }
+  refreshThumb();
+  openModal('bannerModal');
+}
+function editBanner(id){openBannerModal(id)}
+
+function saveBanner(){
+  const editId=document.getElementById('editId').value;
+  const title=document.getElementById('bTitle').value.trim();
+  const subtitle=document.getElementById('bSubtitle').value.trim();
+  const image_url=document.getElementById('bImage').value.trim();
+  const mobile_image_url=document.getElementById('bMobileImage').value.trim()||null;
+  const link_url=document.getElementById('bLink').value.trim()||null;
+  const link_target=document.getElementById('bTarget').value;
+  const placement=document.getElementById('bPlacement').value.trim()||null;
+  const sort_order=parseInt(document.getElementById('bSort').value)||0;
+  const startStr=document.getElementById('bStart').value;
+  const endStr=document.getElementById('bEnd').value;
+  const is_active=document.getElementById('bActive').checked;
+
+  if(!title){showToast('Title is required','error');return;}
+  if(!image_url){showToast('Image URL is required','error');return;}
+
+  const starts_at=startStr?new Date(startStr):null;
+  const ends_at=endStr?new Date(endStr):null;
+
+  if(editId){
+    const b=banners.find(x=>x.id===parseInt(editId));
+    if(b){Object.assign(b,{title,subtitle,image_url,mobile_image_url,link_url,link_target,banner_type:selectedType,placement,sort_order,starts_at,ends_at,is_active,updated_at:now()});showToast(`"${title}" updated`,'success');}
+  } else {
+    banners.push({id:nextId++,title,subtitle,image_url,mobile_image_url,link_url,link_target,banner_type:selectedType,placement,sort_order,starts_at,ends_at,is_active,created_at:now(),updated_at:now()});
+    showToast(`"${title}" created`,'success');
+  }
+  closeModal('bannerModal');renderTable();renderTypeBreakdown();
+}
+
+function dupBanner(id){
+  const b=banners.find(x=>x.id===id);if(!b)return;
+  banners.push({...b,id:nextId++,title:b.title+' (Copy)',sort_order:banners.length,created_at:now(),updated_at:now()});
+  showToast(`Duplicated as "${b.title} (Copy)"`,'success');renderTable();renderTypeBreakdown();
+}
+
+function deleteBanner(id){
+  const b=banners.find(x=>x.id===id);if(!b)return;
+  delCb=()=>{banners=banners.filter(x=>x.id!==id);showToast(`"${b.title}" deleted`,'success');renderTable();renderTypeBreakdown();};
+  document.getElementById('delMsg').textContent=`Delete banner "${b.title}"? This removes the record from the banners table.`;
+  document.getElementById('delSql').textContent=`DELETE FROM banners WHERE id = ${id};`;
+  openModal('deleteModal');
+}
+function confirmDel(){if(delCb){delCb();delCb=null;}closeModal('deleteModal');}
+
+// ============ VIEW DETAIL ============
+function viewBanner(id){
+  const b=banners.find(x=>x.id===id);if(!b)return;
+  const s=getStatus(b);const tc=typeConfig[b.banner_type];
+  document.getElementById('detailContent').innerHTML=`
+    <div class="space-y-5">
+      <div class="hero-preview" style="aspect-ratio:21/9">
+        <img src="${b.image_url}" alt="${b.title}" onerror="this.style.display='none'">
+        <div class="overlay">
+          <p class="text-white font-heading font-bold text-xl">${b.title}</p>
+          <p class="text-white/70 text-sm mt-1">${b.subtitle||''}</p>
+          ${b.link_url?`<span class="inline-flex items-center gap-1 mt-3 text-xs text-white/80 bg-white/20 px-3 py-1 rounded-full"><span class="material-icons text-[12px]">link</span>${b.link_url}</span>`:''}
+        </div>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">${statusBadge(s)}${typeBadge(b.banner_type)}${placementDot(b.placement)}<span class="badge badge-slate">Sort: ${b.sort_order}</span>${b.link_target==='_blank'?'<span class="badge badge-slate"><span class="material-icons text-[11px]">open_in_new</span>_blank</span>':''}</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-slate-50 rounded-xl p-3"><p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Mobile Image</p><p class="text-sm font-medium text-slate-600 mt-1 mono">${b.mobile_image_url?b.mobile_image_url.substring(0,40)+'...':'<span class="text-slate-400 italic">Not set</span>'}</p></div>
+        <div class="bg-slate-50 rounded-xl p-3"><p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Link URL</p><p class="text-sm font-medium text-cc-blue mt-1 mono truncate">${b.link_url||'—'}</p></div>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-4 flex items-center gap-4">
+        <div><p class="text-[10px] text-slate-400">Starts</p><p class="text-sm font-semibold text-slate-700 mono">${fmt(b.starts_at)}</p></div>
+        <span class="material-icons text-slate-300">arrow_forward</span>
+        <div><p class="text-[10px] text-slate-400">Ends</p><p class="text-sm font-semibold text-slate-700 mono">${b.ends_at?fmt(b.ends_at):'No expiry'}</p></div>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-slate-400 mono pt-2 border-t border-slate-100 flex-wrap">
+        <span>id: ${b.id}</span><span>banner_type: '${b.banner_type}'</span><span>placement: '${b.placement||'NULL'}'</span><span>sort_order: ${b.sort_order}</span><span>is_active: ${b.is_active?1:0}</span><span>created_at: ${fmt(b.created_at)}</span><span>updated_at: ${fmt(b.updated_at)}</span>
+      </div>
+    </div>`;
+  openModal('detailModal');
+}
+
+// ============ HERO PREVIEW ============
+function renderHeroPreview(){
+  const heroes=banners.filter(b=>b.banner_type==='hero_slider'&&b.is_active&&getStatus(b)!=='expired').sort((a,b)=>a.sort_order-b.sort_order);
+  const container=document.getElementById('heroPreviewContainer');
+  if(!heroes.length){container.innerHTML='<div class="text-center py-12"><span class="material-icons text-slate-300 text-[48px]">view_carousel</span><p class="text-slate-500 mt-3 font-medium">No active hero banners</p><p class="text-xs text-slate-400 mt-1">Create hero_slider type banners to see them here</p></div>';return;}
+
+  container.innerHTML=heroes.map((b,i)=>{
+    return `<div class="fade-slide-in" style="animation-delay:${i*80}ms">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">#${i+1}</span>
+        <span class="text-xs text-slate-500 font-medium">${b.title}</span>
+        <span class="mono text-[10px] text-slate-400 ml-auto">sort_order: ${b.sort_order}</span>
+      </div>
+      <div class="hero-preview">
+        <img src="${b.image_url}" alt="${b.title}" onerror="this.style.display='none'">
+        <div class="overlay">
+          <div class="max-w-lg">
+            <p class="text-white font-heading font-bold text-lg sm:text-xl leading-tight">${b.title}</p>
+            <p class="text-white/70 text-sm mt-1.5">${b.subtitle||''}</p>
+            ${b.link_url?`<div class="mt-4 inline-flex items-center gap-2 bg-white text-cc-dark font-semibold text-sm px-5 py-2.5 rounded-xl cursor-pointer hover:bg-slate-100 transition"><span>Shop Now</span><span class="material-icons text-[16px]">arrow_forward</span></div>`:''}
+          </div>
+        </div>
+        <div class="absolute top-3 right-3 flex items-center gap-2">
+          ${b.ends_at?`<span class="bg-black/40 text-white/80 text-[10px] font-semibold px-2 py-1 rounded-lg backdrop-blur-sm">Ends ${fmtD(b.ends_at)}</span>`:''}
+          <span class="bg-black/40 text-white/80 text-[10px] font-semibold px-2 py-1 rounded-lg backdrop-blur-sm">${b.placement||'—'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============ INIT ============
+function init(){updateKPIs();renderTypeBreakdown();renderTable();}
+init();
+</script>
+</body>
+</html>

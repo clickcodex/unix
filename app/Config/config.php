@@ -1,0 +1,3 @@
+<?php
+// Configs here
+?>

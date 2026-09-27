@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickCodex — Electronics Category Store</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #2D82FF; }
+  ::selection { background: #FF5100; color: #fff; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Grid/List Card Transitions */
+  .grid-card {
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+  }
+  .grid-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -5px rgba(15, 23, 42, 0.05);
+    border-color: #2D82FF;
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+<!-- ================= TOAST NOTIFICATIONS ================= -->
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= TOP HEADER (AMAZON/FLIPKART ACCENT) ================= -->
+<header class="w-full bg-cc-blue text-white sticky top-0 z-40 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <!-- Logo & Back Link -->
+    <div class="flex items-center gap-3">
+      <a href="#" class="flex items-center gap-1.5 group">
+        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+          <svg width="18" height="18" viewBox="0 0 100 100">
+            <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+            <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+      </a>
+    </div>
+
+    <!-- Live Search Bar -->
+    <div class="flex-1 max-w-md relative hidden sm:block">
+      <input type="text" id="live-search-input" onkeyup="handleLiveSearch(event)" placeholder="Search in Electronics..." class="w-full pl-10 pr-4 py-2 rounded-xl text-slate-800 text-sm focus:bg-white shadow-sm border border-transparent transition">
+      <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+    </div>
+
+    <!-- Utilities -->
+    <div class="flex items-center gap-4 text-xs font-semibold">
+      <span class="hidden md:inline text-white/90">Category: <span class="font-bold underline">Electronics</span></span>
+      <a href="#" class="bg-white/10 hover:bg-white/20 text-white font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition">
+        <span class="material-icons text-sm">shopping_cart</span> Cart <span id="cart-count" class="bg-cc-orange text-white px-1.5 py-0.5 rounded-full text-[9px]">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= MOBILE HEADER SEARCH SUB-BAR ================= -->
+<div class="sm:hidden bg-cc-blue text-white px-4 pb-3 shadow-sm border-t border-white/10">
+  <div class="relative">
+    <input type="text" id="mobile-live-search-input" onkeyup="handleLiveSearch(event)" placeholder="Search in Electronics..." class="w-full pl-10 pr-4 py-2.5 rounded-xl text-slate-800 text-xs shadow-inner">
+    <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+  </div>
+</div>
+
+<!-- ================= HORIZONTAL SUBCATEGORY PILLS (MOBILE COHESIVE) ================= -->
+<div class="bg-white border-b border-slate-200 py-3 shadow-xs">
+  <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 overflow-x-auto scrollbar-none whitespace-nowrap">
+    <button onclick="filterSubcategory('all')" id="sub-pill-all" class="text-xs font-bold bg-cc-orange text-white px-4 py-2 rounded-full shadow-xs transition-all shrink-0">
+      All Electronics
+    </button>
+    <button onclick="filterSubcategory('Audio')" id="sub-pill-Audio" class="sub-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-all shrink-0">
+      Audio & Speakers
+    </button>
+    <button onclick="filterSubcategory('Mobiles')" id="sub-pill-Mobiles" class="sub-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-all shrink-0">
+      Mobiles & Tablets
+    </button>
+    <button onclick="filterSubcategory('Smartwatches')" id="sub-pill-Smartwatches" class="sub-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-all shrink-0">
+      Smart Wearables
+    </button>
+    <button onclick="filterSubcategory('Cameras')" id="sub-pill-Cameras" class="sub-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-all shrink-0">
+      Cameras & Accessories
+    </button>
+  </div>
+</div>
+
+<!-- ================= MOBILE FILTER / SORT STICKY BAR (FLIPKART/AMAZON STYLE) ================= -->
+<div class="lg:hidden bg-white border-b border-slate-200 py-2.5 px-4 sticky top-[105px] sm:top-[61px] z-30 flex items-center justify-between shadow-xs">
+  <button onclick="toggleMobileFilters(true)" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 flex-1 border-r border-slate-200 py-0.5">
+    <span class="material-icons text-sm text-cc-blue">tune</span> Filter Results <span id="mobile-filter-badge" class="bg-cc-orange text-white px-1.5 py-0.5 rounded-full text-[9px] hidden">0</span>
+  </button>
+  <button onclick="toggleMobileSort(true)" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 flex-1 py-0.5">
+    <span class="material-icons text-sm text-cc-blue">sort</span> Sort By
+  </button>
+</div>
+
+<!-- ================= MAIN SECTION ================= -->
+<main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex gap-6">
+
+  <!-- ================= DESKTOP FILTERS SIDEBAR ================= -->
+  <aside class="hidden lg:block w-1/4 space-y-5 shrink-0">
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-heading font-extrabold text-base text-slate-800">Filters</h3>
+        <button onclick="clearAllFilters()" class="text-xs font-bold text-cc-orange hover:underline">Clear All</button>
+      </div>
+
+      <!-- Category Taxonomy (Breadcrumb summary) -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Subcategories</label>
+        <div class="flex flex-col gap-1.5 text-xs font-semibold text-slate-600">
+          <button onclick="filterSubcategory('all')" class="flex justify-between items-center hover:text-cc-blue w-full text-left">
+            <span>All Products</span><span id="count-all">0</span>
+          </button>
+          <button onclick="filterSubcategory('Audio')" class="flex justify-between items-center hover:text-cc-blue w-full text-left">
+            <span>Audio & Speakers</span><span id="count-Audio">0</span>
+          </button>
+          <button onclick="filterSubcategory('Mobiles')" class="flex justify-between items-center hover:text-cc-blue w-full text-left">
+            <span>Mobiles & Tablets</span><span id="count-Mobiles">0</span>
+          </button>
+          <button onclick="filterSubcategory('Smartwatches')" class="flex justify-between items-center hover:text-cc-blue w-full text-left">
+            <span>Smart Wearables</span><span id="count-Smartwatches">0</span>
+          </button>
+          <button onclick="filterSubcategory('Cameras')" class="flex justify-between items-center hover:text-cc-blue w-full text-left">
+            <span>Cameras & DSLR</span><span id="count-Cameras">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Price Range Filter Slider -->
+      <div class="space-y-3 pt-4 border-t border-slate-100">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Price Cap (Max)</label>
+        <input type="range" id="price-slider" min="500" max="40000" step="500" value="40000" oninput="handlePriceSliderChange(this.value)" class="w-full accent-cc-orange cursor-pointer">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+          <span>₹500</span>
+          <span class="bg-slate-100 px-3 py-1 rounded-md text-cc-blue border border-slate-200">Max: ₹<span id="price-val-lbl">40,000</span></span>
+        </div>
+      </div>
+
+      <!-- Customer Reviews Stars Filter -->
+      <div class="space-y-2.5 pt-4 border-t border-slate-100">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Customer Rating</label>
+        <div class="flex flex-col gap-2">
+          <button onclick="filterByRating(4)" class="flex items-center gap-1.5 text-xs text-slate-600 hover:text-cc-blue text-left w-full">
+            <span class="stars">★★★★☆</span> <span class="font-semibold">&amp; Up</span>
+          </button>
+          <button onclick="filterByRating(3)" class="flex items-center gap-1.5 text-xs text-slate-600 hover:text-cc-blue text-left w-full">
+            <span class="stars">★★★☆☆</span> <span class="font-semibold">&amp; Up</span>
+          </button>
+          <button onclick="filterByRating(2)" class="flex items-center gap-1.5 text-xs text-slate-600 hover:text-cc-blue text-left w-full">
+            <span class="stars">★★☆☆☆</span> <span class="font-semibold">&amp; Up</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tag badges applicability -->
+      <div class="space-y-2 pt-4 border-t border-slate-100">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Store Badges</label>
+        <div class="flex flex-col gap-2" id="desktop-tags-container">
+          <!-- Tag checkboxes populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT PRODUCTS LISTINGS PANEL ================= -->
+  <section class="flex-1 space-y-4">
+    
+    <!-- Desktop Sorting Options Header (Hidden on Mobile) -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hidden lg:flex items-center justify-between text-xs">
+      <div class="font-semibold text-slate-500">
+        Showing <span id="results-count" class="font-bold text-slate-800">0</span> electronics matching constraints.
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Sort By:</span>
+        <select id="sort-selector" onchange="handleSortChange(this.value)" class="border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-700 bg-white cursor-pointer focus:border-cc-blue">
+          <option value="popularity">Popularity / Sold</option>
+          <option value="rating">Top Customer Rated</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Active Filter Chips Bar -->
+    <div id="filter-chips-bar" class="flex flex-wrap gap-1.5 items-center hidden">
+      <span class="text-xs font-semibold text-slate-400">Active Filters:</span>
+      <!-- Chips inserted dynamically -->
+    </div>
+
+    <!-- Products Responsive Grid Layout (Flipkart Double Column Mobile Style) -->
+    <div id="category-products-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+      <!-- Cards rendered dynamically -->
+    </div>
+
+  </section>
+</main>
+
+<!-- ================= MOBILE APP SLIDE-UP FILTERS DRAWERS (AMAZON/FLIPKART STYLE) ================= -->
+<div id="mobile-filter-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-y-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileFilters(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl shadow-2xl flex flex-col pointer-events-auto max-h-[85vh] z-10">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 class="font-heading font-extrabold text-base text-slate-800 flex items-center gap-1.5">
+        <span class="material-icons text-cc-blue">tune</span> Filter Options
+      </h3>
+      <button onclick="toggleMobileFilters(false)" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto p-5 space-y-5 text-xs text-left">
+      <!-- Mobile Subcategory Options -->
+      <div class="space-y-2">
+        <label class="block font-bold text-slate-400 uppercase tracking-wider">Subcategories</label>
+        <div class="grid grid-cols-2 gap-2" id="mobile-subcat-container">
+          <!-- Dynamic buttons -->
+        </div>
+      </div>
+
+      <!-- Mobile Price Slider -->
+      <div class="space-y-3 pt-4 border-t border-slate-100">
+        <label class="block font-bold text-slate-400 uppercase tracking-wider">Price Cap (Max)</label>
+        <input type="range" id="mobile-price-slider" min="500" max="40000" step="500" value="40000" oninput="handlePriceSliderChange(this.value)" class="w-full accent-cc-orange cursor-pointer">
+        <div class="flex items-center justify-between font-bold text-slate-700">
+          <span>₹500</span>
+          <span class="bg-slate-100 px-3 py-1 rounded-md text-cc-blue border border-slate-200">Max: ₹<span id="mobile-price-val-lbl">40,000</span></span>
+        </div>
+      </div>
+
+      <!-- Mobile Tag Checkboxes -->
+      <div class="space-y-2 pt-4 border-t border-slate-100">
+        <label class="block font-bold text-slate-400 uppercase tracking-wider">Store Badges</label>
+        <div class="flex flex-col gap-2.5" id="mobile-tags-container">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Apply Drawer Bottom Buttons -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
+      <button onclick="clearAllFilters(); toggleMobileFilters(false);" class="flex-1 text-center border border-slate-200 font-semibold py-3 rounded-xl text-slate-600">Clear</button>
+      <button onclick="toggleMobileFilters(false)" class="flex-1 text-center bg-cc-blue text-white font-bold py-3 rounded-xl shadow-md">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MOBILE APP SORT DRAWER ================= -->
+<div id="mobile-sort-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-y-full transition-transform duration-200 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSort(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl shadow-2xl flex flex-col pointer-events-auto max-h-[50vh] z-10">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 class="font-heading font-extrabold text-base text-slate-800 flex items-center gap-1.5">
+        <span class="material-icons text-cc-blue">sort</span> Sort Criteria
+      </h3>
+      <button onclick="toggleMobileSort(false)" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="p-3 divide-y divide-slate-100 overflow-y-auto">
+      <button onclick="selectMobileSort('popularity')" class="w-full text-left py-3.5 px-4 text-xs font-semibold text-slate-700 flex justify-between items-center hover:bg-slate-50 transition">
+        <span>Popularity / Sold</span> <span class="material-icons text-cc-blue text-sm hidden" id="sort-check-popularity">check_circle</span>
+      </button>
+      <button onclick="selectMobileSort('rating')" class="w-full text-left py-3.5 px-4 text-xs font-semibold text-slate-700 flex justify-between items-center hover:bg-slate-50 transition">
+        <span>Top Customer Rated</span> <span class="material-icons text-cc-blue text-sm hidden" id="sort-check-rating">check_circle</span>
+      </button>
+      <button onclick="selectMobileSort('price-asc')" class="w-full text-left py-3.5 px-4 text-xs font-semibold text-slate-700 flex justify-between items-center hover:bg-slate-50 transition">
+        <span>Price: Low to High</span> <span class="material-icons text-cc-blue text-sm hidden" id="sort-check-price-asc">check_circle</span>
+      </button>
+      <button onclick="selectMobileSort('price-desc')" class="w-full text-left py-3.5 px-4 text-xs font-semibold text-slate-700 flex justify-between items-center hover:bg-slate-50 transition">
+        <span>Price: High to Low</span> <span class="material-icons text-cc-blue text-sm hidden" id="sort-check-price-desc">check_circle</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="w-full bg-white border-t border-slate-200 py-4 px-6 shrink-0 text-center text-xs text-slate-400">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+    <p>© 2026 ClickCodex Retail Pvt. Ltd. All rights reserved.</p>
+    <div class="flex gap-4">
+      <a href="#" class="hover:text-cc-blue transition">Terms of Use</a>
+      <a href="#" class="hover:text-cc-blue transition">Privacy Policy</a>
+      <a href="#" class="hover:text-cc-blue transition">Customer Help</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= JAVASCRIPT ENGINE ================= -->
+<script>
+  // Mock Relational Database Parameters mapped directly to provided SQL Schema files
+  const PRODUCTS = [
+    { id: 1, name: "TrueSound Pro Wireless Earbuds with ANC", subcategory: "Audio", price: 1499, sold: 2341, rating: 4.3, tags: ["Trending"], image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 2, name: "ClickCodex FitTrack Smart Watch, AMOLED", subcategory: "Smartwatches", price: 2799, sold: 5120, rating: 4.8, tags: ["Bestseller"], image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 4, name: "BoomBox Mini Portable Bluetooth Speaker", subcategory: "Audio", price: 799, sold: 3004, rating: 4.5, tags: ["Trending"], image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 7, name: "VisionMax 43\" 4K Smart LED TV", subcategory: "Mobiles", price: 21499, sold: 12987, rating: 4.7, tags: ["Featured"], image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 9, name: "RapidClick Wireless Gaming Mouse", subcategory: "Mobiles", price: 899, sold: 1532, rating: 4.6, tags: ["New Arrival"], image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 12, name: "PixelPro DSLR Camera Kit 24MP", subcategory: "Cameras", price: 34999, sold: 842, rating: 4.9, tags: ["Top Rated"], image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 15, name: "FlexFit Pro Smart Sync Band", subcategory: "Smartwatches", price: 1999, sold: 412, rating: 4.1, tags: ["New Arrival"], image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 16, name: "ChargeUp 20000mAh Power Bank", subcategory: "Mobiles", price: 1399, sold: 4410, rating: 4.6, tags: ["Trending"], image: "https://images.unsplash.com/photo-1609592424109-dd77366b26ec?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 18, name: "AlphaSound Over-Ear Wireless Headphones", subcategory: "Audio", price: 3999, sold: 1210, rating: 4.4, tags: ["New Arrival"], image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80", inStock: 1 },
+    { id: 19, name: "SuperCharge 65W Fast Adaptor", subcategory: "Mobiles", price: 1199, sold: 911, rating: 4.2, tags: ["Featured"], image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=80", inStock: 1 }
+  ];
+
+  const TAGS_METADATA = [
+    { name: "Trending", value: "Trending" },
+    { name: "Bestseller", value: "Bestseller" },
+    { name: "Featured", value: "Featured" },
+    { name: "New Arrival", value: "New Arrival" },
+    { name: "Top Rated", value: "Top Rated" }
+  ];
+
+  // Filtering & Sorting State
+  let activeSubcategory = "all";
+  let searchKeyword = "";
+  let priceCap = 40000;
+  let activeRatingThreshold = 0;
+  let selectedTags = [];
+  let sortCriteria = "popularity";
+  let cartBadgeCount = 0;
+
+  // On Window Load
+  window.onload = function() {
+    renderTagsFilter();
+    renderProducts();
+    updateSubcategoryCounts();
+  };
+
+  // Toast Notification System
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-3.5 rounded-xl shadow-xl font-semibold text-sm text-white flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto max-w-xs`;
+    
+    if (type === "success") {
+      toast.classList.add('bg-slate-900', 'border-l-4', 'border-cc-orange');
+    } else {
+      toast.classList.add('bg-cc-orange');
+    }
+    
+    toast.innerHTML = `<span class="material-icons text-sm">${type === 'success' ? 'check_circle' : 'error'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+      toast.classList.add('translate-y-2', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+
+  // Populate dynamic category checkboxes (Desktop / Mobile Views)
+  function renderTagsFilter() {
+    const dContainer = document.getElementById('desktop-tags-container');
+    const mContainer = document.getElementById('mobile-tags-container');
+    
+    dContainer.innerHTML = "";
+    mContainer.innerHTML = "";
+
+    TAGS_METADATA.forEach(tag => {
+      const checkboxHTML = `
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer">
+          <input type="checkbox" value="${tag.value}" onchange="handleTagToggle(this)" class="rounded border-slate-300 text-cc-blue focus:ring-cc-blue cursor-pointer">
+          <span>${tag.name}</span>
+        </label>
+      `;
+      dContainer.innerHTML += checkboxHTML;
+      mContainer.innerHTML += checkboxHTML;
+    });
+
+    // Also populate mobile subcategory buttons inside drawer
+    const mSubcat = document.getElementById('mobile-subcat-container');
+    mSubcat.innerHTML = `
+      <button onclick="filterSubcategory('all'); toggleMobileFilters(false);" class="border border-slate-200 py-2.5 rounded-xl font-bold">All Products</button>
+      <button onclick="filterSubcategory('Audio'); toggleMobileFilters(false);" class="border border-slate-200 py-2.5 rounded-xl font-bold">Audio & Sound</button>
+      <button onclick="filterSubcategory('Mobiles'); toggleMobileFilters(false);" class="border border-slate-200 py-2.5 rounded-xl font-bold">Mobiles</button>
+      <button onclick="filterSubcategory('Smartwatches'); toggleMobileFilters(false);" class="border border-slate-200 py-2.5 rounded-xl font-bold">Wearables</button>
+      <button onclick="filterSubcategory('Cameras'); toggleMobileFilters(false);" class="border border-slate-200 py-2.5 rounded-xl font-bold">Cameras</button>
+    `;
+  }
+
+  // Real-time Subcategory Count Loader
+  function updateSubcategoryCounts() {
+    document.getElementById('count-all').innerText = PRODUCTS.length;
+    document.getElementById('count-Audio').innerText = PRODUCTS.filter(p => p.subcategory === "Audio").length;
+    document.getElementById('count-Mobiles').innerText = PRODUCTS.filter(p => p.subcategory === "Mobiles").length;
+    document.getElementById('count-Smartwatches').innerText = PRODUCTS.filter(p => p.subcategory === "Smartwatches").length;
+    document.getElementById('count-Cameras').innerText = PRODUCTS.filter(p => p.subcategory === "Cameras").length;
+  }
+
+  // Switch Subcategories
+  function filterSubcategory(subcategory) {
+    activeSubcategory = subcategory;
+
+    // Reset Horizontal Pill Class List
+    const pills = document.querySelectorAll('.sub-pill');
+    pills.forEach(pill => {
+      pill.className = "sub-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-all shrink-0";
+    });
+
+    const activePill = document.getElementById(`sub-pill-${subcategory}`);
+    if (activePill) {
+      activePill.className = "text-xs font-bold bg-cc-orange text-white px-4 py-2 rounded-full shadow-xs transition-all shrink-0";
+    }
+
+    renderProducts();
+    updateFilterChips();
+  }
+
+  // Filter tag actions
+  function handleTagToggle(checkbox) {
+    const val = checkbox.value;
+    if (checkbox.checked) {
+      selectedTags.push(val);
+    } else {
+      selectedTags = selectedTags.filter(t => t !== val);
+    }
+    renderProducts();
+    updateFilterChips();
+  }
+
+  // Price range slider action
+  function handlePriceSliderChange(val) {
+    priceCap = parseInt(val);
+    document.getElementById('price-val-lbl').innerText = priceCap.toLocaleString('en-IN');
+    document.getElementById('mobile-price-val-lbl').innerText = priceCap.toLocaleString('en-IN');
+    
+    // Sync slider elements
+    document.getElementById('price-slider').value = val;
+    document.getElementById('mobile-price-slider').value = val;
+
+    renderProducts();
+    updateFilterChips();
+  }
+
+  // Star Ratings limit
+  function filterByRating(stars) {
+    activeRatingThreshold = stars;
+    renderProducts();
+    updateFilterChips();
+    showToast(`Showing items rated ${stars}★ & above`, "success");
+  }
+
+  function handleLiveSearch(event) {
+    searchKeyword = event.target.value;
+    
+    // Sync search bars
+    document.getElementById('live-search-input').value = searchKeyword;
+    document.getElementById('mobile-live-search-input').value = searchKeyword;
+    
+    renderProducts();
+  }
+
+  // Active Sorting selector
+  function handleSortChange(val) {
+    sortCriteria = val;
+    renderProducts();
+  }
+
+  function selectMobileSort(val) {
+    sortCriteria = val;
+    const sortingMethods = ['popularity', 'rating', 'price-asc', 'price-desc'];
+    sortingMethods.forEach(method => {
+      const check = document.getElementById(`sort-check-${method}`);
+      if (method === val) check.classList.remove('hidden');
+      else check.classList.add('hidden');
+    });
+    toggleMobileSort(false);
+    renderProducts();
+  }
+
+  // Render list of results dynamically
+  function renderProducts() {
+    const grid = document.getElementById('category-products-grid');
+    grid.innerHTML = "";
+
+    // 1. Filtering Logical Matrix
+    let results = PRODUCTS.filter(p => {
+      const matchSubcat = (activeSubcategory === "all") || (p.subcategory === activeSubcategory);
+      const matchSearch = p.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const matchPrice = p.price <= priceCap;
+      const matchRating = p.rating >= activeRatingThreshold;
+      const matchTags = (selectedTags.length === 0) || p.tags.some(tag => selectedTags.includes(tag));
+
+      return matchSubcat && matchSearch && matchPrice && matchRating && matchTags;
+    });
+
+    // 2. Sorting Logical Matrix
+    if (sortCriteria === "popularity") {
+      results.sort((a, b) => b.sold - a.sold);
+    } else if (sortCriteria === "rating") {
+      results.sort((a, b) => b.rating - a.rating);
+    } else if (sortCriteria === "price-asc") {
+      results.sort((a, b) => a.price - b.price);
+    } else if (sortCriteria === "price-desc") {
+      results.sort((a, b) => b.price - a.price);
+    }
+
+    // 3. UI rendering loop
+    document.getElementById('results-count').innerText = results.length;
+    
+    if (results.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full py-16 text-center text-slate-400">
+          <span class="material-icons text-5xl">grid_off</span>
+          <p class="text-sm font-semibold mt-4">No matching electronic products found.</p>
+        </div>
+      `;
+      return;
+    }
+
+    results.forEach(p => {
+      const starsHTML = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+      const badgeColor = getTagBadgeColor(p.tags[0]);
+      const badgeHTML = p.tags[0] ? `<span class="absolute top-2 left-2 ${badgeColor} text-white text-[8px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider shadow z-10">${p.tags[0]}</span>` : '';
+      
+      grid.innerHTML += `
+        <div class="grid-card bg-white rounded-xl p-3 flex flex-col justify-between relative overflow-hidden shadow-xs">
+          ${badgeHTML}
+          <div>
+            <div class="rounded-lg overflow-hidden aspect-square bg-slate-50 flex items-center justify-center mb-3">
+              <img src="${p.image}" class="w-full h-full object-cover" alt="">
+            </div>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">${p.subcategory}</p>
+            <h4 class="text-xs font-bold text-slate-800 line-clamp-2 leading-snug mt-0.5">${p.name}</h4>
+            <div class="flex items-center gap-1 mt-1 text-[10px] sm:text-xs">
+              <span class="stars">${starsHTML}</span>
+              <span class="text-slate-400">(${p.sold})</span>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="flex items-baseline justify-between gap-1.5 mb-2.5">
+              <span class="font-extrabold text-sm sm:text-base text-slate-900">₹${p.price.toLocaleString('en-IN')}</span>
+              <span class="text-[9px] font-bold text-green-600">In Stock</span>
+            </div>
+            <div class="flex gap-1">
+              <button onclick="addToCartSim()" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white text-[10px] font-extrabold py-2 rounded-lg transition-all flex items-center justify-center gap-1 active:scale-95">
+                <span class="material-icons text-xs">shopping_cart</span> Add
+              </button>
+              <button onclick="toggleWishlistItemSim()" class="bg-slate-50 border border-slate-200 hover:bg-red-50 p-1.5 rounded-lg transition">
+                <span class="material-icons text-xs text-cc-pink">favorite_border</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Badge mapping color config
+  function getTagBadgeColor(tag) {
+    switch (tag) {
+      case "Bestseller": return "bg-cc-orange";
+      case "Trending": return "bg-cc-blue";
+      case "Featured": return "bg-cc-purple";
+      case "New Arrival": return "bg-green-600";
+      default: return "bg-slate-800";
+    }
+  }
+
+  // Active filter breadcrumb chips
+  function updateFilterChips() {
+    const bar = document.getElementById('filter-chips-bar');
+    bar.innerHTML = "";
+    let activeFiltersCount = 0;
+
+    if (activeSubcategory !== "all") {
+      bar.innerHTML += createChipHTML(`Subcat: ${activeSubcategory}`, () => filterSubcategory('all'));
+      activeFiltersCount++;
+    }
+    if (priceCap < 40000) {
+      bar.innerHTML += createChipHTML(`Max: ₹${priceCap.toLocaleString('en-IN')}`, () => handlePriceSliderChange(40000));
+      activeFiltersCount++;
+    }
+    if (activeRatingThreshold > 0) {
+      bar.innerHTML += createChipHTML(`${activeRatingThreshold}★ & above`, () => { activeRatingThreshold = 0; renderProducts(); updateFilterChips(); });
+      activeFiltersCount++;
+    }
+    selectedTags.forEach(tag => {
+      bar.innerHTML += createChipHTML(tag, () => {
+        selectedTags = selectedTags.filter(t => t !== tag);
+        renderProducts();
+        updateFilterChips();
+        // Uncheck corresponding checkbox
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => { if (cb.value === tag) cb.checked = false; });
+      });
+      activeFiltersCount++;
+    });
+
+    if (activeFiltersCount > 0) {
+      bar.classList.remove('hidden');
+      document.getElementById('mobile-filter-badge').innerText = activeFiltersCount;
+      document.getElementById('mobile-filter-badge').classList.remove('hidden');
+    } else {
+      bar.classList.add('hidden');
+      document.getElementById('mobile-filter-badge').classList.add('hidden');
+    }
+  }
+
+  function createChipHTML(text, clearAction) {
+    const uid = Math.random().toString(36).substring(2, 9);
+    // Bind global clean actions using window listeners dynamically
+    window[`clear_${uid}`] = clearAction;
+    return `
+      <span class="inline-flex items-center gap-1 bg-cc-blue/10 text-cc-blue text-[10px] font-bold px-2 py-1 rounded-lg">
+        <span>${text}</span>
+        <button onclick="window['clear_${uid}']();" class="text-cc-blue hover:text-slate-900 focus:outline-none"><span class="material-icons text-xs leading-none">close</span></button>
+      </span>
+    `;
+  }
+
+  function clearAllFilters() {
+    activeSubcategory = "all";
+    priceCap = 40000;
+    activeRatingThreshold = 0;
+    selectedTags = [];
+    searchKeyword = "";
+
+    // Clear UI triggers
+    document.getElementById('price-slider').value = 40000;
+    document.getElementById('mobile-price-slider').value = 40000;
+    document.getElementById('price-val-lbl').innerText = "40,000";
+    document.getElementById('mobile-price-val-lbl').innerText = "40,000";
+    document.getElementById('live-search-input').value = "";
+    document.getElementById('mobile-live-search-input').value = "";
+
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+
+    filterSubcategory('all');
+    showToast("Filters successfully reset.", "success");
+  }
+
+  // Drawers trigger controllers
+  function toggleMobileFilters(show) {
+    const drawer = document.getElementById('mobile-filter-drawer');
+    if (show) drawer.classList.remove('translate-y-full');
+    else drawer.classList.add('translate-y-full');
+  }
+
+  function toggleMobileSort(show) {
+    const drawer = document.getElementById('mobile-sort-drawer');
+    if (show) drawer.classList.remove('translate-y-full');
+    else drawer.classList.add('translate-y-full');
+  }
+
+  // Interactive UI Simulation triggers
+  function addToCartSim() {
+    cartBadgeCount++;
+    document.getElementById('cart-count').innerText = cartBadgeCount;
+    showToast("Product added to Shopping Cart successfully!", "success");
+  }
+
+  function toggleWishlistItemSim() {
+    showToast("Product added to your Wishlist!", "success");
+  }
+</script>
+</body>
+</html>

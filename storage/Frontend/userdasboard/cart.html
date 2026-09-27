@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping Cart — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B', purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A', light: '#F8FAFC', ice: '#F1F5F9' }
+        },
+        fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  input:focus, select:focus, textarea:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+  .stars { color: #FFB800; }
+  .price-strike { text-decoration: line-through; color: #94A3B8; }
+
+  .sidebar-link { transition: all 0.15s ease; border-radius: 10px; padding: 10px 14px; margin: 2px 0; display: flex; align-items: center; gap: 12px; font-size: 14px; color: #475569; }
+  .sidebar-link:hover { background: #E8F0FE; color: #2D82FF; padding-left: 20px; }
+  .sidebar-link.active { background: #E8F0FE; color: #2D82FF; font-weight: 600; }
+  .sidebar-link.active .material-icons { color: #2D82FF; }
+
+  .cart-item-row {
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+  }
+  .cart-item-row:hover { border-color: #2D82FF; box-shadow: 0 4px 16px rgba(45,130,255,0.06); }
+  .cart-item-row.removing {
+    opacity: 0; transform: translateX(40px); max-height: 0; margin: 0; padding: 0; border: 0; overflow: hidden;
+  }
+
+  .qty-btn {
+    width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid #E2E8F0; background: white;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600;
+    color: #475569; cursor: pointer; transition: all 0.15s ease; user-select: none; line-height: 1;
+  }
+  .qty-btn:hover:not(:disabled) { border-color: #2D82FF; color: #2D82FF; background: #F0F6FF; }
+  .qty-btn:active:not(:disabled) { transform: scale(0.92); }
+  .qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+  .toast-in { animation: slideInRight 0.35s ease-out forwards; }
+  .toast-out { animation: slideOutRight 0.3s ease-in forwards; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.35s ease-out forwards; }
+
+  @keyframes progressPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .progress-pulse { animation: progressPulse 2s ease-in-out infinite; }
+
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  .skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+
+  @keyframes confettiBurst { 0% { transform: scale(0); opacity: 1; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+  .coupon-applied-anim { animation: confettiBurst 0.4s ease-out; }
+
+  .savelater-card { transition: all 0.25s cubic-bezier(.4,0,.2,1); border: 1.5px solid #E2E8F0; }
+  .savelater-card:hover { border-color: #8C30F5; box-shadow: 0 8px 20px rgba(140,48,245,0.08); transform: translateY(-2px); }
+
+  .rec-card { transition: all 0.25s ease; border: 1.5px solid #E2E8F0; }
+  .rec-card:hover { border-color: #2D82FF; transform: translateY(-4px); box-shadow: 0 12px 24px rgba(15,23,42,0.08); }
+
+  .pincode-input:focus { border-color: #2D82FF; box-shadow: 0 0 0 3px rgba(45,130,255,0.1); }
+
+  @keyframes pulse-badge { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+
+  .order-summary-sticky { position: sticky; top: 80px; }
+  @media (max-width: 1023px) { .order-summary-sticky { position: relative; top: auto; } }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width: 380px;"></div>
+
+<!-- TOP UTILITY BAR -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Welcome back, Rahul — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow focus:outline-none" aria-label="Open Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search for products, brands and more..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl" />
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" /></svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[22px]">account_circle</span><span class="mt-0.5">Rahul</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[22px]">favorite_border</span><span class="mt-0.5 hidden md:inline">Wishlist</span>
+        <span id="wishlist-badge" class="absolute -top-1 -right-0.5 bg-cc-pink text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg" style="transform:scale(0)">3</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight text-cc-yellow transition px-2 py-1 rounded-lg bg-white/10">
+        <span class="material-icons text-[22px]">shopping_cart</span><span class="mt-0.5 hidden md:inline">Cart</span>
+        <span id="cart-badge" class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">Shopping Cart</span>
+  </nav>
+
+  <div class="flex gap-6">
+    <!-- ACCOUNT SIDEBAR (Desktop) -->
+    <aside class="hidden lg:block w-64 shrink-0">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[80px]">
+        <div class="bg-gradient-to-br from-cc-blue to-cc-purple p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">R</div>
+            <div class="min-w-0">
+              <p class="font-heading font-bold text-sm truncate">Rahul Sharma</p>
+              <p class="text-white/70 text-xs truncate">rahul.sharma@email.com</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-2 pb-1">Shopping</p>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">shopping_bag</span> My Orders</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</button>
+          <button class="sidebar-link w-full text-left active"><span class="material-icons text-[20px]">shopping_cart</span> My Cart <span id="sidebar-cart-count" class="ml-auto bg-cc-orange text-white text-[10px] font-bold rounded-full px-2 py-0.5">0</span></button>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Account</p>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">payment</span> Payment Methods</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</button>
+          <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 min-w-0">
+
+      <!-- Page Header -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 mb-5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-cc-orange/10 flex items-center justify-center">
+              <span class="material-icons text-cc-orange text-xl">shopping_cart</span>
+            </div>
+            <div>
+              <h1 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Shopping Cart</h1>
+              <p class="text-sm text-slate-500 mt-0.5"><span id="cart-item-count">0</span> items</p>
+            </div>
+          </div>
+          <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+            <span class="material-icons text-[16px]">lock</span> Secure Checkout
+          </div>
+        </div>
+      </div>
+
+      <!-- FREE SHIPPING PROGRESS BAR -->
+      <div id="shipping-progress-bar" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-5">
+        <div class="flex items-center gap-3 mb-2.5">
+          <span class="material-icons text-green-500 text-xl">local_shipping</span>
+          <div class="flex-1">
+            <p id="shipping-progress-text" class="text-sm font-medium text-slate-700"></p>
+            <p id="shipping-progress-sub" class="text-xs text-slate-400 mt-0.5"></p>
+          </div>
+          <span id="shipping-progress-badge" class="text-xs font-bold px-3 py-1 rounded-full"></span>
+        </div>
+        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div id="shipping-progress-fill" class="h-full rounded-full transition-all duration-700 ease-out progress-pulse" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- DELIVERY PINCODE CHECK -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center gap-2 text-sm text-slate-600 shrink-0">
+          <span class="material-icons text-cc-blue text-xl">location_on</span>
+          <span class="font-medium">Deliver to:</span>
+        </div>
+        <div class="flex-1 flex gap-2">
+          <input type="text" id="pincode-input" value="457001" maxlength="6" placeholder="Enter pincode" class="pincode-input flex-1 border border-slate-200 px-4 py-2.5 rounded-xl text-sm transition">
+          <button onclick="checkPincode()" class="bg-cc-blue hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shrink-0">Check</button>
+        </div>
+        <div id="pincode-result" class="hidden sm:flex items-center gap-1.5 text-xs font-medium"></div>
+      </div>
+
+      <!-- TWO COLUMN: CART ITEMS + ORDER SUMMARY -->
+      <div class="flex flex-col lg:flex-row gap-5">
+
+        <!-- LEFT: CART ITEMS -->
+        <div class="flex-1 min-w-0">
+          <div id="cart-items-container" class="space-y-3">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- EMPTY STATE -->
+          <div id="empty-state" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-10 sm:p-16 text-center">
+              <div class="w-28 h-28 mx-auto rounded-full bg-cc-ice flex items-center justify-center mb-6">
+                <span class="material-icons text-6xl text-slate-300">shopping_cart</span>
+              </div>
+              <h3 class="font-heading text-2xl font-bold text-slate-800 mb-2">Your cart is empty</h3>
+              <p class="text-sm text-slate-500 max-w-md mx-auto mb-8 leading-relaxed">Looks like you haven't added anything to your cart yet. Explore our products and find something you love!</p>
+              <div class="flex flex-wrap gap-3 justify-center">
+                <a href="#" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-md inline-flex items-center gap-2 text-sm">
+                  <span class="material-icons text-[18px]">explore</span> Start Shopping
+                </a>
+                <a href="#" class="border-2 border-cc-pink text-cc-pink hover:bg-cc-pink hover:text-white font-semibold px-8 py-3.5 rounded-xl transition inline-flex items-center gap-2 text-sm">
+                  <span class="material-icons text-[18px]">favorite</span> View Wishlist
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- SAVED FOR LATER -->
+          <div id="saved-for-later-section" class="mt-8 hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-icons text-cc-purple text-xl">bookmark</span> Saved for Later
+                <span id="saved-count-badge" class="text-xs bg-cc-purple/10 text-cc-purple font-bold px-2.5 py-0.5 rounded-full">0</span>
+              </h2>
+            </div>
+            <div id="saved-for-later-items" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- RECOMMENDATIONS -->
+          <div id="recommendations-section" class="mt-8">
+            <h2 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <span class="material-icons text-cc-yellow text-xl">auto_awesome</span> Frequently Bought Together
+            </h2>
+            <div id="recommendations-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: ORDER SUMMARY (Sticky) -->
+        <div class="lg:w-[360px] shrink-0">
+          <div class="order-summary-sticky">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <!-- Summary Header -->
+              <div class="bg-gradient-to-r from-cc-dark to-slate-800 text-white px-5 py-4">
+                <h3 class="font-heading font-bold text-base flex items-center gap-2">
+                  <span class="material-icons text-cc-yellow text-lg">receipt_long</span> Order Summary
+                </h3>
+              </div>
+
+              <div class="p-5 space-y-4">
+                <!-- Price Breakdown -->
+                <div class="space-y-2.5">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Price (<span id="summary-item-count">0</span> items)</span>
+                    <span id="summary-subtotal" class="font-medium text-slate-800">₹0</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Discount</span>
+                    <span id="summary-discount" class="font-medium text-green-600">−₹0</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Delivery Charges</span>
+                    <span id="summary-delivery" class="font-medium text-green-600">FREE</span>
+                  </div>
+                  <div class="flex justify-between text-sm" id="summary-coupon-row" style="display:none;">
+                    <span class="text-slate-500 flex items-center gap-1"><span class="material-icons text-[14px] text-cc-purple">local_offer</span> Coupon (<span id="summary-coupon-code"></span>)</span>
+                    <span id="summary-coupon-discount" class="font-medium text-green-600">−₹0</span>
+                  </div>
+                  <div class="flex justify-between text-sm" id="summary-tax-row">
+                    <span class="text-slate-500">Tax (GST)</span>
+                    <span id="summary-tax" class="font-medium text-slate-800">₹0</span>
+                  </div>
+                </div>
+
+                <!-- Total -->
+                <div class="border-t-2 border-dashed border-slate-200 pt-3.5 flex justify-between items-baseline">
+                  <span class="font-heading font-bold text-base text-slate-900">Total Amount</span>
+                  <span id="summary-total" class="font-heading font-extrabold text-2xl text-cc-orange">₹0</span>
+                </div>
+
+                <!-- Savings Banner -->
+                <div id="savings-banner" class="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2.5 hidden">
+                  <span class="material-icons text-green-600 text-xl">savings</span>
+                  <div>
+                    <p class="text-xs font-bold text-green-800">You will save <span id="total-savings">₹0</span> on this order</p>
+                    <p class="text-[10px] text-green-600 mt-0.5">Inclusive of all discounts & offers</p>
+                  </div>
+                </div>
+
+                <!-- Coupon Input -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                  <div class="flex">
+                    <div class="flex-1 flex items-center gap-2 px-3">
+                      <span class="material-icons text-slate-400 text-[18px]">local_offer</span>
+                      <input type="text" id="coupon-input" placeholder="Enter coupon code" class="flex-1 py-3 text-sm text-slate-700 bg-transparent border-none" style="outline:none;" maxlength="20">
+                    </div>
+                    <button id="coupon-apply-btn" onclick="applyCoupon()" class="bg-cc-purple hover:bg-purple-700 text-white px-5 py-3 text-sm font-semibold transition whitespace-nowrap">Apply</button>
+                  </div>
+                </div>
+
+                <!-- Applied Coupon Tag -->
+                <div id="applied-coupon-tag" class="hidden bg-cc-purple/5 border border-cc-purple/20 rounded-xl p-3 flex items-center justify-between coupon-applied-anim">
+                  <div class="flex items-center gap-2">
+                    <span class="material-icons text-cc-purple text-lg">verified</span>
+                    <div>
+                      <p class="text-xs font-bold text-cc-purple" id="applied-coupon-label"></p>
+                      <p class="text-[10px] text-slate-500" id="applied-coupon-desc"></p>
+                    </div>
+                  </div>
+                  <button onclick="removeCoupon()" class="text-slate-400 hover:text-red-500 transition" title="Remove coupon">
+                    <span class="material-icons text-[18px]">close</span>
+                  </button>
+                </div>
+
+                <!-- Checkout Button -->
+                <button id="checkout-btn" onclick="proceedToCheckout()" class="w-full bg-cc-orange hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition shadow-lg text-base flex items-center justify-center gap-2">
+                  <span class="material-icons text-xl">lock</span> Proceed to Checkout
+                </button>
+
+                <!-- Trust Badges -->
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                  <div class="text-center">
+                    <span class="material-icons text-slate-400 text-[20px]">shield</span>
+                    <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Safe Payment</p>
+                  </div>
+                  <div class="text-center">
+                    <span class="material-icons text-slate-400 text-[20px]">autorenew</span>
+                    <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Easy Returns</p>
+                  </div>
+                  <div class="text-center">
+                    <span class="material-icons text-slate-400 text-[20px]">verified_user</span>
+                    <p class="text-[9px] text-slate-400 mt-0.5 font-medium">100% Genuine</p>
+                  </div>
+                </div>
+
+                <!-- Payment Icons -->
+                <div class="flex items-center justify-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span class="material-icons text-[14px]">credit_card</span> Cards
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span class="material-icons text-[14px]">account_balance</span> UPI
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span class="material-icons text-[14px]">payments</span> Net Banking
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span class="material-icons text-[14px]">currency_rupee</span> COD
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delivery Estimate Card -->
+            <div id="delivery-estimate-card" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mt-4 hidden">
+              <h4 class="font-heading font-semibold text-sm text-slate-800 flex items-center gap-2 mb-3">
+                <span class="material-icons text-cc-blue text-lg">schedule</span> Estimated Delivery
+              </h4>
+              <div id="delivery-estimate-content" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">grid_view</span><span class="text-[10px] font-semibold">Categories</span></button>
+  <button class="relative flex flex-col items-center justify-center text-cc-orange py-1"><span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span><span id="cart-badge-mobile" class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">person_outline</span><span class="text-[10px] font-semibold">Profile</span></button>
+</div>
+
+<!-- MOBILE STICKY CHECKOUT BAR -->
+<div id="mobile-checkout-bar" class="md:hidden fixed bottom-[56px] left-0 right-0 bg-white border-t border-slate-200 z-40 px-4 py-3 flex items-center justify-between shadow-lg">
+  <div>
+    <p class="text-[10px] text-slate-400 font-medium uppercase">Total Amount</p>
+    <p id="mobile-total" class="font-heading font-extrabold text-xl text-cc-orange">₹0</p>
+  </div>
+  <button onclick="proceedToCheckout()" class="bg-cc-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2 shadow-md">
+    <span class="material-icons text-[18px]">lock</span> Checkout
+  </button>
+</div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="mobile-sidebar" class="fixed inset-0 z-[60] overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">R</div><span class="font-heading font-bold">Rahul Sharma</span></div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1">
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">shopping_bag</span> My Orders</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</button>
+      <button class="sidebar-link w-full text-left active"><span class="material-icons text-[20px]">shopping_cart</span> My Cart</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</button>
+      <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeConfirmModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6">
+    <button onclick="closeConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center">
+      <div id="confirm-icon-wrap" class="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4"><span id="confirm-icon" class="material-icons text-red-500 text-2xl">delete_outline</span></div>
+      <h3 id="confirm-title" class="font-heading font-bold text-lg text-slate-800 mb-2"></h3>
+      <p id="confirm-desc" class="text-sm text-slate-500 mb-6"></p>
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition text-sm">Cancel</button>
+        <button id="confirm-action-btn" onclick="" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUPON LIST MODAL -->
+<div id="coupon-list-modal" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center overflow-hidden hidden">
+  <div onclick="closeCouponListModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-lg w-full shadow-2xl relative z-10 max-h-[80vh] flex flex-col">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2"><span class="material-icons text-cc-purple">local_offer</span> Available Coupons</h3>
+      <button onclick="closeCouponListModal()" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="coupon-list-content" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+  </div>
+</div>
+
+
+<script>
+// ==================== MOCK DATA ====================
+// Simulating: carts + cart_items JOIN products + product_images
+const CART_DB = {
+  id: 7,
+  user_id: 1,
+  session_token: null,
+  coupon_code: null,
+  notes: null,
+  expires_at: null,
+  created_at: '2026-01-15T10:00:00'
+};
+
+const PRODUCTS_DB = [
+  { id: 1, uuid: 'p-001', name: 'TrueSound Pro Wireless Earbuds with ANC', slug: 'truesound-pro', category_name: 'Audio', base_price: 2999, sale_price: 1499, effective_price: 1499, average_rating: 4.3, review_count: 2341, is_in_stock: true, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&auto=format&fit=crop&q=80', variant_label: 'Color: Midnight Black' },
+  { id: 2, uuid: 'p-002', name: 'FitTrack AMOLED Smart Watch', slug: 'fittrack-amoled', category_name: 'Electronics', base_price: 3999, sale_price: 2799, effective_price: 2799, average_rating: 4.8, review_count: 5120, is_in_stock: true, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&auto=format&fit=crop&q=80', variant_label: 'Strap Size: Large' },
+  { id: 3, uuid: 'p-003', name: 'Urban Trail Waterproof Laptop Backpack 15.6"', slug: 'urban-trail', category_name: 'Accessories', base_price: 1199, sale_price: 899, effective_price: 899, average_rating: 4.2, review_count: 986, is_in_stock: true, tax_rate: 12.00, primary_image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=80', variant_label: null },
+  { id: 4, uuid: 'p-004', name: 'BoomBox Mini Portable Bluetooth Speaker', slug: 'boombox-mini', category_name: 'Audio', base_price: 1599, sale_price: 799, effective_price: 799, average_rating: 4.5, review_count: 3004, is_in_stock: true, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&auto=format&fit=crop&q=80', variant_label: 'Color: Forest Green' },
+  { id: 5, uuid: 'p-005', name: 'HomeChef Digital Air Fryer 4.5L', slug: 'homechef-airfryer', category_name: 'Appliances', base_price: 3999, sale_price: 3199, effective_price: 3199, average_rating: 4.6, review_count: 1892, is_in_stock: true, tax_rate: 12.00, primary_image: 'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=400&auto=format&fit=crop&q=80', variant_label: null },
+  { id: 6, uuid: 'p-006', name: 'Cotton Luxe Men\'s Slim Fit Casual Shirt', slug: 'cotton-luxe-shirt', category_name: 'Fashion', base_price: 1499, sale_price: 599, effective_price: 599, average_rating: 4.4, review_count: 4231, is_in_stock: true, tax_rate: 5.00, primary_image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&auto=format&fit=crop&q=80', variant_label: 'Size: L, Color: Navy' },
+  { id: 7, uuid: 'p-007', name: 'ProCam 4K Action Camera Waterproof', slug: 'procam-4k', category_name: 'Electronics', base_price: 8999, sale_price: 4999, effective_price: 4999, average_rating: 4.7, review_count: 1456, is_in_stock: false, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&auto=format&fit=crop&q=80', variant_label: null },
+  { id: 8, uuid: 'p-008', name: 'SwiftCharge 65W GaN Fast Charger', slug: 'swiftcharge-65w', category_name: 'Accessories', base_price: 1999, sale_price: 999, effective_price: 999, average_rating: 4.5, review_count: 2890, is_in_stock: true, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&auto=format&fit=crop&q=80', variant_label: null },
+  { id: 9, uuid: 'p-009', name: 'AromaZen Essential Oil Diffuser 300ml', slug: 'aromazen-diffuser', category_name: 'Home', base_price: 999, sale_price: 449, effective_price: 449, average_rating: 4.0, review_count: 623, is_in_stock: true, tax_rate: 12.00, primary_image: 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=400&auto=format&fit=crop&q=80', variant_label: 'Color: White' },
+  { id: 10, uuid: 'p-010', name: 'ErgoFlex Mesh Office Chair with Lumbar', slug: 'ergoflex-chair', category_name: 'Furniture', base_price: 12999, sale_price: 7499, effective_price: 7499, average_rating: 4.6, review_count: 872, is_in_stock: true, tax_rate: 18.00, primary_image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400&auto=format&fit=crop&q=80', variant_label: 'Color: Black' },
+];
+
+// Simulating cart_items table rows
+let cartItems = [
+  { id: 1, cart_id: 7, product_id: 1, variant_id: 101, quantity: 1, unit_price: 1499.00, added_at: '2026-01-15T14:30:00', updated_at: '2026-01-15T14:30:00' },
+  { id: 2, cart_id: 7, product_id: 2, variant_id: 205, quantity: 1, unit_price: 2799.00, added_at: '2026-01-15T12:10:00', updated_at: '2026-01-15T12:10:00' },
+  { id: 3, cart_id: 7, product_id: 3, variant_id: null, quantity: 2, unit_price: 899.00, added_at: '2026-01-14T18:45:00', updated_at: '2026-01-15T09:00:00' },
+  { id: 4, cart_id: 7, product_id: 6, variant_id: 310, quantity: 3, unit_price: 599.00, added_at: '2026-01-14T11:20:00', updated_at: '2026-01-15T07:30:00' },
+  { id: 5, cart_id: 7, product_id: 5, variant_id: null, quantity: 1, unit_price: 3199.00, added_at: '2026-01-13T16:00:00', updated_at: '2026-01-13T16:00:00' },
+  { id: 6, cart_id: 7, product_id: 8, variant_id: null, quantity: 1, unit_price: 999.00, added_at: '2026-01-13T10:30:00', updated_at: '2026-01-13T10:30:00' },
+];
+
+let savedForLater = [];
+
+// Coupons table mock
+const COUPONS_DB = [
+  { id: 1, code: 'WELCOME100', description: '₹100 off on first order', discount_type: 'flat', discount_value: 100, min_order_value: 499, max_discount: 100, per_user_limit: 1, is_active: true, starts_at: null, ends_at: null },
+  { id: 2, code: 'SAVE20', description: '20% off up to ₹500', discount_type: 'percentage', discount_value: 20, min_order_value: 1000, max_discount: 500, per_user_limit: 3, is_active: true, starts_at: null, ends_at: null },
+  { id: 3, code: 'FLAT500', description: 'Flat ₹500 off on orders above ₹2000', discount_type: 'flat', discount_value: 500, min_order_value: 2000, max_discount: 500, per_user_limit: 1, is_active: true, starts_at: null, ends_at: null },
+  { id: 4, code: 'EXPIRED10', description: 'Expired coupon (demo)', discount_type: 'percentage', discount_value: 10, min_order_value: 500, max_discount: 200, per_user_limit: 1, is_active: false, starts_at: null, ends_at: '2025-01-01' },
+];
+
+// Settings
+const SETTINGS = { free_shipping_above: 999, currency_symbol: '₹', tax_inclusive: false };
+
+let appliedCoupon = null;
+let pincodeVerified = false;
+
+// ==================== HELPERS ====================
+function getProduct(id) { return PRODUCTS_DB.find(p => p.id === id); }
+function formatPrice(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function getDiscount(base, sale) { return (!sale || sale >= base) ? 0 : Math.round(((base - sale) / base) * 100); }
+function getStars(r) { const f = Math.floor(r); return `<span class="stars text-xs">${'★'.repeat(f)}<span class="text-slate-300">${'★'.repeat(5-f)}</span></span>`; }
+function getCartQty() { return cartItems.reduce((s, i) => s + i.quantity, 0); }
+
+// ==================== TOAST ====================
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const colors = { success:'bg-green-600', error:'bg-red-500', info:'bg-cc-blue', warning:'bg-amber-500', cart:'bg-cc-orange' };
+  const icons = { success:'check_circle', error:'error', info:'info', warning:'warning', cart:'shopping_cart' };
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${colors[type]||colors.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${icons[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.replace('toast-in','toast-out'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ==================== BADGES ====================
+function updateBadges() {
+  const qty = getCartQty();
+  ['cart-badge','cart-badge-mobile'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = qty; });
+  document.getElementById('sidebar-cart-count').textContent = qty;
+  document.getElementById('cart-item-count').textContent = cartItems.length;
+}
+
+// ==================== PINCODE CHECK ====================
+function checkPincode() {
+  const pin = document.getElementById('pincode-input').value.trim();
+  const result = document.getElementById('pincode-result');
+  if (!/^\d{6}$/.test(pin)) { result.className = 'hidden sm:flex items-center gap-1.5 text-xs font-medium text-red-500'; result.innerHTML = '<span class="material-icons text-[16px]">error</span> Enter valid 6-digit pincode'; return; }
+  // Simulated check
+  pincodeVerified = true;
+  result.className = 'hidden sm:flex items-center gap-1.5 text-xs font-medium text-green-600';
+  result.innerHTML = '<span class="material-icons text-[16px]">check_circle</span> Delivery available to ' + pin;
+  showToast('Delivery available to pincode ' + pin, 'success');
+  renderDeliveryEstimate();
+}
+
+// ==================== DELIVERY ESTIMATE ====================
+function renderDeliveryEstimate() {
+  const card = document.getElementById('delivery-estimate-card');
+  const content = document.getElementById('delivery-estimate-content');
+  if (!pincodeVerified || cartItems.length === 0) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const today = new Date();
+  const est = new Date(today); est.setDate(est.getDate() + 3);
+  const estStr = est.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  const freeShippingMet = getSubtotal() >= SETTINGS.free_shipping_above;
+  content.innerHTML = `
+    <div class="flex items-center justify-between text-sm">
+      <span class="text-slate-600">Estimated delivery</span>
+      <span class="font-semibold text-slate-800">${estStr}</span>
+    </div>
+    <div class="flex items-center justify-between text-sm">
+      <span class="text-slate-600">Shipping</span>
+      <span class="font-semibold ${freeShippingMet ? 'text-green-600' : 'text-slate-800'}">${freeShippingMet ? 'FREE' : formatPrice(49)}</span>
+    </div>
+    <p class="text-[10px] text-slate-400 mt-1">* Delivery dates may vary based on pincode and availability</p>`;
+}
+
+// ==================== FREE SHIPPING PROGRESS ====================
+function renderShippingProgress() {
+  const subtotal = getSubtotal();
+  const threshold = SETTINGS.free_shipping_above;
+  const pct = Math.min(100, (subtotal / threshold) * 100);
+  const remaining = threshold - subtotal;
+  const fill = document.getElementById('shipping-progress-fill');
+  const text = document.getElementById('shipping-progress-text');
+  const sub = document.getElementById('shipping-progress-sub');
+  const badge = document.getElementById('shipping-progress-badge');
+
+  fill.style.width = pct + '%';
+  if (pct >= 100) {
+    fill.className = 'h-full rounded-full transition-all duration-700 ease-out bg-green-500';
+    text.textContent = 'You\'ve unlocked FREE delivery!';
+    sub.textContent = 'Your order qualifies for free shipping';
+    badge.textContent = 'FREE'; badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-green-100 text-green-700';
+  } else {
+    fill.className = 'h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-cc-orange to-cc-yellow progress-pulse';
+    text.textContent = `Add ${formatPrice(remaining)} more for FREE delivery`;
+    sub.textContent = `Free shipping on orders above ${formatPrice(threshold)}`;
+    badge.textContent = Math.round(pct) + '%'; badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-cc-orange/10 text-cc-orange';
+  }
+}
+
+// ==================== PRICE CALCULATIONS ====================
+function getSubtotal() {
+  // Sum of (base_price * qty) — the MRP total before any discounts
+  return cartItems.reduce((s, ci) => {
+    const p = getProduct(ci.product_id);
+    return s + (p ? p.base_price * ci.quantity : 0);
+  }, 0);
+}
+
+function getItemDiscount() {
+  // Discount from sale_price vs base_price
+  return cartItems.reduce((s, ci) => {
+    const p = getProduct(ci.product_id);
+    if (!p || !p.sale_price) return s;
+    return s + ((p.base_price - p.sale_price) * ci.quantity);
+  }, 0);
+}
+
+function getCouponDiscount(subtotalAfterItemDiscount) {
+  if (!appliedCoupon) return 0;
+  const c = appliedCoupon;
+  let disc = 0;
+  if (c.discount_type === 'percentage') {
+    disc = (c.discount_value / 100) * subtotalAfterItemDiscount;
+    if (c.max_discount) disc = Math.min(disc, c.max_discount);
+  } else {
+    disc = c.discount_value;
+  }
+  return Math.round(disc * 100) / 100;
+}
+
+function getDeliveryCharge() {
+  if (!pincodeVerified) return 0;
+  const afterDiscount = getSubtotal() - getItemDiscount() - getCouponDiscount(getSubtotal() - getItemDiscount());
+  return afterDiscount >= SETTINGS.free_shipping_above ? 0 : 49;
+}
+
+function getTax() {
+  // Tax calculated on effective price (after item discount, before coupon)
+  const taxableAmount = getSubtotal() - getItemDiscount();
+  return cartItems.reduce((s, ci) => {
+    const p = getProduct(ci.product_id);
+    if (!p) return s;
+    const effectiveUnitPrice = p.sale_price || p.base_price;
+    return s + ((effectiveUnitPrice * ci.quantity) * (p.tax_rate / 100));
+  }, 0);
+}
+
+function getTotal() {
+  return getSubtotal() - getItemDiscount() - getCouponDiscount(getSubtotal() - getItemDiscount()) + getDeliveryCharge() + getTax();
+}
+
+// ==================== RENDER CART ITEMS ====================
+function renderCart() {
+  const container = document.getElementById('cart-items-container');
+  const emptyState = document.getElementById('empty-state');
+  const recSection = document.getElementById('recommendations-section');
+
+  updateBadges();
+  renderShippingProgress();
+  renderSummary();
+  renderDeliveryEstimate();
+
+  if (cartItems.length === 0) {
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    recSection.classList.add('hidden');
+    document.getElementById('mobile-checkout-bar').style.display = 'none';
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  container.classList.remove('hidden');
+  recSection.classList.remove('hidden');
+  document.getElementById('mobile-checkout-bar').style.display = 'flex';
+
+  container.innerHTML = cartItems.map((ci, idx) => {
+    const p = getProduct(ci.product_id);
+    if (!p) return '';
+    const disc = getDiscount(p.base_price, p.sale_price);
+    const lineMrp = p.base_price * ci.quantity;
+    const linePrice = ci.unit_price * ci.quantity;
+    const oos = !p.is_in_stock;
+
+    return `
+    <div class="cart-item-row bg-white rounded-2xl p-4 sm:p-5 fade-up" id="cart-item-${ci.id}" style="animation-delay: ${idx * 0.05}s; opacity:0;">
+      <!-- Mobile: stack, Desktop: row -->
+      <div class="flex gap-4">
+        <!-- Product Image -->
+        <div class="relative shrink-0">
+          <a href="#" class="block w-24 h-24 sm:w-28 sm:h-28 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center border border-slate-100">
+            <img src="${p.primary_image}" alt="${p.name}" class="max-h-full max-w-full object-contain p-2" loading="lazy">
+          </a>
+          ${oos ? '<div class="absolute inset-0 bg-white/70 rounded-xl flex items-center justify-center"><span class="bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">OUT OF STOCK</span></div>' : ''}
+          ${disc > 0 ? `<span class="absolute -top-1.5 -left-1.5 bg-cc-pink text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow">${disc}% OFF</span>` : ''}
+        </div>
+
+        <!-- Details -->
+        <div class="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">${p.category_name}</p>
+                <a href="#" class="font-heading font-semibold text-sm sm:text-base text-slate-800 leading-snug hover:text-cc-blue transition line-clamp-2">${p.name}</a>
+                ${p.variant_label ? `<p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1"><span class="material-icons text-[12px]">sell</span>${p.variant_label}</p>` : ''}
+                <div class="flex items-center gap-1.5 mt-1">${getStars(p.average_rating)}<span class="text-[11px] text-slate-400">(${p.review_count.toLocaleString()})</span></div>
+              </div>
+              <button onclick="confirmRemoveItem(${ci.id})" class="shrink-0 text-slate-300 hover:text-red-500 transition p-1 -m-1" title="Remove">
+                <span class="material-icons text-[20px]">close</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <!-- Quantity Controls -->
+            <div class="flex items-center gap-2">
+              <button class="qty-btn" onclick="updateQty(${ci.id}, -1)" ${ci.quantity <= 1 ? 'disabled' : ''} title="Decrease">−</button>
+              <span class="w-10 text-center font-semibold text-sm text-slate-800">${ci.quantity}</span>
+              <button class="qty-btn" onclick="updateQty(${ci.id}, 1)" ${ci.quantity >= 10 || oos ? 'disabled' : ''} title="Increase">+</button>
+              <span class="text-[10px] text-slate-400 ml-1 hidden sm:inline">Max: 10</span>
+            </div>
+
+            <!-- Price -->
+            <div class="text-right">
+              <p class="font-bold text-base sm:text-lg ${oos ? 'text-slate-400' : 'text-cc-orange'}">${formatPrice(linePrice)}</p>
+              ${disc > 0 ? `<p class="text-[11px] text-slate-400">MRP: <span class="price-strike">${formatPrice(lineMrp)}</span> <span class="text-green-600 font-medium">Save ${formatPrice(lineMrp - linePrice)}</span></p>` : `<p class="text-[11px] text-slate-400">(${formatPrice(p.base_price)} each)</p>`}
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+            ${oos ? `<button disabled class="text-[11px] text-slate-400 font-medium flex items-center gap-1 cursor-not-allowed"><span class="material-icons text-[14px]">notifications_none</span> Out of stock — remove to proceed</button>` : `
+            <button onclick="saveForLater(${ci.id})" class="text-[11px] text-cc-purple hover:text-purple-700 font-medium flex items-center gap-1 transition">
+              <span class="material-icons text-[14px]">bookmark_add</span> Save for Later
+            </button>
+            <span class="text-slate-200">|</span>
+            <button onclick="confirmRemoveItem(${ci.id})" class="text-[11px] text-slate-400 hover:text-red-500 font-medium flex items-center gap-1 transition">
+              <span class="material-icons text-[14px]">delete_outline</span> Remove
+            </button>`}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderSavedForLater();
+  renderRecommendations();
+  document.getElementById('mobile-total').textContent = formatPrice(getTotal());
+}
+
+// ==================== QUANTITY UPDATE ====================
+function updateQty(cartItemId, delta) {
+  const ci = cartItems.find(i => i.id === cartItemId);
+  if (!ci) return;
+  const newQty = ci.quantity + delta;
+  if (newQty < 1 || newQty > 10) return;
+  ci.quantity = newQty;
+  ci.updated_at = new Date().toISOString();
+  // Simulating: UPDATE cart_items SET quantity = ?, updated_at = NOW() WHERE id = ?
+  renderCart();
+  const p = getProduct(ci.product_id);
+  if (delta > 0) showToast(`Quantity updated to ${newQty}`, 'info');
+}
+
+// ==================== REMOVE ITEM ====================
+let pendingRemoveId = null;
+
+function confirmRemoveItem(cartItemId) {
+  pendingRemoveId = cartItemId;
+  const ci = cartItems.find(i => i.id === cartItemId);
+  const p = ci ? getProduct(ci.product_id) : null;
+  const name = p ? p.name.split(' ').slice(0, 4).join(' ') + '...' : 'this item';
+  document.getElementById('confirm-title').textContent = 'Remove from Cart?';
+  document.getElementById('confirm-desc').textContent = `"${name}" will be removed from your cart. You can always add it back later.`;
+  document.getElementById('confirm-action-btn').textContent = 'Remove';
+  document.getElementById('confirm-action-btn').className = 'flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('confirm-action-btn').onclick = executeRemoveItem;
+  document.getElementById('confirm-icon').textContent = 'delete_outline';
+  document.getElementById('confirm-icon').className = 'material-icons text-red-500 text-2xl';
+  document.getElementById('confirm-icon-wrap').className = 'w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4';
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function executeRemoveItem() {
+  if (pendingRemoveId === null) return;
+  // Animate removal
+  const el = document.getElementById('cart-item-' + pendingRemoveId);
+  if (el) { el.classList.add('removing'); setTimeout(() => {}, 350); }
+  const ci = cartItems.find(i => i.id === pendingRemoveId);
+  const p = ci ? getProduct(ci.product_id) : null;
+  cartItems = cartItems.filter(i => i.id !== pendingRemoveId);
+  closeConfirmModal();
+  setTimeout(() => renderCart(), 50);
+  showToast(p ? `${p.name.split(' ').slice(0,3).join(' ')}... removed` : 'Item removed', 'cart');
+  pendingRemoveId = null;
+}
+
+function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); }
+
+// ==================== SAVE FOR LATER ====================
+function saveForLater(cartItemId) {
+  const ci = cartItems.find(i => i.id === cartItemId);
+  if (!ci) return;
+  const p = getProduct(ci.product_id);
+  savedForLater.push({ ...ci });
+  cartItems = cartItems.filter(i => i.id !== cartItemId);
+  renderCart();
+  showToast(p ? `${p.name.split(' ').slice(0,3).join(' ')}... saved for later` : 'Saved for later', 'info');
+}
+
+function moveToCartFromSaved(savedIdx) {
+  const item = savedForLater[savedIdx];
+  if (!item) return;
+  const existing = cartItems.find(ci => ci.product_id === item.product_id);
+  if (existing) { existing.quantity += item.quantity; } else { cartItems.push({ ...item, id: Math.max(0, ...cartItems.map(i=>i.id)) + 1 }); }
+  savedForLater.splice(savedIdx, 1);
+  renderCart();
+  showToast('Moved back to cart', 'cart');
+}
+
+function removeSavedItem(savedIdx) {
+  savedForLater.splice(savedIdx, 1);
+  renderSavedForLater();
+  showToast('Removed from saved items', 'info');
+}
+
+function renderSavedForLater() {
+  const section = document.getElementById('saved-for-later-section');
+  const container = document.getElementById('saved-for-later-items');
+  const badge = document.getElementById('saved-count-badge');
+  if (savedForLater.length === 0) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+  badge.textContent = savedForLater.length;
+  container.innerHTML = savedForLater.map((item, idx) => {
+    const p = getProduct(item.product_id);
+    if (!p) return '';
+    return `
+    <div class="savelater-card bg-white rounded-xl p-3 flex gap-3 fade-up">
+      <img src="${p.primary_image}" class="w-16 h-16 rounded-lg object-contain bg-slate-50 p-1.5 shrink-0 border border-slate-100" alt="${p.name}">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-slate-800 line-clamp-1">${p.name}</p>
+        <p class="text-sm font-bold text-cc-orange mt-0.5">${formatPrice(p.effective_price)}</p>
+        <div class="flex gap-2 mt-2">
+          <button onclick="moveToCartFromSaved(${idx})" class="text-[10px] bg-cc-blue text-white px-2.5 py-1 rounded-md font-medium hover:bg-blue-600 transition">Move to Cart</button>
+          <button onclick="removeSavedItem(${idx})" class="text-[10px] text-slate-400 hover:text-red-500 transition flex items-center"><span class="material-icons text-[14px]">close</span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== RECOMMENDATIONS ====================
+function renderRecommendations() {
+  const grid = document.getElementById('recommendations-grid');
+  const inCartIds = new Set(cartItems.map(ci => ci.product_id));
+  const inSavedIds = new Set(savedForLater.map(s => s.product_id));
+  const recs = PRODUCTS_DB.filter(p => !inCartIds.has(p.id) && !inSavedIds.has(p.id) && p.is_in_stock).slice(0, 4);
+  if (recs.length === 0) { grid.parentElement.classList.add('hidden'); return; }
+  grid.parentElement.classList.remove('hidden');
+  grid.innerHTML = recs.map(p => {
+    const disc = getDiscount(p.base_price, p.sale_price);
+    return `
+    <div class="rec-card bg-white rounded-xl overflow-hidden">
+      <div class="bg-slate-50 p-3 aspect-square flex items-center justify-center">
+        <img src="${p.primary_image}" class="max-h-full max-w-full object-contain" alt="${p.name}" loading="lazy">
+      </div>
+      <div class="p-3">
+        <p class="text-[11px] font-semibold text-slate-800 line-clamp-2 leading-snug min-h-[2em]">${p.name}</p>
+        <div class="flex items-baseline gap-1.5 mt-1.5">
+          <span class="font-bold text-sm text-cc-orange">${formatPrice(p.effective_price)}</span>
+          ${disc > 0 ? `<span class="price-strike text-[10px]">${formatPrice(p.base_price)}</span>` : ''}
+        </div>
+        <button onclick="addToCartFromRec(${p.id})" class="w-full mt-2 bg-cc-blue/10 hover:bg-cc-blue hover:text-white text-cc-blue text-[11px] font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1">
+          <span class="material-icons text-[14px]">add_shopping_cart</span> Add
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addToCartFromRec(productId) {
+  const p = getProduct(productId);
+  if (!p) return;
+  const existing = cartItems.find(ci => ci.product_id === productId);
+  if (existing) { existing.quantity = Math.min(10, existing.quantity + 1); }
+  else { cartItems.push({ id: Math.max(0, ...cartItems.map(i=>i.id)) + 1, cart_id: CART_DB.id, product_id: productId, variant_id: null, quantity: 1, unit_price: p.effective_price, added_at: new Date().toISOString(), updated_at: new Date().toISOString() }); }
+  renderCart();
+  showToast(`${p.name.split(' ').slice(0,3).join(' ')}... added to cart`, 'cart');
+}
+
+// ==================== ORDER SUMMARY ====================
+function renderSummary() {
+  const subtotal = getSubtotal();
+  const itemDisc = getItemDiscount();
+  const afterItemDisc = subtotal - itemDisc;
+  const couponDisc = getCouponDiscount(afterItemDisc);
+  const delivery = getDeliveryCharge();
+  const tax = getTax();
+  const total = getTotal();
+  const totalSavings = itemDisc + couponDisc;
+
+  document.getElementById('summary-item-count').textContent = cartItems.length;
+  document.getElementById('summary-subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('summary-discount').textContent = '−' + formatPrice(itemDisc);
+  document.getElementById('summary-delivery').textContent = delivery === 0 ? 'FREE' : formatPrice(delivery);
+  document.getElementById('summary-delivery').className = `font-medium ${delivery === 0 ? 'text-green-600' : 'text-slate-800'}`;
+
+  // Coupon row
+  const couponRow = document.getElementById('summary-coupon-row');
+  if (couponDisc > 0) {
+    couponRow.style.display = 'flex';
+    document.getElementById('summary-coupon-code').textContent = appliedCoupon.code;
+    document.getElementById('summary-coupon-discount').textContent = '−' + formatPrice(couponDisc);
+  } else { couponRow.style.display = 'none'; }
+
+  // Tax
+  document.getElementById('summary-tax').textContent = formatPrice(tax);
+
+  // Total
+  document.getElementById('summary-total').textContent = formatPrice(total);
+  document.getElementById('mobile-total').textContent = formatPrice(total);
+
+  // Savings banner
+  const banner = document.getElementById('savings-banner');
+  if (totalSavings > 0) { banner.classList.remove('hidden'); document.getElementById('total-savings').textContent = formatPrice(totalSavings); }
+  else { banner.classList.add('hidden'); }
+
+  // Checkout button state
+  const btn = document.getElementById('checkout-btn');
+  const hasOos = cartItems.some(ci => { const p = getProduct(ci.product_id); return p && !p.is_in_stock; });
+  if (hasOos) {
+    btn.disabled = true;
+    btn.className = 'w-full bg-slate-300 text-slate-500 font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 cursor-not-allowed';
+    btn.innerHTML = '<span class="material-icons text-xl">block</span> Remove out-of-stock items to proceed';
+  } else {
+    btn.disabled = false;
+    btn.className = 'w-full bg-cc-orange hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition shadow-lg text-base flex items-center justify-center gap-2';
+    btn.innerHTML = '<span class="material-icons text-xl">lock</span> Proceed to Checkout';
+  }
+}
+
+// ==================== COUPON LOGIC ====================
+function applyCoupon() {
+  const input = document.getElementById('coupon-input');
+  const code = input.value.trim().toUpperCase();
+  if (!code) { showToast('Please enter a coupon code', 'warning'); return; }
+
+  // Find in coupons table
+  const coupon = COUPONS_DB.find(c => c.code === code && c.is_active);
+  if (!coupon) { showToast('Invalid or expired coupon code', 'error'); return; }
+
+  // Check min order value (against subtotal after item discounts)
+  const afterItemDisc = getSubtotal() - getItemDiscount();
+  if (coupon.min_order_value && afterItemDisc < coupon.min_order_value) {
+    showToast(`Minimum order of ${formatPrice(coupon.min_order_value)} required for this coupon`, 'warning');
+    return;
+  }
+
+  // Check if already applied
+  if (appliedCoupon && appliedCoupon.code === code) { showToast('This coupon is already applied', 'info'); return; }
+
+  appliedCoupon = coupon;
+  CART_DB.coupon_code = coupon.code; // UPDATE carts SET coupon_code = ? WHERE id = ?
+
+  input.value = '';
+  renderSummary();
+  renderShippingProgress();
+  showAppliedCouponTag();
+  showToast(`Coupon "${code}" applied successfully!`, 'success');
+}
+
+function removeCoupon() {
+  const code = appliedCoupon ? appliedCoupon.code : '';
+  appliedCoupon = null;
+  CART_DB.coupon_code = null; // UPDATE carts SET coupon_code = NULL
+  document.getElementById('applied-coupon-tag').classList.add('hidden');
+  renderSummary();
+  renderShippingProgress();
+  showToast(`Coupon ${code} removed`, 'info');
+}
+
+function showAppliedCouponTag() {
+  if (!appliedCoupon) return;
+  const tag = document.getElementById('applied-coupon-tag');
+  tag.classList.remove('hidden');
+  document.getElementById('applied-coupon-label').textContent = appliedCoupon.code;
+  document.getElementById('applied-coupon-desc').textContent = appliedCoupon.description;
+}
+
+// ==================== COUPON LIST MODAL ====================
+function showCouponList() {
+  const content = document.getElementById('coupon-list-content');
+  const afterItemDisc = getSubtotal() - getItemDiscount();
+  const applicable = COUPONS_DB.filter(c => c.is_active);
+  content.innerHTML = applicable.map(c => {
+    const meetsMin = !c.min_order_value || afterItemDisc >= c.min_order_value;
+    const isApplied = appliedCoupon && appliedCoupon.code === c.code;
+    return `
+    <div class="border ${isApplied ? 'border-cc-purple bg-cc-purple/5' : meetsMin ? 'border-green-200 bg-green-50/50' : 'border-slate-200 bg-slate-50'} rounded-xl p-4 flex gap-4 ${!meetsMin ? 'opacity-60' : ''}">
+      <div class="shrink-0 w-16 h-16 rounded-xl ${isApplied ? 'bg-cc-purple text-white' : 'bg-white border border-dashed border-slate-300 text-slate-500'} flex flex-col items-center justify-center">
+        <span class="text-[10px] font-bold uppercase">${c.discount_type === 'percentage' ? c.discount_value + '% OFF' : formatPrice(c.discount_value) + ' OFF'}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-sm text-slate-800">${c.code}</p>
+        <p class="text-xs text-slate-500 mt-0.5">${c.description}</p>
+        ${c.min_order_value ? `<p class="text-[10px] ${meetsMin ? 'text-green-600' : 'text-red-500'} mt-1 font-medium">Min. order: ${formatPrice(c.min_order_value)}</p>` : ''}
+        ${c.max_discount && c.discount_type === 'percentage' ? `<p class="text-[10px] text-slate-400 mt-0.5">Max discount: ${formatPrice(c.max_discount)}</p>` : ''}
+      </div>
+      <div class="shrink-0 flex items-center">
+        ${isApplied
+          ? '<span class="text-xs text-cc-purple font-bold flex items-center gap-1"><span class="material-icons text-[14px]">check_circle</span> Applied</span>'
+          : meetsMin
+            ? `<button onclick="quickApplyCoupon('${c.code}')" class="text-xs bg-cc-purple hover:bg-purple-700 text-white px-3 py-2 rounded-lg font-medium transition">Apply</button>`
+            : '<span class="text-[10px] text-slate-400 font-medium">Not eligible</span>'
+        }
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('coupon-list-modal').classList.remove('hidden');
+}
+
+function quickApplyCoupon(code) {
+  document.getElementById('coupon-input').value = code;
+  closeCouponListModal();
+  applyCoupon();
+}
+
+function closeCouponListModal() { document.getElementById('coupon-list-modal').classList.add('hidden'); }
+
+// ==================== CHECKOUT ====================
+function proceedToCheckout() {
+  if (cartItems.length === 0) { showToast('Your cart is empty', 'warning'); return; }
+  const hasOos = cartItems.some(ci => { const p = getProduct(ci.product_id); return p && !p.is_in_stock; });
+  if (hasOos) { showToast('Remove out-of-stock items first', 'warning'); return; }
+  showToast('Redirecting to secure checkout...', 'success');
+  // In real app: POST /checkout → create order from cart
+}
+
+// ==================== MOBILE SIDEBAR ====================
+function toggleMobileSidebar(open) {
+  const el = document.getElementById('mobile-sidebar');
+  if (open) el.classList.remove('translate-x-[-100%]', 'pointer-events-none');
+  else el.classList.add('translate-x-[-100%]', 'pointer-events-none');
+}
+
+// ==================== COUPON INPUT: ENTER KEY ====================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('coupon-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+  });
+  // Add "View Coupons" link below coupon input
+  const couponWrap = document.querySelector('#coupon-input').closest('.border');
+  if (couponWrap) {
+    const link = document.createElement('div');
+    link.className = 'px-4 py-2 border-t border-slate-100 flex items-center justify-between';
+    link.innerHTML = `<button onclick="showCouponList()" class="text-xs text-cc-purple hover:text-purple-700 font-semibold flex items-center gap-1 transition"><span class="material-icons text-[14px]">local_offer</span> View Available Coupons</button><span class="text-[10px] text-slate-400">${COUPONS_DB.filter(c=>c.is_active).length} offers</span>`;
+    couponWrap.after(link);
+  }
+  // Pincode enter key
+  document.getElementById('pincode-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); checkPincode(); }
+  });
+  renderCart();
+});
+</script>
+</body>
+</html>

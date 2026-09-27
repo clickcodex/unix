@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .stock-bar{height:6px;border-radius:3px;background:#E2E8F0;overflow:hidden}
+  .stock-bar .fill{height:100%;border-radius:3px}
+  .stars-filled{color:#FFB800}
+  .stars-empty{color:#E2E8F0}
+  .spark-bar{display:flex;align-items:flex-end;gap:2px;height:32px}
+  .spark-bar span{width:4px;border-radius:2px}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item active"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">Dashboard</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search orders, products, users..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Dashboard</h1>
+        <p class="text-slate-500 text-sm mt-1">Real-time overview from <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">orders</span>, <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">products</span>, <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">reviews</span> &amp; <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">payment_transactions</span></p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-slate-50 transition">
+          <span class="material-icons text-[18px]">calendar_month</span>
+          <span class="hidden sm:inline">Today: 10 Feb 2026</span>
+        </button>
+        <button class="flex items-center gap-2 bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-md shadow-cc-blue/20">
+          <span class="material-icons text-[18px]">download</span>
+          <span class="hidden sm:inline">Export Report</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+
+      <!-- KPI 1: Total Revenue — SUM(orders.total_amount) WHERE payment_status='paid' -->
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">₹47,82,340</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">orders.payment_status = 'paid'</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center">
+            <span class="material-icons text-cc-blue text-[22px]">account_balance_wallet</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-0.5 text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded-full">
+              <span class="material-icons text-[14px]">trending_up</span> 12.5%
+            </span>
+            <span class="text-xs text-slate-400">vs last month</span>
+          </div>
+          <div class="spark-bar">
+            <span style="height:40%;background:#2D82FF;opacity:.4"></span>
+            <span style="height:55%;background:#2D82FF;opacity:.5"></span>
+            <span style="height:45%;background:#2D82FF;opacity:.4"></span>
+            <span style="height:70%;background:#2D82FF;opacity:.6"></span>
+            <span style="height:60%;background:#2D82FF;opacity:.5"></span>
+            <span style="height:50%;background:#2D82FF;opacity:.5"></span>
+            <span style="height:80%;background:#2D82FF;opacity:.7"></span>
+            <span style="height:75%;background:#2D82FF;opacity:.6"></span>
+            <span style="height:90%;background:#2D82FF"></span>
+            <span style="height:85%;background:#2D82FF"></span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+
+      <!-- KPI 2: Orders Today — COUNT(orders.id) WHERE placed_at = TODAY -->
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Orders Today</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">3,256</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(orders) WHERE placed_at = today</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-orange/10 flex items-center justify-center">
+            <span class="material-icons text-cc-orange text-[22px]">shopping_bag</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-0.5 text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded-full">
+              <span class="material-icons text-[14px]">trending_up</span> 8.3%
+            </span>
+            <span class="text-xs text-slate-400">vs yesterday</span>
+          </div>
+          <div class="spark-bar">
+            <span style="height:50%;background:#FF5100;opacity:.4"></span>
+            <span style="height:65%;background:#FF5100;opacity:.5"></span>
+            <span style="height:40%;background:#FF5100;opacity:.4"></span>
+            <span style="height:80%;background:#FF5100;opacity:.6"></span>
+            <span style="height:55%;background:#FF5100;opacity:.5"></span>
+            <span style="height:70%;background:#FF5100;opacity:.6"></span>
+            <span style="height:60%;background:#FF5100;opacity:.5"></span>
+            <span style="height:85%;background:#FF5100;opacity:.7"></span>
+            <span style="height:75%;background:#FF5100;opacity:.7"></span>
+            <span style="height:95%;background:#FF5100"></span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF5100;border-radius:0 0 16px 16px"></div>
+      </div>
+
+      <!-- KPI 3: Out of Stock — COUNT(products.id) WHERE is_in_stock = 0 -->
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Out of Stock</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">23</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">products.is_in_stock = 0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-pink/10 flex items-center justify-center">
+            <span class="material-icons text-cc-pink text-[22px]">remove_shopping_cart</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-0.5 text-red-600 text-xs font-bold bg-red-50 px-2 py-0.5 rounded-full">
+              <span class="material-icons text-[14px]">trending_up</span> +7 today
+            </span>
+            <span class="text-xs text-slate-400">need restock</span>
+          </div>
+          <div class="flex -space-x-1">
+            <div class="w-6 h-6 rounded-full bg-cc-pink/20 border-2 border-white flex items-center justify-center"><span class="text-[9px] font-bold text-cc-pink">23</span></div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF006B;border-radius:0 0 16px 16px"></div>
+      </div>
+
+      <!-- KPI 4: Pending Reviews — COUNT(reviews.id) WHERE status = 'pending' -->
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Reviews</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">156</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">reviews.status = 'pending'</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-purple/10 flex items-center justify-center">
+            <span class="material-icons text-cc-purple text-[22px]">rate_review</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="text-cc-yellow text-sm font-bold">★ 4.3</span>
+            <span class="text-xs text-slate-400">avg rating</span>
+          </div>
+          <div class="spark-bar">
+            <span style="height:60%;background:#8C30F5;opacity:.4"></span>
+            <span style="height:45%;background:#8C30F5;opacity:.4"></span>
+            <span style="height:75%;background:#8C30F5;opacity:.6"></span>
+            <span style="height:50%;background:#8C30F5;opacity:.5"></span>
+            <span style="height:85%;background:#8C30F5;opacity:.7"></span>
+            <span style="height:65%;background:#8C30F5;opacity:.6"></span>
+            <span style="height:70%;background:#8C30F5;opacity:.6"></span>
+            <span style="height:80%;background:#8C30F5;opacity:.7"></span>
+            <span style="height:90%;background:#8C30F5"></span>
+            <span style="height:88%;background:#8C30F5"></span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#8C30F5;border-radius:0 0 16px 16px"></div>
+      </div>
+    </div>
+
+    <!-- ===== ORDER STATUS BREAKDOWN (exact enum from schema) ===== -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900">Order Status Distribution</h2>
+          <p class="text-xs text-slate-400 mt-0.5 mono">orders.status ENUM: pending → confirmed → processing → shipped → delivered | cancelled | return_requested → returned → refunded</p>
+        </div>
+        <a href="#" class="text-xs text-cc-blue hover:underline font-semibold flex items-center gap-1"><span class="material-icons text-[14px]">open_in_new</span> View All Orders</a>
+      </div>
+      <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-yellow-700 font-heading">412</p>
+          <p class="text-[11px] text-yellow-600 font-semibold mt-1">Pending</p>
+          <p class="text-[10px] text-yellow-500 mono mt-0.5">status='pending'</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-blue-700 font-heading">89</p>
+          <p class="text-[11px] text-blue-600 font-semibold mt-1">Confirmed</p>
+          <p class="text-[10px] text-blue-500 mono mt-0.5">status='confirmed'</p>
+        </div>
+        <div class="bg-cyan-50 border border-cyan-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-cyan-700 font-heading">156</p>
+          <p class="text-[11px] text-cyan-600 font-semibold mt-1">Processing</p>
+          <p class="text-[10px] text-cyan-500 mono mt-0.5">status='processing'</p>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-indigo-700 font-heading">312</p>
+          <p class="text-[11px] text-indigo-600 font-semibold mt-1">Shipped</p>
+          <p class="text-[10px] text-indigo-500 mono mt-0.5">status='shipped'</p>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-green-700 font-heading">2,148</p>
+          <p class="text-[11px] text-green-600 font-semibold mt-1">Delivered</p>
+          <p class="text-[10px] text-green-500 mono mt-0.5">status='delivered'</p>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-red-700 font-heading">67</p>
+          <p class="text-[11px] text-red-600 font-semibold mt-1">Cancelled</p>
+          <p class="text-[10px] text-red-500 mono mt-0.5">status='cancelled'</p>
+        </div>
+        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-orange-700 font-heading">34</p>
+          <p class="text-[11px] text-orange-600 font-semibold mt-1">Return Req.</p>
+          <p class="text-[10px] text-orange-500 mono mt-0.5">'return_requested'</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-amber-700 font-heading">21</p>
+          <p class="text-[11px] text-amber-600 font-semibold mt-1">Returned</p>
+          <p class="text-[10px] text-amber-500 mono mt-0.5">status='returned'</p>
+        </div>
+        <div class="bg-slate-100 border border-slate-200 rounded-xl p-3 text-center hover:shadow-md transition cursor-pointer">
+          <p class="text-xl font-bold text-slate-600 font-heading">17</p>
+          <p class="text-[11px] text-slate-500 font-semibold mt-1">Refunded</p>
+          <p class="text-[10px] text-slate-400 mono mt-0.5">status='refunded'</p>
+        </div>
+      </div>
+      <!-- Visual bar -->
+      <div class="mt-4 flex rounded-full overflow-hidden h-3">
+        <div class="bg-yellow-400" style="width:12.7%" title="Pending 412"></div>
+        <div class="bg-blue-400" style="width:2.7%" title="Confirmed 89"></div>
+        <div class="bg-cyan-400" style="width:4.8%" title="Processing 156"></div>
+        <div class="bg-indigo-400" style="width:9.6%" title="Shipped 312"></div>
+        <div class="bg-green-500" style="width:66%" title="Delivered 2148"></div>
+        <div class="bg-red-400" style="width:2.1%" title="Cancelled 67"></div>
+        <div class="bg-orange-400" style="width:1%" title="Return Requested 34"></div>
+        <div class="bg-amber-400" style="width:0.6%" title="Returned 21"></div>
+        <div class="bg-slate-400" style="width:0.5%" title="Refunded 17"></div>
+      </div>
+    </div>
+
+    <!-- ===== REVENUE CHART (CSS-only) ===== -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900">Revenue — 14 Days</h2>
+          <p class="text-xs text-slate-400 mt-0.5 mono">SUM(orders.total_amount) GROUP BY DATE(placed_at)</p>
+        </div>
+        <div class="flex items-center gap-4 text-xs">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-cc-blue"></span> Revenue</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-cc-blue/15"></span> Target (₹3L/day)</span>
+        </div>
+      </div>
+      <div class="flex items-end gap-1.5 sm:gap-2 h-48">
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:65%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:58%"></div></div><span class="text-[10px] text-slate-400">Jan 28</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:65%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:72%"></div></div><span class="text-[10px] text-slate-400">Jan 29</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:65%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:48%"></div></div><span class="text-[10px] text-slate-400">Jan 30</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:70%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:65%"></div></div><span class="text-[10px] text-slate-400">Jan 31</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:70%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:55%"></div></div><span class="text-[10px] text-slate-400">Feb 1</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:75%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:80%"></div></div><span class="text-[10px] text-slate-400">Feb 2</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:75%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:62%"></div></div><span class="text-[10px] text-slate-400">Feb 3</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:75%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:88%"></div></div><span class="text-[10px] text-slate-400">Feb 4</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:80%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:75%"></div></div><span class="text-[10px] text-slate-400">Feb 5</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:80%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:82%"></div></div><span class="text-[10px] text-slate-400">Feb 6</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:85%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:90%"></div></div><span class="text-[10px] text-slate-400">Feb 7</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:85%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:78%"></div></div><span class="text-[10px] text-slate-400">Feb 8</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:90%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:95%"></div></div><span class="text-[10px] text-cc-blue font-semibold">Feb 9</span></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full flex items-end gap-0.5 h-40"><div class="flex-1 bg-cc-blue/15 rounded-t-md" style="height:90%"></div><div class="flex-1 bg-cc-blue rounded-t-md" style="height:100%"></div></div><span class="text-[10px] text-slate-700 font-bold">Today</span></div>
+      </div>
+    </div>
+
+    <!-- ===== DATABASE METADATA ROW ===== -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-cc-blue text-[20px]">people</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">24,817</p><p class="text-[11px] text-slate-400 mono">users (is_active=1)</p></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-cc-purple text-[20px]">inventory_2</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">12,847</p><p class="text-[11px] text-slate-400 mono">products (is_active=1)</p></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-cc-orange text-[20px]">category</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">47</p><p class="text-[11px] text-slate-400 mono">categories</p></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-cc-pink text-[20px]">favorite</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">8,432</p><p class="text-[11px] text-slate-400 mono">wishlist_items</p></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-green-600 text-[20px]">shopping_cart</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">1,204</p><p class="text-[11px] text-slate-400 mono">active carts</p></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:border-cc-blue hover:shadow-sm transition">
+        <span class="material-icons text-cc-yellow text-[20px]">sell</span>
+        <div><p class="text-lg font-bold text-slate-800 leading-tight">6</p><p class="text-[11px] text-slate-400 mono">active offers</p></div>
+      </div>
+    </div>
+
+    <!-- ===== ORDERS TABLE ===== -->
+    <div class="section-card">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-orange text-[22px]">shopping_bag</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Recent Orders</h2>
+            <p class="text-xs text-slate-400 mono">orders ← JOIN users ON orders.user_id = users.id</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg">All (3,256)</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Pending</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Shipped</button>
+          <a href="#" class="text-xs text-cc-blue hover:underline font-semibold ml-1">View All →</a>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>order_number</th>
+              <th>users.name</th>
+              <th>Items <span class="text-slate-300 font-normal normal-case">(order_items)</span></th>
+              <th>total_amount</th>
+              <th>payment_status</th>
+              <th>status</th>
+              <th>placed_at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3256</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-blue/10 flex items-center justify-center text-cc-blue text-[10px] font-bold shrink-0">RK</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Rahul Kumar</p><p class="text-[11px] text-slate-400 mono">user_id: 1847</p></div>
+                </div>
+              </td>
+              <td class="text-sm">TrueSound Pro Earbuds × 1</td>
+              <td class="font-semibold text-slate-800">₹1,499.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-green">delivered</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 09:14 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3255</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-pink/10 flex items-center justify-center text-cc-pink text-[10px] font-bold shrink-0">PS</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Priya Sharma</p><p class="text-[11px] text-slate-400 mono">user_id: 3201</p></div>
+                </div>
+              </td>
+              <td class="text-sm">FitTrack Watch × 1, Band × 1</td>
+              <td class="font-semibold text-slate-800">₹4,298.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-blue">shipped</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 08:52 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3254</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-purple/10 flex items-center justify-center text-cc-purple text-[10px] font-bold shrink-0">AJ</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Amit Jain</p><p class="text-[11px] text-slate-400 mono">user_id: 984</p></div>
+                </div>
+              </td>
+              <td class="text-sm">HomeChef Air Fryer 4.5L × 1</td>
+              <td class="font-semibold text-slate-800">₹3,199.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-yellow">processing</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 08:31 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3253</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-orange/10 flex items-center justify-center text-cc-orange text-[10px] font-bold shrink-0">MG</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Meera Gupta</p><p class="text-[11px] text-slate-400 mono">user_id: 5672</p></div>
+                </div>
+              </td>
+              <td class="text-sm">Cotton Kurti Set × 2</td>
+              <td class="font-semibold text-slate-800">₹2,598.00</td>
+              <td><span class="badge badge-slate">unpaid</span></td>
+              <td><span class="badge badge-yellow">pending</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 08:15 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3252</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-[10px] font-bold shrink-0">VP</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Vikram Patel</p><p class="text-[11px] text-slate-400 mono">user_id: 145</p></div>
+                </div>
+              </td>
+              <td class="text-sm">Laptop Backpack × 1, Mouse × 1</td>
+              <td class="font-semibold text-slate-800">₹1,847.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-green">delivered</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 07:48 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3251</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-yellow/20 flex items-center justify-center text-yellow-600 text-[10px] font-bold shrink-0">NR</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Neha Reddy</p><p class="text-[11px] text-slate-400 mono">user_id: 7890</p></div>
+                </div>
+              </td>
+              <td class="text-sm">BoomBox Speaker × 2</td>
+              <td class="font-semibold text-slate-800">₹1,598.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-blue">shipped</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 07:22 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3250</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-[10px] font-bold shrink-0">SK</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Suresh Kulkarni</p><p class="text-[11px] text-slate-400 mono">user_id: 2341</p></div>
+                </div>
+              </td>
+              <td class="text-sm">Running Shoes × 1</td>
+              <td class="font-semibold text-slate-800">₹2,199.00</td>
+              <td><span class="badge badge-slate">unpaid</span></td>
+              <td><span class="badge badge-red">cancelled</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 06:55 AM</td>
+            </tr>
+            <tr>
+              <td class="font-semibold text-slate-800 mono text-xs">ORD-20260210-3249</td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-cc-blue/10 flex items-center justify-center text-cc-blue text-[10px] font-bold shrink-0">DM</div>
+                  <div><p class="font-medium text-slate-700 text-sm">Deepa Menon</p><p class="text-[11px] text-slate-400 mono">user_id: 4512</p></div>
+                </div>
+              </td>
+              <td class="text-sm">Face Serum × 1, Moisturizer × 1</td>
+              <td class="font-semibold text-slate-800">₹1,247.00</td>
+              <td><span class="badge badge-green">paid</span></td>
+              <td><span class="badge badge-green">delivered</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 06:30 AM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== TWO-COLUMN: PRODUCTS + REVIEWS ===== -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <!-- PRODUCTS TABLE — from v_products_active view -->
+      <div class="section-card">
+        <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-blue text-[22px]">inventory_2</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Products</h2>
+              <p class="text-xs text-slate-400 mono">v_products_active ← JOIN categories, product_images</p>
+            </div>
+          </div>
+          <a href="#" class="text-xs text-cc-blue hover:underline font-semibold">Manage →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>category_name</th>
+                <th>effective_price</th>
+                <th>is_in_stock</th>
+                <th>average_rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">TrueSound Pro Earbuds</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-EAR-001</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-blue">Audio</span></td>
+                <td class="font-semibold text-slate-800">₹1,499</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">check</span> In Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">total_sold: 1,847</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">4.3</span>
+                    <span class="text-[10px] text-slate-400 mono">(2,341)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">FitTrack Smart Watch</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-WAT-012</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-purple">Electronics</span></td>
+                <td class="font-semibold text-slate-800">₹2,799</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">check</span> In Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">total_sold: 3,204</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">4.8</span>
+                    <span class="text-[10px] text-slate-400 mono">(5,120)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">Urban Trail Backpack</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-BPK-034</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-slate">Accessories</span></td>
+                <td class="font-semibold text-slate-800">₹899</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">check</span> In Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">total_sold: 986</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">4.2</span>
+                    <span class="text-[10px] text-slate-400 mono">(986)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">BoomBox Mini Speaker</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-SPK-007</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-blue">Audio</span></td>
+                <td class="font-semibold text-slate-800">₹799</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-red text-[11px]"><span class="material-icons text-[12px]">close</span> Out of Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">is_in_stock: 0</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">4.5</span>
+                    <span class="text-[10px] text-slate-400 mono">(3,004)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">HomeChef Air Fryer 4.5L</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-AFR-021</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-orange">Appliances</span></td>
+                <td class="font-semibold text-slate-800">₹3,199</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">check</span> In Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">total_sold: 756</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">4.1</span>
+                    <span class="text-[10px] text-slate-400 mono">(756)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1434389677669-e08b4cda3a20?w=80&auto=format&fit=crop&q=80" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-700 text-sm truncate max-w-[130px]">Cotton Kurti Set</p>
+                      <p class="text-[10px] text-slate-400 mono">SKU: CC-FSH-089</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-pink">Fashion</span></td>
+                <td class="font-semibold text-slate-800">₹1,299</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-red text-[11px]"><span class="material-icons text-[12px]">close</span> Out of Stock</span>
+                    <span class="text-[10px] text-slate-400 mono">is_in_stock: 0</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="text-cc-yellow text-sm">★</span>
+                    <span class="text-sm font-semibold text-slate-700">3.9</span>
+                    <span class="text-[10px] text-slate-400 mono">(421)</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REVIEWS TABLE — reviews JOIN users JOIN products -->
+      <div class="section-card">
+        <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-purple text-[22px]">rate_review</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Reviews</h2>
+              <p class="text-xs text-slate-400 mono">reviews ← JOIN users, products | WHERE status IN ('pending','approved')</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="badge badge-yellow text-[11px]">156 pending</span>
+            <a href="#" class="text-xs text-cc-blue hover:underline font-semibold">All →</a>
+          </div>
+        </div>
+        <div class="divide-y divide-slate-50">
+          <!-- Review 1: approved -->
+          <div class="p-4 sm:p-5 hover:bg-slate-50/50 transition">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-cc-blue/10 flex items-center justify-center text-cc-blue text-xs font-bold shrink-0">RK</div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">Rahul Kumar <span class="text-[10px] text-slate-400 mono font-normal ml-1">user_id: 1847</span></p>
+                  <p class="text-[11px] text-slate-400">on <span class="mono text-cc-blue">products</span>: TrueSound Pro Earbuds</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="badge badge-green text-[11px]">approved</span>
+                <span class="text-[11px] text-slate-400">2h ago</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-0.5 mb-2">
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="text-xs text-slate-400 ml-1.5 font-medium mono">rating: 5</span>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed">Excellent noise cancellation! The bass is deep and the battery easily lasts 2 days. Best purchase under ₹1500.</p>
+            <div class="flex items-center gap-3 mt-3">
+              <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">verified</span> is_verified_purchase: 1</span>
+              <span class="text-[10px] text-slate-400 mono">helpful_count: 24</span>
+            </div>
+          </div>
+          <!-- Review 2: approved -->
+          <div class="p-4 sm:p-5 hover:bg-slate-50/50 transition">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-cc-pink/10 flex items-center justify-center text-cc-pink text-xs font-bold shrink-0">PS</div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">Priya Sharma <span class="text-[10px] text-slate-400 mono font-normal ml-1">user_id: 3201</span></p>
+                  <p class="text-[11px] text-slate-400">on <span class="mono text-cc-blue">products</span>: FitTrack Smart Watch</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="badge badge-green text-[11px]">approved</span>
+                <span class="text-[11px] text-slate-400">4h ago</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-0.5 mb-2">
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="text-xs text-slate-400 ml-1.5 font-medium mono">rating: 4</span>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed">Great AMOLED display and build quality. The health tracking is accurate. Wish the strap was a bit softer.</p>
+            <div class="flex items-center gap-3 mt-3">
+              <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">verified</span> is_verified_purchase: 1</span>
+              <span class="text-[10px] text-slate-400 mono">helpful_count: 11</span>
+            </div>
+          </div>
+          <!-- Review 3: pending — needs moderation -->
+          <div class="p-4 sm:p-5 hover:bg-slate-50/50 transition bg-yellow-50/30">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-cc-orange/10 flex items-center justify-center text-cc-orange text-xs font-bold shrink-0">AJ</div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">Amit Jain <span class="text-[10px] text-slate-400 mono font-normal ml-1">user_id: 984</span></p>
+                  <p class="text-[11px] text-slate-400">on <span class="mono text-cc-blue">products</span>: HomeChef Air Fryer</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="badge badge-yellow text-[11px]">pending</span>
+                <span class="text-[11px] text-slate-400">6h ago</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-0.5 mb-2">
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="text-xs text-slate-400 ml-1.5 font-medium mono">rating: 3</span>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed">Decent air fryer for the price. Food cooks evenly but the digital controls feel a bit cheap.</p>
+            <div class="flex items-center gap-3 mt-3">
+              <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">verified</span> is_verified_purchase: 1</span>
+              <button class="text-[11px] bg-green-50 hover:bg-green-100 text-green-700 font-semibold px-2.5 py-1 rounded-lg transition">Approve</button>
+              <button class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-2.5 py-1 rounded-lg transition">Reject</button>
+            </div>
+          </div>
+          <!-- Review 4: pending negative -->
+          <div class="p-4 sm:p-5 hover:bg-slate-50/50 transition bg-yellow-50/30">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-cc-yellow/20 flex items-center justify-center text-yellow-600 text-xs font-bold shrink-0">NR</div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">Neha Reddy <span class="text-[10px] text-slate-400 mono font-normal ml-1">user_id: 7890</span></p>
+                  <p class="text-[11px] text-slate-400">on <span class="mono text-cc-blue">products</span>: BoomBox Mini Speaker</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="badge badge-yellow text-[11px]">pending</span>
+                <span class="text-[11px] text-slate-400">10h ago</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-0.5 mb-2">
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="text-xs text-slate-400 ml-1.5 font-medium mono">rating: 2</span>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed">Sound quality is okay for the size but battery drains fast. The RGB lights stopped working after 2 weeks. Disappointed.</p>
+            <div class="flex items-center gap-3 mt-3">
+              <span class="badge badge-green text-[11px]"><span class="material-icons text-[12px]">verified</span> is_verified_purchase: 1</span>
+              <button class="text-[11px] bg-green-50 hover:bg-green-100 text-green-700 font-semibold px-2.5 py-1 rounded-lg transition">Approve</button>
+              <button class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-2.5 py-1 rounded-lg transition">Reject</button>
+            </div>
+          </div>
+          <!-- Review 5: rejected -->
+          <div class="p-4 sm:p-5 hover:bg-slate-50/50 transition opacity-60">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0">AN</div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">Ankit Nair <span class="text-[10px] text-slate-400 mono font-normal ml-1">user_id: 6012</span></p>
+                  <p class="text-[11px] text-slate-400">on <span class="mono text-cc-blue">products</span>: Cotton Kurti Set</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="badge badge-red text-[11px]">rejected</span>
+                <span class="text-[11px] text-slate-400">12h ago</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-0.5 mb-2">
+              <span class="material-icons stars-filled text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="material-icons stars-empty text-[16px]">star</span>
+              <span class="text-xs text-slate-400 ml-1.5 font-medium mono">rating: 1</span>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed line-through">Spam content detected — promotional text for external website.</p>
+            <div class="flex items-center gap-3 mt-3">
+              <span class="badge badge-slate text-[11px]">is_verified_purchase: 0</span>
+              <span class="text-[10px] text-red-400 mono">Reason: Spam / promotional</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENT TRANSACTIONS TABLE ===== -->
+    <div class="section-card">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-yellow text-[22px]">receipt_long</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Payment Transactions</h2>
+            <p class="text-xs text-slate-400 mono">payment_transactions ← JOIN orders ON payment_transactions.order_id = orders.id</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg">All</button>
+          <button class="text-xs bg-green-50 text-green-700 font-medium px-3 py-1.5 rounded-lg hover:bg-green-100 transition">success</button>
+          <button class="text-xs bg-red-50 text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-100 transition">failed / refunded</button>
+          <button class="text-xs bg-yellow-50 text-yellow-700 font-medium px-3 py-1.5 rounded-lg hover:bg-yellow-100 transition">pending</button>
+          <a href="#" class="text-xs text-cc-blue hover:underline font-semibold ml-1">View All →</a>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>order_number</th>
+              <th>users.name</th>
+              <th>gateway</th>
+              <th>amount</th>
+              <th>status</th>
+              <th>processed_at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90847</td>
+              <td class="text-sm text-cc-blue font-medium mono">ORD-20260210-3256</td>
+              <td class="text-sm">Rahul Kumar</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-green-600 text-[18px]">account_balance</span>
+                  <div>
+                    <span class="text-sm font-medium">razorpay</span>
+                    <span class="text-[10px] text-slate-400 mono block">gateway_txn_id: pay_Rz...</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-green-600">+₹1,499.00</td>
+              <td><span class="badge badge-green">success</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 09:14 AM</td>
+            </tr>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90846</td>
+              <td class="text-sm text-cc-blue font-medium mono">ORD-20260210-3255</td>
+              <td class="text-sm">Priya Sharma</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-blue-600 text-[18px]">credit_card</span>
+                  <div>
+                    <span class="text-sm font-medium">razorpay</span>
+                    <span class="text-[10px] text-slate-400 mono block">card ****4521</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-green-600">+₹4,298.00</td>
+              <td><span class="badge badge-green">success</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 08:52 AM</td>
+            </tr>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90845</td>
+              <td class="text-sm text-cc-blue font-medium mono">ORD-20260210-3254</td>
+              <td class="text-sm">Amit Jain</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-green-600 text-[18px]">account_balance</span>
+                  <div>
+                    <span class="text-sm font-medium">razorpay</span>
+                    <span class="text-[10px] text-slate-400 mono block">upi @amitj</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-green-600">+₹3,199.00</td>
+              <td><span class="badge badge-yellow">pending</span></td>
+              <td class="text-slate-400 text-sm">—</td>
+            </tr>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90844</td>
+              <td class="text-sm text-slate-500 font-medium mono">ORD-20260210-3253</td>
+              <td class="text-sm">Meera Gupta</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-slate-400 text-[18px]">money</span>
+                  <span class="text-sm font-medium">cod</span>
+                </div>
+              </td>
+              <td class="font-semibold text-slate-500">₹2,598.00</td>
+              <td><span class="badge badge-slate">initiated</span></td>
+              <td class="text-slate-400 text-sm">—</td>
+            </tr>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90843</td>
+              <td class="text-sm text-cc-blue font-medium mono">ORD-20260210-3252</td>
+              <td class="text-sm">Vikram Patel</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-blue-600 text-[18px]">credit_card</span>
+                  <div>
+                    <span class="text-sm font-medium">razorpay</span>
+                    <span class="text-[10px] text-slate-400 mono block">card ****8834</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-green-600">+₹1,847.00</td>
+              <td><span class="badge badge-green">success</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 07:48 AM</td>
+            </tr>
+            <tr>
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90842</td>
+              <td class="text-sm text-cc-blue font-medium mono">ORD-20260210-3251</td>
+              <td class="text-sm">Neha Reddy</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-green-600 text-[18px]">account_balance</span>
+                  <div>
+                    <span class="text-sm font-medium">razorpay</span>
+                    <span class="text-[10px] text-slate-400 mono block">upi @nehar</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-green-600">+₹1,598.00</td>
+              <td><span class="badge badge-green">success</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 07:22 AM</td>
+            </tr>
+            <!-- Refund transaction -->
+            <tr class="bg-red-50/30">
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90839</td>
+              <td class="text-sm text-red-500 font-medium mono">ORD-20260209-3198</td>
+              <td class="text-sm">Kavita Singh</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-red-500 text-[18px]">undo</span>
+                  <div>
+                    <span class="text-sm font-medium text-red-600">razorpay</span>
+                    <span class="text-[10px] text-red-400 mono block">refund → upi @kavita</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-red-500">−₹2,499.00</td>
+              <td><span class="badge badge-red">refunded</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 05:10 AM</td>
+            </tr>
+            <!-- Failed transaction -->
+            <tr class="bg-red-50/30">
+              <td class="mono text-xs font-semibold text-slate-600">PTX-90837</td>
+              <td class="text-sm text-red-500 font-medium mono">ORD-20260209-3195</td>
+              <td class="text-sm">Ravi Verma</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-red-500 text-[18px]">error</span>
+                  <div>
+                    <span class="text-sm font-medium text-red-600">razorpay</span>
+                    <span class="text-[10px] text-red-400 mono block">card ****3312 — timeout</span>
+                  </div>
+                </div>
+              </td>
+              <td class="font-semibold text-red-500">₹899.00</td>
+              <td><span class="badge badge-red">failed</span></td>
+              <td class="text-slate-400 text-sm">10 Feb, 04:22 AM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Transaction Summary — matching schema fields -->
+      <div class="px-5 sm:px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <span class="text-slate-500">Net: <strong class="text-slate-800">₹47,82,340.00</strong></span>
+        <span class="text-slate-300">|</span>
+        <span class="text-green-600">status='success': <strong>+₹12,541.00</strong></span>
+        <span class="text-slate-300">|</span>
+        <span class="text-red-500">status='refunded': <strong>−₹2,499.00</strong></span>
+        <span class="text-slate-300">|</span>
+        <span class="text-red-500">status='failed': <strong>₹899.00</strong></span>
+        <span class="text-slate-300">|</span>
+        <span class="text-yellow-600">status='pending': <strong>₹3,199.00</strong></span>
+        <span class="text-slate-300">|</span>
+        <span class="text-slate-500">currency: <span class="mono font-semibold text-slate-700">INR</span></span>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENT GATEWAY BREAKDOWN ===== -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 text-center hover:shadow-md transition">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-2">
+          <span class="material-icons text-blue-600">account_balance</span>
+        </div>
+        <p class="text-lg font-bold text-slate-800">48%</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">UPI (razorpay)</p>
+        <p class="text-[10px] text-slate-300 mono mt-1">gateway = 'razorpay' + UPI</p>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-4 text-center hover:shadow-md transition">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mx-auto mb-2">
+          <span class="material-icons text-cc-purple">credit_card</span>
+        </div>
+        <p class="text-lg font-bold text-slate-800">28%</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Cards (razorpay)</p>
+        <p class="text-[10px] text-slate-300 mono mt-1">gateway = 'razorpay' + card</p>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-4 text-center hover:shadow-md transition">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-2">
+          <span class="material-icons text-slate-600">money</span>
+        </div>
+        <p class="text-lg font-bold text-slate-800">16%</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">COD (gateway='cod')</p>
+        <p class="text-[10px] text-slate-300 mono mt-1">payment_status = 'unpaid'</p>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-4 text-center hover:shadow-md transition">
+        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-2">
+          <span class="material-icons text-red-500">undo</span>
+        </div>
+        <p class="text-lg font-bold text-slate-800">8%</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Refunded</p>
+        <p class="text-[10px] text-slate-300 mono mt-1">status IN ('refunded','failed')</p>
+      </div>
+    </div>
+
+    <!-- ===== SCHEMA REFERENCE FOOTER ===== -->
+    <div class="section-card bg-cc-dark border-cc-dark">
+      <div class="px-5 sm:px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-yellow text-[20px]">storage</span>
+          <div>
+            <h2 class="font-heading text-base font-bold text-white">Dashboard Data Sources</h2>
+            <p class="text-[11px] text-white/40 mono">37 tables • 3 views — InnoDB | utf8mb4_unicode_ci</p>
+          </div>
+        </div>
+      </div>
+      <div class="px-5 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white/5 rounded-xl p-3 border border-white/5">
+          <p class="text-[11px] font-bold text-cc-blue uppercase tracking-wider mb-2">KPIs</p>
+          <p class="text-[11px] text-white/50 leading-relaxed mono">orders.total_amount<br>orders.status<br>products.is_in_stock<br>reviews.status</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 border border-white/5">
+          <p class="text-[11px] font-bold text-cc-orange uppercase tracking-wider mb-2">Orders Table</p>
+          <p class="text-[11px] text-white/50 leading-relaxed mono">orders JOIN users<br>orders JOIN order_items<br>order_status_history</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 border border-white/5">
+          <p class="text-[11px] font-bold text-cc-purple uppercase tracking-wider mb-2">Products + Reviews</p>
+          <p class="text-[11px] text-white/50 leading-relaxed mono">v_products_active VIEW<br>reviews JOIN users<br>reviews JOIN products</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 border border-white/5">
+          <p class="text-[11px] font-bold text-cc-yellow uppercase tracking-wider mb-2">Payments</p>
+          <p class="text-[11px] text-white/50 leading-relaxed mono">payment_transactions<br>JOIN orders ON order_id<br>currency = 'INR' (default)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-4"></div>
+  </div>
+</div>
+
+<!-- ================= MINIMAL JS (SIDEBAR ONLY) ================= -->
+<script>
+  function toggleSidebar() {
+    const s = document.getElementById('sidebar');
+    const o = document.getElementById('sidebarOverlay');
+    s.classList.toggle('mobile-open');
+    o.classList.toggle('show');
+    document.body.style.overflow = s.classList.contains('mobile-open') ? 'hidden' : '';
+  }
+  function collapseSidebar() {
+    const s = document.getElementById('sidebar');
+    const m = document.getElementById('mainArea');
+    const i = document.getElementById('collapseIcon');
+    s.classList.toggle('collapsed');
+    m.classList.toggle('expanded');
+    i.textContent = s.classList.contains('collapsed') ? 'chevron_right' : 'menu_open';
+  }
+</script>
+</body>
+</html>

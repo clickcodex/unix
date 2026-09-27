@@ -1,0 +1,291 @@
+SINGLE-OWNER E-COMMERCE PLATFORM
+Project Document — Architecture, Panels, Pages &amp; Workflow
+PHP Custom MVC | MySQL/InnoDB | High-Scale Ready
+Version 1.0
+
+1. Project Overview
+This document defines the full page structure, admin panels, and end-to-end workflow for a single-owner, high-scale e-commerce platform built on a custom PHP MVC architecture, backed by a fully normalized MySQL/InnoDB schema (37 tables, 3 views). The schema supports products with variants/attributes, offers, coupons, reviews, wishlist, cart, order lifecycle tracking, inventory movements, payment transactions, shipments, RBAC-based staff access, notifications, and audit logging.
+Architecture pattern: Model–View–Controller (MVC).
+Model layer — one model class per table/domain (User, Product, Order, Cart, Review, Offer, Coupon, etc.), encapsulating queries and business rules.
+Controller layer — split into Front (customer-facing) and Admin controller namespaces, each mapping to route groups.
+View layer — Blade-style/plain PHP templates, shared layout partials (header, footer, sidebar), separated per panel (front/, admin/).
+Service/Repository layer (recommended for scale) — CartService, OrderService, InventoryService, PricingService to keep controllers thin and logic testable.
+Routing — front-end (public) routes and /admin/* routes protected by auth + role middleware.
+2. High-Level System Architecture
+1. Presentation Layer — Customer storefront (public) + Admin Panel (protected), both served by the same PHP MVC codebase under different route groups.
+2. Application Layer — Controllers handle HTTP requests, validate input, call Services/Models, and return Views or JSON (for AJAX: cart, wishlist, search-suggest, filters).
+3. Domain/Service Layer — Business logic — pricing &amp; offer calculation, stock checks, order state machine, coupon validation — isolated from controllers for reuse and testability.
+4. Data Layer — MySQL/InnoDB via PDO with prepared statements; heavy list endpoints (products, orders) use covering indexes already defined in schema (idx_prod_*, idx_ord_*, FULLTEXT ft_prod_name).
+5. Cross-cutting — Session/Auth (users + user_sessions), RBAC (roles/permissions/role_permissions), Audit Logs, Notifications, Media Library, Settings — shared across both panels.
+6. Scale-readiness — Denormalized counters (is_in_stock, average_rating, total_sold, wishlist_count) avoid heavy joins on listing pages; guest cart via session_token; soft deletes (deleted_at) on users/products; UUIDs for public-safe references.
+3. Panels in the System
+The platform is composed of three functional panels sharing one codebase and one database:
+Customer Panel (Storefront) — public + logged-in customer experience.
+Admin Panel — Super Admin / Admin / Staff, access controlled via roles table (super_admin, admin, staff, customer) and permissions/role_permissions.
+Delivery / Order-Ops View (subset of Admin Panel) — restricted staff role scoped to orders, shipments and inventory only, using the same RBAC tables.
+4. Customer Panel — Page List
+4.1 Authentication &amp; Account
+Page
+	Purpose / Contents
+	
+Register / Login
+	Email or phone signup, password hashing, session token issued into user_sessions.
+	
+OTP / Email Verification
+	Sets email_verified_at / phone_verified_at on users.
+	
+Forgot / Reset Password
+	Uses password_resets (token_hash, expires_at, used_at).
+	
+My Account Dashboard
+	Summary: recent orders, wishlist count, saved addresses.
+	
+Profile Edit
+	Name, phone, gender, DOB, avatar (via media).
+	
+Address Book
+	List/add/edit/delete user_addresses, set default.
+	
+Notifications
+	In-app notifications list, mark as read (notifications table).
+	
+4.2 Browse &amp; Discovery
+Page
+	Purpose / Contents
+	
+Home Page
+	Hero slider &amp; banners (banners: hero_slider/offer_banner), featured products (is_featured), tag-based rails (Best Seller, Trending, New Arrival from tags), active offers.
+	
+Category / Listing Page
+	Products by categories (with parent/child tree), filters by attributes/price, sort by rating/price/newest, pagination.
+	
+Product Detail Page
+	Images (product_images), videos (product_videos), specifications grouped by spec_group, variants/attributes (product_variants, product_attributes), price (base/sale), stock, reviews &amp; rating summary, related products.
+	
+Search Results Page
+	FULLTEXT search on products (name, short_description); logs to search_history; autosuggest via AJAX.
+	
+Offers / Deals Page
+	Active offers (offers + offer_applicability) and coupon highlights.
+	
+Static Pages
+	About, Contact, Terms, Privacy, FAQ (content-managed).
+	
+4.3 Engagement
+Page
+	Purpose / Contents
+	
+Wishlist
+	wishlists / wishlist_items — add/remove, move to cart.
+	
+Product Reviews
+	Write review (rating 1–5, title, body, images) — only for verified purchases (order_item_id linkage), goes to pending until admin approval.
+	
+4.4 Cart, Checkout &amp; Orders
+Page
+	Purpose / Contents
+	
+Cart Page
+	carts + cart_items (guest via session_token or logged-in via user_id); quantity update, coupon apply, price recalculation.
+	
+Checkout Page
+	Address selection/new address, order summary (subtotal, discount, shipping, tax), payment method selection, place order.
+	
+Order Confirmation
+	Shows order_number, uuid, status = pending.
+	
+My Orders (List)
+	All orders with status badges.
+	
+Order Detail / Tracking
+	order_items snapshot, order_status_history timeline (uses v_order_tracking view), invoice download.
+	
+Cancel / Return Request
+	Transitions order to cancelled / return_requested / returned / refunded.
+	
+5. Admin Panel — Page List
+5.1 Dashboard &amp; Analytics
+Page
+	Purpose / Contents
+	
+Dashboard
+	Today&apos;s orders, revenue, low-stock alerts, top products (total_sold), recent reviews pending moderation.
+	
+Sales Reports
+	Revenue by period/category, uses v_user_order_summary and order aggregates.
+	
+5.2 Catalog Management
+Page
+	Purpose / Contents
+	
+Categories
+	Tree management (parent_id), slug/SEO fields, icon, sort order, active toggle.
+	
+Products — List
+	Search/filter by category, stock, active status; bulk actions.
+	
+Products — Add/Edit
+	Pricing (base/sale/cost), tax_rate (GST%), dimensions/weight, unit (units table), SEO meta.
+	
+Product Images / Videos
+	Upload via Media Library, set primary image, sort order.
+	
+Product Specifications
+	Grouped key–value specs (spec_group, spec_key, spec_value).
+	
+Product Attributes &amp; Variants
+	Attribute groups (Color/Size), attribute values, variant SKUs with price/stock override (product_variants, variant_attribute_values).
+	
+Units Management
+	Weight/volume/count/length/area units for measured products.
+	
+Tags
+	Manage Featured/Best Seller/Trending/etc. tags and assignment (product_tags).
+	
+5.3 Marketing
+Page
+	Purpose / Contents
+	
+Offers
+	Percentage/flat/BXGY/combo offers with date range and applicability scope (all/category/product).
+	
+Coupons
+	Code, discount type/value, usage limits, per-user limit, validity window.
+	
+Banners
+	Hero sliders, offer &amp; category banners with placement and scheduling.
+	
+5.4 Orders &amp; Fulfilment
+Page
+	Purpose / Contents
+	
+Orders — List
+	Filter by status/payment_status/date; search by order_number.
+	
+Order Detail
+	Items, shipping snapshot, financial breakdown, status update (writes order_status_history).
+	
+Payments
+	payment_transactions per order — gateway, status, amount, raw payload.
+	
+Shipments
+	Carrier, tracking number/URL, shipped/estimated/delivered dates.
+	
+Returns / Refunds
+	Manage return_requested → returned/refunded transitions.
+	
+5.5 Customers &amp; Reviews
+Page
+	Purpose / Contents
+	
+Customers — List
+	Search users, view lifetime value (v_user_order_summary).
+	
+Customer Detail
+	Orders, addresses, wishlist, reviews for that user.
+	
+Reviews Moderation
+	Approve/reject pending reviews; verified-purchase badge.
+	
+5.6 Inventory
+Page
+	Purpose / Contents
+	
+Stock Overview
+	Current stock per product/variant, low-stock flags.
+	
+Inventory Movements
+	In/out/adjustment/return log with reference to order or manual entry (inventory_movements).
+	
+5.7 System &amp; Administration
+Page
+	Purpose / Contents
+	
+Staff / Users
+	Create staff accounts, assign roles (user_roles).
+	
+Roles &amp; Permissions
+	Define roles, map permissions per module (roles, permissions, role_permissions).
+	
+Media Library
+	Central asset manager for all image/video uploads (media).
+	
+Settings
+	General, currency, tax-inclusive toggle, shipping threshold, order prefix, review auto-approve (settings).
+	
+Notifications (Admin)
+	Send/broadcast notifications to customers.
+	
+Audit Logs
+	Immutable trail of admin actions (audit_logs) — who changed what, old/new data.
+	
+6. RBAC — Access Model
+Roles ship pre-seeded: super_admin, admin, staff, customer. Access to each Admin Panel page is checked against role_permissions for the logged-in staff/admin user (user_roles), enforced via route middleware rather than hard-coded role names, so new roles/permissions can be added without code changes.
+Super Admin — full access including Roles &amp; Permissions, Settings, Audit Logs.
+Admin — catalog, marketing, orders, customers, reports (no system-level settings).
+Staff — scoped access, typically Orders, Shipments, Inventory (order-ops).
+Customer — storefront only, no admin routes.
+7. Core Workflows
+7.1 Customer Registration &amp; Login
+1. Sign up — User submits name/email/phone/password → row created in users, password_hash stored.
+2. Verify — Email/phone OTP sent → on confirmation, email_verified_at / phone_verified_at set.
+3. Login — Credentials checked → session/token created in user_sessions (device_type, expires_at).
+4. Forgot password — Token issued in password_resets → user resets → used_at stamped, session invalidated on old devices (optional).
+7.2 Browse → Cart → Checkout → Order (main revenue flow)
+1. Browse — Home/Category/Search → Product Detail (view logged to product_views).
+2. Select variant — If product has variants, user picks attribute combination → resolves to a product_variants row (price_override, stock_qty).
+3. Add to Cart — Row inserted/updated in cart_items with unit_price snapshotted at add-time; cart resolved via user_id (logged-in) or session_token (guest).
+4. Apply Offer/Coupon — Cart re-priced against active offers (offer_applicability scope) and/or coupons table validation (usage_limit, per_user_limit, date range).
+5. Checkout — User selects/creates a user_addresses entry; order totals computed: subtotal, discount_amount, shipping_charge (compared to free_shipping_above setting), tax_amount, total_amount.
+6. Place Order — Transaction creates orders (status=pending, payment_status=unpaid) + order_items (full product/price snapshot) + first order_status_history row; cart is cleared; inventory_movements &apos;out&apos; rows optionally reserved.
+7. Payment — payment_transactions row created (gateway/COD); on success payment_status → paid.
+8. Confirmation — Order confirmation page + notification (order_placed) sent to user.
+7.3 Order Fulfilment (Admin side)
+1. Confirm — Admin reviews pending order → status: pending → confirmed (order_status_history logged, changed_by = admin user).
+2. Process — Status → processing; stock decremented via inventory_movements (type=out, reference_type=order).
+3. Ship — Shipment created (shipments: carrier, tracking_number); order status → shipped, shipped_at set.
+4. Deliver — Status → delivered, delivered_at set; triggers &apos;write a review&apos; notification to customer.
+5. Cancel / Return — If requested before shipping → cancelled (stock reverted). After delivery → return_requested → returned → refunded, with payment_transactions status updated to refunded/partially_refunded.
+7.4 Review Workflow
+1. Eligibility — Customer can review a product only if a matching order_items row exists for a delivered order (is_verified_purchase = 1).
+2. Submit — Review saved with status = pending (unless settings.review_auto_approve = true).
+3. Moderate — Admin approves/rejects in Reviews Moderation; on approval, products.review_count and average_rating are recalculated (trigger/job).
+7.5 Inventory &amp; Stock Sync
+1. Movement logged — Every stock change (order out, admin adjustment, return in) writes an inventory_movements row.
+2. Denormalized flag — products.is_in_stock is recomputed from variant/product stock so listing pages avoid a join.
+7.6 Admin Action Audit
+1. Every write — Sensitive admin actions (status change, price edit, role change) capture old_data/new_data JSON in audit_logs with actor and IP — no FK to users, so history survives user deletion.
+8. Page-to-Table Traceability (summary)
+Page
+	Purpose / Contents
+	
+Home / Listing / Search
+	products, categories, tags, product_tags, banners, offers
+	
+Product Detail
+	products, product_images, product_videos, product_specifications, product_variants, product_attributes, reviews
+	
+Cart / Checkout
+	carts, cart_items, user_addresses, offers, coupons
+	
+Orders (both panels)
+	orders, order_items, order_status_history, payment_transactions, shipments
+	
+Account
+	users, user_addresses, user_sessions, notifications, wishlists
+	
+Admin — RBAC
+	roles, permissions, role_permissions, user_roles
+	
+Admin — System
+	settings, media, audit_logs
+	
+9. Recommended Build Order
+Auth module (users, sessions, password resets) + RBAC skeleton.
+Catalog module (categories, products, images, specs, variants, tags, units).
+Storefront browse pages (home, listing, product detail, search).
+Cart + Checkout + Orders (core transaction path).
+Admin order management + inventory + shipments + payments.
+Reviews, wishlist, offers, coupons, banners.
+Notifications, audit logs, settings, reports/analytics.
+Performance pass: caching for home/listing, query profiling on FULLTEXT and status indexes, queue-based order confirmation emails/SMS for scale.

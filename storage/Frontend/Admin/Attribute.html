@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attributes & Units — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+  .attr-value-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;transition:background .15s}
+  .attr-value-row:hover{background:#F8FAFC}
+  .attr-value-row .drag-handle{cursor:grab;color:#CBD5E1;transition:color .15s}
+  .attr-value-row .drag-handle:hover{color:#64748B}
+  .group-card{border:1.5px solid #E2E8F0;border-radius:16px;background:#fff;overflow:hidden;transition:box-shadow .2s,border-color .2s}
+  .group-card:hover{border-color:#CBD5E1;box-shadow:0 4px 16px -4px rgba(15,23,42,.06)}
+  .unit-type-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .unit-type-weight{background:#FEF3C7;color:#92400E}
+  .unit-type-volume{background:#DBEAFE;color:#1E40AF}
+  .unit-type-length{background:#F3E8FF;color:#6B21A8}
+  .unit-type-dimension{background:#ECFEFF;color:#155E75}
+  .unit-type-count{background:#DCFCE7;color:#166534}
+  .unit-type-temperature{background:#FFE4E6;color:#9F1239}
+  .expand-content{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+  .expand-content.open{max-height:1200px}
+  .expand-icon{transition:transform .25s ease}
+  .expand-icon.rotated{transform:rotate(180deg)}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .fade-slide-in{animation:fadeSlideIn .2s ease}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item active"><span class="material-icons">tune</span><span class="nav-label">Attributes & Units</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Attributes & Units</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search groups, attributes, units..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="handleGlobalSearch()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Attributes & Units</h1>
+        <p class="text-slate-500 text-sm mt-1">Manage <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">product_attribute_groups</span>, <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">product_attributes</span> &amp; <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">units</span></p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button class="btn-secondary text-sm" onclick="openUnitModal()">
+          <span class="material-icons text-[18px]">straighten</span> Add Unit
+        </button>
+        <button class="btn-primary text-sm" onclick="openGroupModal()">
+          <span class="material-icons text-[18px]">add_circle</span> Add Attribute Group
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Attribute Groups</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiGroups">6</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(product_attribute_groups)</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-purple/10 flex items-center justify-center">
+            <span class="material-icons text-cc-purple text-[22px]">category</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#8C30F5;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Attributes</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiAttributes">38</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(product_attributes)</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center">
+            <span class="material-icons text-cc-blue text-[22px]">label</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Units Defined</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiUnits">14</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(units) WHERE is_active = 1</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-orange/10 flex items-center justify-center">
+            <span class="material-icons text-cc-orange text-[22px]">straighten</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF5100;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Products Using</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">8,432</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">DISTINCT product_id FROM variant_attribute_values</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-yellow/15 flex items-center justify-center">
+            <span class="material-icons text-cc-yellow text-[22px]">link</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FFB800;border-radius:0 0 16px 16px"></div>
+      </div>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1.5 w-fit">
+      <button class="tab-btn active" id="tabGroups" onclick="switchTab('groups')">
+        <span class="material-icons text-[16px] align-middle mr-1">category</span>Attribute Groups
+      </button>
+      <button class="tab-btn" id="tabUnits" onclick="switchTab('units')">
+        <span class="material-icons text-[16px] align-middle mr-1">straighten</span>Units
+      </button>
+      <button class="tab-btn" id="tabUsage" onclick="switchTab('usage')">
+        <span class="material-icons text-[16px] align-middle mr-1">bar_chart</span>Usage Overview
+      </button>
+    </div>
+
+    <!-- ===== ATTRIBUTE GROUPS SECTION ===== -->
+    <div id="groupsSection" class="space-y-5">
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center bg-white rounded-xl border border-slate-200 px-3 py-2 gap-2 w-full sm:w-72 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Filter groups..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="groupSearch" oninput="renderGroups()">
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg group-filter-btn" data-filter="all" onclick="filterGroups('all',this)">All</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition group-filter-btn" data-filter="active" onclick="filterGroups('active',this)">Active</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition group-filter-btn" data-filter="inactive" onclick="filterGroups('inactive',this)">Inactive</button>
+        </div>
+        <div class="sm:ml-auto flex items-center gap-2">
+          <button class="btn-icon" title="Expand All" onclick="expandAll()"><span class="material-icons text-[18px]">unfold_more</span></button>
+          <button class="btn-icon" title="Collapse All" onclick="collapseAll()"><span class="material-icons text-[18px]">unfold_less</span></button>
+        </div>
+      </div>
+
+      <!-- Groups Container -->
+      <div id="groupsContainer" class="space-y-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ===== UNITS SECTION ===== -->
+    <div id="unitsSection" class="hidden">
+      <div class="section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-orange text-[22px]">straighten</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Units</h2>
+              <p class="text-xs text-slate-400 mono">units — measurement units for products (weight, volume, length, etc.)</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg unit-filter-btn" data-filter="all" onclick="filterUnits('all',this)">All</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition unit-filter-btn" data-filter="weight" onclick="filterUnits('weight',this)">Weight</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition unit-filter-btn" data-filter="volume" onclick="filterUnits('volume',this)">Volume</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition unit-filter-btn" data-filter="length" onclick="filterUnits('length',this)">Length</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition unit-filter-btn" data-filter="dimension" onclick="filterUnits('dimension',this)">Dimension</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table" id="unitsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name <span class="text-slate-300 font-normal normal-case">(units.name)</span></th>
+                <th>Symbol</th>
+                <th>Unit Type</th>
+                <th>Factor to Base</th>
+                <th>Products Using</th>
+                <th>Active</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="unitsTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== USAGE OVERVIEW SECTION ===== -->
+    <div id="usageSection" class="hidden space-y-6">
+      <div class="section-card p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="material-icons text-cc-yellow text-[22px]">bar_chart</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Group Usage Distribution</h2>
+            <p class="text-xs text-slate-400 mono">COUNT(product_attributes) GROUP BY group_id</p>
+          </div>
+        </div>
+        <div id="usageChart" class="space-y-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="section-card p-5 sm:p-6">
+          <h3 class="font-heading text-base font-bold text-slate-900 mb-4">Unit Type Distribution</h3>
+          <div id="unitTypeChart" class="space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        <div class="section-card p-5 sm:p-6">
+          <h3 class="font-heading text-base font-bold text-slate-900 mb-4">Recently Modified</h3>
+          <div id="recentActivity" class="space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: GROUP ===== -->
+<div class="modal-backdrop" id="groupModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="groupModalTitle">Add Attribute Group</h3>
+      <button class="btn-icon" onclick="closeModal('groupModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editGroupId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Group Name <span class="text-slate-400 font-normal mono text-xs">(product_attribute_groups.name)</span></label>
+        <input type="text" class="input-field" id="groupName" placeholder="e.g. Color, Size, Material">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Display Name</label>
+        <input type="text" class="input-field" id="groupDisplayName" placeholder="e.g. Product Color (shown to customers)">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+        <textarea class="input-field" rows="2" id="groupDescription" placeholder="Optional description for internal use..."></textarea>
+      </div>
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">product_attribute_groups.is_active</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="groupActive" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('groupModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveGroup()" id="saveGroupBtn">Save Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: ATTRIBUTE VALUE ===== -->
+<div class="modal-backdrop" id="attrModal">
+  <div class="modal-panel w-full max-w-md mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="attrModalTitle">Add Attribute Value</h3>
+      <button class="btn-icon" onclick="closeModal('attrModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editAttrId">
+      <input type="hidden" id="attrGroupId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Value <span class="text-slate-400 font-normal mono text-xs">(product_attributes.value)</span></label>
+        <input type="text" class="input-field" id="attrValue" placeholder="e.g. Black, XL, Cotton">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Display Value</label>
+        <input type="text" class="input-field" id="attrDisplayValue" placeholder="e.g. Midnight Black (optional, for frontend)">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Sort Order</label>
+        <input type="number" class="input-field" id="attrSortOrder" placeholder="0" min="0" value="0">
+        <p class="text-[11px] text-slate-400 mt-1 mono">product_attributes.display_order</p>
+      </div>
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">product_attributes.is_active</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="attrActive" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('attrModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveAttr()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: UNIT ===== -->
+<div class="modal-backdrop" id="unitModal">
+  <div class="modal-panel w-full max-w-md mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="unitModalTitle">Add Unit</h3>
+      <button class="btn-icon" onclick="closeModal('unitModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editUnitId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Unit Name <span class="text-slate-400 font-normal mono text-xs">(units.name)</span></label>
+        <input type="text" class="input-field" id="unitName" placeholder="e.g. Kilogram">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Symbol</label>
+        <input type="text" class="input-field" id="unitSymbol" placeholder="e.g. kg" style="width:120px">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Unit Type</label>
+        <select class="input-field" id="unitType">
+          <option value="weight">Weight</option>
+          <option value="volume">Volume</option>
+          <option value="length">Length</option>
+          <option value="dimension">Dimension</option>
+          <option value="count">Count</option>
+          <option value="temperature">Temperature</option>
+        </select>
+        <p class="text-[11px] text-slate-400 mt-1 mono">units.unit_type ENUM</p>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Factor to Base Unit</label>
+        <input type="number" class="input-field" id="unitFactor" placeholder="e.g. 1000 (1 kg = 1000 g)" step="any" min="0">
+        <p class="text-[11px] text-slate-400 mt-1">Conversion factor to the smallest unit in the type</p>
+      </div>
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">units.is_active</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="unitActive" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('unitModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveUnit()" id="saveUnitBtn">Save Unit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DELETE CONFIRM ===== -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-red-500 text-[28px]">delete_forever</span>
+      </div>
+      <h3 class="font-heading text-lg font-bold text-slate-900">Confirm Delete</h3>
+      <p class="text-sm text-slate-500 mt-2" id="deleteMessage">This action cannot be undone.</p>
+      <p class="text-xs text-slate-400 mt-1 mono" id="deleteSql">DELETE FROM ...</p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger text-sm" onclick="confirmDelete()" id="confirmDeleteBtn" style="background:#DC2626;color:#fff;border-color:#DC2626">
+        <span class="material-icons text-[16px]">delete</span> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA LAYER ============
+
+let nextGroupId = 7;
+let nextAttrId = 39;
+let nextUnitId = 15;
+
+let attributeGroups = [
+  { id: 1, name: 'Color', display_name: 'Product Color', description: 'Available color options for products', is_active: true, created_at: '2025-08-12 10:30:00' },
+  { id: 2, name: 'Size', display_name: 'Product Size', description: 'Standard size variants (clothing, footwear)', is_active: true, created_at: '2025-08-12 10:31:00' },
+  { id: 3, name: 'Material', display_name: 'Material Type', description: 'Primary material composition', is_active: true, created_at: '2025-09-01 14:20:00' },
+  { id: 4, name: 'Storage', display_name: 'Storage Capacity', description: 'Digital storage options for electronics', is_active: true, created_at: '2025-09-15 09:00:00' },
+  { id: 5, name: 'RAM', display_name: 'RAM Size', description: 'Memory options for computing devices', is_active: true, created_at: '2025-09-15 09:05:00' },
+  { id: 6, name: 'Finish', display_name: 'Surface Finish', description: 'Surface treatment for furniture and hardware', is_active: false, created_at: '2025-11-02 16:45:00' },
+];
+
+let productAttributes = [
+  // Color group (id:1)
+  { id: 1, group_id: 1, value: 'Black', display_value: 'Midnight Black', display_order: 1, is_active: true, product_count: 2341 },
+  { id: 2, group_id: 1, value: 'White', display_value: 'Pearl White', display_order: 2, is_active: true, product_count: 1987 },
+  { id: 3, group_id: 1, value: 'Navy Blue', display_value: 'Deep Navy', display_order: 3, is_active: true, product_count: 1245 },
+  { id: 4, group_id: 1, value: 'Red', display_value: 'Crimson Red', display_order: 4, is_active: true, product_count: 876 },
+  { id: 5, group_id: 1, value: 'Green', display_value: 'Forest Green', display_order: 5, is_active: true, product_count: 654 },
+  { id: 6, group_id: 1, value: 'Grey', display_value: 'Charcoal Grey', display_order: 6, is_active: true, product_count: 1432 },
+  { id: 7, group_id: 1, value: 'Beige', display_value: 'Warm Beige', display_order: 7, is_active: false, product_count: 123 },
+  { id: 8, group_id: 1, value: 'Pink', display_value: 'Rose Pink', display_order: 8, is_active: true, product_count: 432 },
+  // Size group (id:2)
+  { id: 9, group_id: 2, value: 'XS', display_value: 'Extra Small', display_order: 1, is_active: true, product_count: 1234 },
+  { id: 10, group_id: 2, value: 'S', display_value: 'Small', display_order: 2, is_active: true, product_count: 3456 },
+  { id: 11, group_id: 2, value: 'M', display_value: 'Medium', display_order: 3, is_active: true, product_count: 4567 },
+  { id: 12, group_id: 2, value: 'L', display_value: 'Large', display_order: 4, is_active: true, product_count: 3210 },
+  { id: 13, group_id: 2, value: 'XL', display_value: 'Extra Large', display_order: 5, is_active: true, product_count: 2345 },
+  { id: 14, group_id: 2, value: 'XXL', display_value: 'Double XL', display_order: 6, is_active: true, product_count: 987 },
+  { id: 15, group_id: 2, value: '3XL', display_value: 'Triple XL', display_order: 7, is_active: false, product_count: 234 },
+  // Material group (id:3)
+  { id: 16, group_id: 3, value: 'Cotton', display_value: '100% Cotton', display_order: 1, is_active: true, product_count: 1876 },
+  { id: 17, group_id: 3, value: 'Polyester', display_value: 'Polyester Blend', display_order: 2, is_active: true, product_count: 1234 },
+  { id: 18, group_id: 3, value: 'Silk', display_value: 'Pure Silk', display_order: 3, is_active: true, product_count: 567 },
+  { id: 19, group_id: 3, value: 'Linen', display_value: 'Natural Linen', display_order: 4, is_active: true, product_count: 345 },
+  { id: 20, group_id: 3, value: 'Denim', display_value: 'Denim', display_order: 5, is_active: true, product_count: 876 },
+  { id: 21, group_id: 3, value: 'Leather', display_value: 'Genuine Leather', display_order: 6, is_active: true, product_count: 432 },
+  { id: 22, group_id: 3, value: 'Wool', display_value: 'Merino Wool', display_order: 7, is_active: true, product_count: 234 },
+  // Storage group (id:4)
+  { id: 23, group_id: 4, value: '64GB', display_value: '64 GB', display_order: 1, is_active: true, product_count: 234 },
+  { id: 24, group_id: 4, value: '128GB', display_value: '128 GB', display_order: 2, is_active: true, product_count: 567 },
+  { id: 25, group_id: 4, value: '256GB', display_value: '256 GB', display_order: 3, is_active: true, product_count: 876 },
+  { id: 26, group_id: 4, value: '512GB', display_value: '512 GB', display_order: 4, is_active: true, product_count: 654 },
+  { id: 27, group_id: 4, value: '1TB', display_value: '1 TB', display_order: 5, is_active: true, product_count: 345 },
+  { id: 28, group_id: 4, value: '2TB', display_value: '2 TB', display_order: 6, is_active: true, product_count: 123 },
+  // RAM group (id:5)
+  { id: 29, group_id: 5, value: '4GB', display_value: '4 GB', display_order: 1, is_active: true, product_count: 123 },
+  { id: 30, group_id: 5, value: '8GB', display_value: '8 GB', display_order: 2, is_active: true, product_count: 456 },
+  { id: 31, group_id: 5, value: '16GB', display_value: '16 GB', display_order: 3, is_active: true, product_count: 789 },
+  { id: 32, group_id: 5, value: '32GB', display_value: '32 GB', display_order: 4, is_active: true, product_count: 234 },
+  { id: 33, group_id: 5, value: '64GB', display_value: '64 GB', display_order: 5, is_active: true, product_count: 56 },
+  // Finish group (id:6)
+  { id: 34, group_id: 6, value: 'Matte', display_value: 'Matte Finish', display_order: 1, is_active: false, product_count: 45 },
+  { id: 35, group_id: 6, value: 'Glossy', display_value: 'Glossy Finish', display_order: 2, is_active: false, product_count: 32 },
+  { id: 36, group_id: 6, value: 'Satin', display_value: 'Satin Finish', display_order: 3, is_active: false, product_count: 18 },
+  { id: 37, group_id: 6, value: 'Brushed', display_value: 'Brushed Metal', display_order: 4, is_active: false, product_count: 27 },
+  { id: 38, group_id: 6, value: 'Polished', display_value: 'Mirror Polish', display_order: 5, is_active: false, product_count: 12 },
+];
+
+let units = [
+  { id: 1, name: 'Gram', symbol: 'g', unit_type: 'weight', factor_to_base: 1, is_active: true, product_count: 5421, created_at: '2025-08-12' },
+  { id: 2, name: 'Kilogram', symbol: 'kg', unit_type: 'weight', factor_to_base: 1000, is_active: true, product_count: 3245, created_at: '2025-08-12' },
+  { id: 3, name: 'Milligram', symbol: 'mg', unit_type: 'weight', factor_to_base: 0.001, is_active: true, product_count: 234, created_at: '2025-08-12' },
+  { id: 4, name: 'Milliliter', symbol: 'ml', unit_type: 'volume', factor_to_base: 1, is_active: true, product_count: 1876, created_at: '2025-08-12' },
+  { id: 5, name: 'Liter', symbol: 'L', unit_type: 'volume', factor_to_base: 1000, is_active: true, product_count: 987, created_at: '2025-08-12' },
+  { id: 6, name: 'Centimeter', symbol: 'cm', unit_type: 'length', factor_to_base: 10, is_active: true, product_count: 4532, created_at: '2025-08-12' },
+  { id: 7, name: 'Meter', symbol: 'm', unit_type: 'length', factor_to_base: 1000, is_active: true, product_count: 1234, created_at: '2025-08-12' },
+  { id: 8, name: 'Inch', symbol: 'in', unit_type: 'length', factor_to_base: 25.4, is_active: true, product_count: 2345, created_at: '2025-09-01' },
+  { id: 9, name: 'Millimeter', symbol: 'mm', unit_type: 'length', factor_to_base: 1, is_active: true, product_count: 3456, created_at: '2025-09-01' },
+  { id: 10, name: 'Centimeter Cube', symbol: 'cm³', unit_type: 'dimension', factor_to_base: 1, is_active: true, product_count: 876, created_at: '2025-09-15' },
+  { id: 11, name: 'Meter Cube', symbol: 'm³', unit_type: 'dimension', factor_to_base: 1000000, is_active: true, product_count: 234, created_at: '2025-09-15' },
+  { id: 12, name: 'Piece', symbol: 'pcs', unit_type: 'count', factor_to_base: 1, is_active: true, product_count: 8432, created_at: '2025-08-12' },
+  { id: 13, name: 'Pair', symbol: 'pair', unit_type: 'count', factor_to_base: 2, is_active: true, product_count: 1234, created_at: '2025-10-01' },
+  { id: 14, name: 'Celsius', symbol: '°C', unit_type: 'temperature', factor_to_base: 1, is_active: false, product_count: 45, created_at: '2025-11-02' },
+];
+
+let expandedGroups = new Set([1, 2]);
+let groupFilter = 'all';
+let unitFilter = 'all';
+let deleteCallback = null;
+
+// ============ SIDEBAR ============
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function collapseSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('mainArea').classList.toggle('expanded');
+  const icon = document.getElementById('collapseIcon');
+  icon.textContent = document.getElementById('sidebar').classList.contains('collapsed') ? 'menu' : 'menu_open';
+}
+
+// ============ MODAL HELPERS ============
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', () => closeModal(m.id));
+});
+
+// ============ TOAST ============
+function showToast(message, type = 'success') {
+  const colors = { success: '#16A34A', error: '#DC2626', info: '#2D82FF', warning: '#D97706' };
+  const icons = { success: 'check_circle', error: 'error', info: 'info', warning: 'warning' };
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = colors[type];
+  toast.innerHTML = `<span class="material-icons text-[20px]">${icons[type]}</span> ${message}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ============ TABS ============
+function switchTab(tab) {
+  document.getElementById('tabGroups').classList.toggle('active', tab === 'groups');
+  document.getElementById('tabUnits').classList.toggle('active', tab === 'units');
+  document.getElementById('tabUsage').classList.toggle('active', tab === 'usage');
+  document.getElementById('groupsSection').classList.toggle('hidden', tab !== 'groups');
+  document.getElementById('unitsSection').classList.toggle('hidden', tab !== 'units');
+  document.getElementById('usageSection').classList.toggle('hidden', tab !== 'usage');
+  if (tab === 'usage') renderUsage();
+}
+
+// ============ KPI UPDATE ============
+function updateKPIs() {
+  document.getElementById('kpiGroups').textContent = attributeGroups.length;
+  document.getElementById('kpiAttributes').textContent = productAttributes.length;
+  document.getElementById('kpiUnits').textContent = units.filter(u => u.is_active).length;
+}
+
+// ============ RENDER GROUPS ============
+function renderGroups() {
+  const container = document.getElementById('groupsContainer');
+  const search = (document.getElementById('groupSearch')?.value || '').toLowerCase();
+
+  let filtered = attributeGroups;
+  if (groupFilter === 'active') filtered = filtered.filter(g => g.is_active);
+  else if (groupFilter === 'inactive') filtered = filtered.filter(g => !g.is_active);
+  if (search) filtered = filtered.filter(g => g.name.toLowerCase().includes(search) || g.display_name.toLowerCase().includes(search));
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="section-card p-10 text-center">
+        <span class="material-icons text-slate-300 text-[48px]">category</span>
+        <p class="text-slate-500 mt-3 font-medium">No attribute groups found</p>
+        <p class="text-xs text-slate-400 mt-1">Create your first group to start organizing product attributes</p>
+        <button class="btn-primary text-sm mt-4" onclick="openGroupModal()"><span class="material-icons text-[18px]">add</span> Create Group</button>
+      </div>`;
+    return;
+  }
+
+  const groupColors = ['cc-purple', 'cc-blue', 'cc-orange', 'cc-pink', 'cc-yellow', 'cc-blue'];
+  const groupIcons = ['palette', 'straighten', 'texture', 'sd_storage', 'memory', 'brush'];
+
+  let html = '';
+  filtered.forEach((group, idx) => {
+    const attrs = productAttributes
+      .filter(a => a.group_id === group.id)
+      .sort((a, b) => a.display_order - b.display_order);
+    const activeAttrs = attrs.filter(a => a.is_active);
+    const isExpanded = expandedGroups.has(group.id);
+    const color = groupColors[idx % groupColors.length];
+    const icon = groupIcons[idx % groupIcons.length];
+    const totalProducts = attrs.reduce((s, a) => s + a.product_count, 0);
+
+    html += `
+      <div class="group-card fade-slide-in">
+        <!-- Group Header -->
+        <div class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50/50 transition" onclick="toggleGroupExpand(${group.id})">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-11 h-11 rounded-xl bg-${color}/10 flex items-center justify-center shrink-0">
+              <span class="material-icons text-${color} text-[22px]">${icon}</span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="font-heading text-base font-bold text-slate-900">${group.name}</h3>
+                <span class="badge ${group.is_active ? 'badge-green' : 'badge-red'} text-[11px]">
+                  <span class="material-icons text-[11px]">${group.is_active ? 'check_circle' : 'cancel'}</span>
+                  ${group.is_active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">${group.display_name} &middot; <span class="mono text-[11px]">id: ${group.id}</span></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="hidden sm:flex items-center gap-4 text-xs text-slate-400">
+              <span class="flex items-center gap-1"><span class="font-bold text-slate-600">${attrs.length}</span> values</span>
+              <span class="flex items-center gap-1"><span class="font-bold text-slate-600">${totalProducts.toLocaleString()}</span> products</span>
+            </div>
+            <span class="material-icons text-slate-400 expand-icon ${isExpanded ? 'rotated' : ''}" id="expandIcon_${group.id}">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Expandable Content -->
+        <div class="expand-content ${isExpanded ? 'open' : ''}" id="expandContent_${group.id}">
+          <div class="border-t border-slate-100 px-5 py-3 bg-slate-50/50">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs text-slate-400 mono">product_attributes WHERE group_id = ${group.id} ORDER BY display_order</p>
+              <button class="flex items-center gap-1.5 text-xs text-cc-blue font-semibold hover:underline" onclick="event.stopPropagation();openAttrModal(${group.id})">
+                <span class="material-icons text-[14px]">add</span> Add Value
+              </button>
+            </div>
+            ${attrs.length === 0 ? `
+              <div class="text-center py-6">
+                <p class="text-sm text-slate-400">No attribute values yet</p>
+                <button class="text-xs text-cc-blue font-semibold mt-2 hover:underline" onclick="event.stopPropagation();openAttrModal(${group.id})">Add first value</button>
+              </div>
+            ` : `
+              <div class="space-y-0.5">
+                ${attrs.map((attr, aIdx) => `
+                  <div class="attr-value-row fade-slide-in" style="animation-delay:${aIdx * 30}ms">
+                    <span class="drag-handle material-icons text-[18px]">drag_indicator</span>
+                    <div class="flex items-center justify-center w-6 h-6 rounded-md bg-slate-100 text-[11px] font-bold text-slate-500 mono">${attr.display_order}</div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="font-medium text-slate-800 text-sm">${attr.value}</span>
+                        ${attr.display_value && attr.display_value !== attr.value ? `<span class="text-xs text-slate-400">→ ${attr.display_value}</span>` : ''}
+                      </div>
+                      <p class="text-[10px] text-slate-400 mono">id: ${attr.id} &middot; ${attr.product_count.toLocaleString()} products</p>
+                    </div>
+                    <span class="badge ${attr.is_active ? 'badge-green' : 'badge-slate'} text-[10px]">${attr.is_active ? 'Active' : 'Inactive'}</span>
+                    <button class="btn-icon" style="width:28px;height:28px" onclick="event.stopPropagation();editAttr(${attr.id},${group.id})" title="Edit"><span class="material-icons text-[14px]">edit</span></button>
+                    <button class="btn-icon danger" style="width:28px;height:28px" onclick="event.stopPropagation();deleteAttr(${attr.id})" title="Delete"><span class="material-icons text-[14px]">delete</span></button>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+            ${attrs.length > 0 ? `
+              <div class="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between">
+                <p class="text-xs text-slate-400">${activeAttrs.length} of ${attrs.length} values active &middot; Used by ${totalProducts.toLocaleString()} products</p>
+                <div class="flex items-center gap-1">
+                  <button class="btn-icon" style="width:28px;height:28px" onclick="event.stopPropagation();editGroup(${group.id})" title="Edit Group"><span class="material-icons text-[14px]">edit</span></button>
+                  <button class="btn-icon danger" style="width:28px;height:28px" onclick="event.stopPropagation();deleteGroup(${group.id})" title="Delete Group"><span class="material-icons text-[14px]">delete</span></button>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+  updateKPIs();
+}
+
+function toggleGroupExpand(id) {
+  if (expandedGroups.has(id)) expandedGroups.delete(id);
+  else expandedGroups.add(id);
+  renderGroups();
+}
+
+function expandAll() {
+  attributeGroups.forEach(g => expandedGroups.add(g.id));
+  renderGroups();
+}
+
+function collapseAll() {
+  expandedGroups.clear();
+  renderGroups();
+}
+
+function filterGroups(filter, btn) {
+  groupFilter = filter;
+  document.querySelectorAll('.group-filter-btn').forEach(b => {
+    b.className = 'text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition group-filter-btn';
+  });
+  btn.className = 'text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg group-filter-btn';
+  renderGroups();
+}
+
+// ============ GROUP CRUD ============
+function openGroupModal(editId) {
+  if (editId) {
+    const g = attributeGroups.find(g => g.id === editId);
+    if (!g) return;
+    document.getElementById('groupModalTitle').textContent = 'Edit Attribute Group';
+    document.getElementById('saveGroupBtn').textContent = 'Update Group';
+    document.getElementById('editGroupId').value = g.id;
+    document.getElementById('groupName').value = g.name;
+    document.getElementById('groupDisplayName').value = g.display_name;
+    document.getElementById('groupDescription').value = g.description;
+    document.getElementById('groupActive').checked = g.is_active;
+  } else {
+    document.getElementById('groupModalTitle').textContent = 'Add Attribute Group';
+    document.getElementById('saveGroupBtn').textContent = 'Save Group';
+    document.getElementById('editGroupId').value = '';
+    document.getElementById('groupName').value = '';
+    document.getElementById('groupDisplayName').value = '';
+    document.getElementById('groupDescription').value = '';
+    document.getElementById('groupActive').checked = true;
+  }
+  openModal('groupModal');
+}
+
+function editGroup(id) { openGroupModal(id); }
+
+function saveGroup() {
+  const editId = document.getElementById('editGroupId').value;
+  const name = document.getElementById('groupName').value.trim();
+  const displayName = document.getElementById('groupDisplayName').value.trim();
+  const description = document.getElementById('groupDescription').value.trim();
+  const isActive = document.getElementById('groupActive').checked;
+
+  if (!name) { showToast('Group name is required', 'error'); return; }
+
+  if (editId) {
+    const g = attributeGroups.find(g => g.id === parseInt(editId));
+    if (g) {
+      g.name = name;
+      g.display_name = displayName || name;
+      g.description = description;
+      g.is_active = isActive;
+      showToast(`Group "${name}" updated`, 'success');
+    }
+  } else {
+    attributeGroups.push({
+      id: nextGroupId++,
+      name, display_name: displayName || name,
+      description, is_active: isActive,
+      created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    });
+    showToast(`Group "${name}" created`, 'success');
+  }
+
+  closeModal('groupModal');
+  renderGroups();
+}
+
+function deleteGroup(id) {
+  const g = attributeGroups.find(g => g.id === id);
+  if (!g) return;
+  const attrs = productAttributes.filter(a => a.group_id === id);
+  if (attrs.length > 0) {
+    showToast(`Cannot delete: "${g.name}" has ${attrs.length} attribute values`, 'error');
+    return;
+  }
+  deleteCallback = () => {
+    attributeGroups = attributeGroups.filter(gr => gr.id !== id);
+    expandedGroups.delete(id);
+    showToast(`Group "${g.name}" deleted`, 'success');
+    renderGroups();
+  };
+  document.getElementById('deleteMessage').textContent = `Delete group "${g.name}"? This will remove the record from product_attribute_groups.`;
+  document.getElementById('deleteSql').textContent = `DELETE FROM product_attribute_groups WHERE id = ${id}`;
+  openModal('deleteModal');
+}
+
+// ============ ATTRIBUTE CRUD ============
+function openAttrModal(groupId, editId) {
+  document.getElementById('attrGroupId').value = groupId;
+  if (editId) {
+    const a = productAttributes.find(a => a.id === editId);
+    if (!a) return;
+    document.getElementById('attrModalTitle').textContent = 'Edit Attribute Value';
+    document.getElementById('editAttrId').value = a.id;
+    document.getElementById('attrValue').value = a.value;
+    document.getElementById('attrDisplayValue').value = a.display_value || '';
+    document.getElementById('attrSortOrder').value = a.display_order;
+    document.getElementById('attrActive').checked = a.is_active;
+  } else {
+    document.getElementById('attrModalTitle').textContent = 'Add Attribute Value';
+    document.getElementById('editAttrId').value = '';
+    document.getElementById('attrValue').value = '';
+    document.getElementById('attrDisplayValue').value = '';
+    const groupAttrs = productAttributes.filter(a => a.group_id === groupId);
+    document.getElementById('attrSortOrder').value = groupAttrs.length + 1;
+    document.getElementById('attrActive').checked = true;
+  }
+  openModal('attrModal');
+}
+
+function editAttr(id, groupId) { openAttrModal(groupId, id); }
+
+function saveAttr() {
+  const editId = document.getElementById('editAttrId').value;
+  const groupId = parseInt(document.getElementById('attrGroupId').value);
+  const value = document.getElementById('attrValue').value.trim();
+  const displayValue = document.getElementById('attrDisplayValue').value.trim();
+  const sortOrder = parseInt(document.getElementById('attrSortOrder').value) || 0;
+  const isActive = document.getElementById('attrActive').checked;
+
+  if (!value) { showToast('Attribute value is required', 'error'); return; }
+
+  if (editId) {
+    const a = productAttributes.find(a => a.id === parseInt(editId));
+    if (a) {
+      a.value = value;
+      a.display_value = displayValue;
+      a.display_order = sortOrder;
+      a.is_active = isActive;
+      showToast(`"${value}" updated`, 'success');
+    }
+  } else {
+    productAttributes.push({
+      id: nextAttrId++,
+      group_id: groupId,
+      value, display_value: displayValue,
+      display_order: sortOrder,
+      is_active: isActive, product_count: 0
+    });
+    showToast(`"${value}" added`, 'success');
+  }
+
+  closeModal('attrModal');
+  renderGroups();
+}
+
+function deleteAttr(id) {
+  const a = productAttributes.find(a => a.id === id);
+  if (!a) return;
+  if (a.product_count > 0) {
+    showToast(`Cannot delete: "${a.value}" is used by ${a.product_count} products`, 'error');
+    return;
+  }
+  deleteCallback = () => {
+    productAttributes = productAttributes.filter(at => at.id !== id);
+    showToast(`"${a.value}" deleted`, 'success');
+    renderGroups();
+  };
+  document.getElementById('deleteMessage').textContent = `Delete "${a.value}"? This removes the record from product_attributes.`;
+  document.getElementById('deleteSql').textContent = `DELETE FROM product_attributes WHERE id = ${id}`;
+  openModal('deleteModal');
+}
+
+// ============ RENDER UNITS TABLE ============
+function renderUnitsTable() {
+  const tbody = document.getElementById('unitsTableBody');
+  let filtered = units;
+  if (unitFilter !== 'all') filtered = filtered.filter(u => u.unit_type === unitFilter);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10">
+      <span class="material-icons text-slate-300 text-[40px]">straighten</span>
+      <p class="text-slate-500 mt-2 font-medium">No units found</p>
+    </td></tr>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(u => {
+    html += `
+      <tr>
+        <td class="mono text-xs font-semibold text-slate-500">${u.id}</td>
+        <td>
+          <span class="font-medium text-slate-800 text-sm">${u.name}</span>
+          <p class="text-[10px] text-slate-400 mono">units.id: ${u.id}</p>
+        </td>
+        <td>
+          <span class="mono text-sm font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">${u.symbol}</span>
+        </td>
+        <td><span class="unit-type-badge unit-type-${u.unit_type}">${u.unit_type}</span></td>
+        <td class="mono text-sm text-slate-600">${u.factor_to_base}</td>
+        <td>
+          <span class="font-semibold text-slate-700 text-sm">${u.product_count.toLocaleString()}</span>
+          <p class="text-[10px] text-slate-400">products</p>
+        </td>
+        <td>
+          <div class="flex items-center gap-2">
+            <label class="toggle-switch" style="transform:scale(.8)">
+              <input type="checkbox" ${u.is_active ? 'checked' : ''} onchange="toggleUnit(${u.id})">
+              <span class="slider"></span>
+            </label>
+            <span class="text-xs font-medium ${u.is_active ? 'text-green-600' : 'text-slate-400'}">${u.is_active ? 'Yes' : 'No'}</span>
+          </div>
+        </td>
+        <td class="text-sm text-slate-400">${u.created_at}</td>
+        <td>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" style="width:30px;height:30px" onclick="editUnit(${u.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+            <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteUnit(${u.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+  updateKPIs();
+}
+
+function filterUnits(filter, btn) {
+  unitFilter = filter;
+  document.querySelectorAll('.unit-filter-btn').forEach(b => {
+    b.className = 'text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition unit-filter-btn';
+  });
+  btn.className = 'text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg unit-filter-btn';
+  renderUnitsTable();
+}
+
+function toggleUnit(id) {
+  const u = units.find(u => u.id === id);
+  if (u) {
+    u.is_active = !u.is_active;
+    showToast(`${u.name} (${u.symbol}) ${u.is_active ? 'activated' : 'deactivated'}`, 'info');
+    renderUnitsTable();
+  }
+}
+
+// ============ UNIT CRUD ============
+function openUnitModal(editId) {
+  if (editId) {
+    const u = units.find(u => u.id === editId);
+    if (!u) return;
+    document.getElementById('unitModalTitle').textContent = 'Edit Unit';
+    document.getElementById('saveUnitBtn').textContent = 'Update Unit';
+    document.getElementById('editUnitId').value = u.id;
+    document.getElementById('unitName').value = u.name;
+    document.getElementById('unitSymbol').value = u.symbol;
+    document.getElementById('unitType').value = u.unit_type;
+    document.getElementById('unitFactor').value = u.factor_to_base;
+    document.getElementById('unitActive').checked = u.is_active;
+  } else {
+    document.getElementById('unitModalTitle').textContent = 'Add Unit';
+    document.getElementById('saveUnitBtn').textContent = 'Save Unit';
+    document.getElementById('editUnitId').value = '';
+    document.getElementById('unitName').value = '';
+    document.getElementById('unitSymbol').value = '';
+    document.getElementById('unitType').value = 'weight';
+    document.getElementById('unitFactor').value = '';
+    document.getElementById('unitActive').checked = true;
+  }
+  openModal('unitModal');
+}
+
+function editUnit(id) { openUnitModal(id); }
+
+function saveUnit() {
+  const editId = document.getElementById('editUnitId').value;
+  const name = document.getElementById('unitName').value.trim();
+  const symbol = document.getElementById('unitSymbol').value.trim();
+  const unitType = document.getElementById('unitType').value;
+  const factor = parseFloat(document.getElementById('unitFactor').value) || 0;
+  const isActive = document.getElementById('unitActive').checked;
+
+  if (!name) { showToast('Unit name is required', 'error'); return; }
+  if (!symbol) { showToast('Symbol is required', 'error'); return; }
+
+  if (editId) {
+    const u = units.find(u => u.id === parseInt(editId));
+    if (u) {
+      u.name = name; u.symbol = symbol;
+      u.unit_type = unitType; u.factor_to_base = factor;
+      u.is_active = isActive;
+      showToast(`Unit "${name}" (${symbol}) updated`, 'success');
+    }
+  } else {
+    units.push({
+      id: nextUnitId++, name, symbol,
+      unit_type: unitType, factor_to_base: factor,
+      is_active: isActive, product_count: 0,
+      created_at: new Date().toISOString().slice(0, 10)
+    });
+    showToast(`Unit "${name}" (${symbol}) created`, 'success');
+  }
+
+  closeModal('unitModal');
+  renderUnitsTable();
+}
+
+function deleteUnit(id) {
+  const u = units.find(u => u.id === id);
+  if (!u) return;
+  if (u.product_count > 0) {
+    showToast(`Cannot delete: "${u.name}" is used by ${u.product_count} products`, 'error');
+    return;
+  }
+  deleteCallback = () => {
+    units = units.filter(un => un.id !== id);
+    showToast(`Unit "${u.name}" deleted`, 'success');
+    renderUnitsTable();
+  };
+  document.getElementById('deleteMessage').textContent = `Delete unit "${u.name}" (${u.symbol})?`;
+  document.getElementById('deleteSql').textContent = `DELETE FROM units WHERE id = ${id}`;
+  openModal('deleteModal');
+}
+
+// ============ DELETE CONFIRM ============
+function confirmDelete() {
+  if (deleteCallback) { deleteCallback(); deleteCallback = null; }
+  closeModal('deleteModal');
+}
+
+// ============ USAGE OVERVIEW ============
+function renderUsage() {
+  // Group usage bars
+  const usageChart = document.getElementById('usageChart');
+  const maxProducts = Math.max(...attributeGroups.map(g => {
+    return productAttributes.filter(a => a.group_id === g.id).reduce((s, a) => s + a.product_count, 0);
+  }));
+
+  const barColors = ['#8C30F5', '#2D82FF', '#FF5100', '#FF006B', '#FFB800', '#64748B'];
+  let usageHtml = '';
+  attributeGroups.forEach((g, idx) => {
+    const total = productAttributes.filter(a => a.group_id === g.id).reduce((s, a) => s + a.product_count, 0);
+    const pct = maxProducts > 0 ? (total / maxProducts) * 100 : 0;
+    const attrCount = productAttributes.filter(a => a.group_id === g.id).length;
+    usageHtml += `
+      <div class="flex items-center gap-4">
+        <div class="w-28 shrink-0 text-right">
+          <p class="text-sm font-semibold text-slate-700">${g.name}</p>
+          <p class="text-[10px] text-slate-400 mono">${attrCount} values</p>
+        </div>
+        <div class="flex-1">
+          <div class="h-8 rounded-lg bg-slate-100 overflow-hidden relative">
+            <div class="h-full rounded-lg transition-all duration-700 flex items-center px-3" style="width:${Math.max(pct, 2)}%;background:${barColors[idx % barColors.length]}">
+              <span class="text-white text-xs font-bold whitespace-nowrap">${total.toLocaleString()} products</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+  usageChart.innerHTML = usageHtml;
+
+  // Unit type distribution
+  const unitTypeChart = document.getElementById('unitTypeChart');
+  const typeCounts = {};
+  units.forEach(u => { typeCounts[u.unit_type] = (typeCounts[u.unit_type] || 0) + 1; });
+  const totalUnits = units.length;
+  const typeColors = { weight: '#F59E0B', volume: '#2D82FF', length: '#8C30F5', dimension: '#06B6D4', count: '#22C55E', temperature: '#EF4444' };
+  const typeIcons = { weight: 'scale', volume: 'water_drop', length: 'straighten', dimension: 'view_in_ar', count: 'filter_1', temperature: 'thermostat' };
+
+  let typeHtml = '';
+  Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).forEach(([type, count]) => {
+    const pct = ((count / totalUnits) * 100).toFixed(0);
+    typeHtml += `
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:${typeColors[type]}15">
+          <span class="material-icons text-[18px]" style="color:${typeColors[type]}">${typeIcons[type]}</span>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-semibold text-slate-700 capitalize">${type}</span>
+            <span class="text-xs text-slate-500">${count} units (${pct}%)</span>
+          </div>
+          <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full rounded-full" style="width:${pct}%;background:${typeColors[type]};transition:width .6s ease"></div>
+          </div>
+        </div>
+      </div>`;
+  });
+  unitTypeChart.innerHTML = typeHtml;
+
+  // Recent activity
+  const recentActivity = document.getElementById('recentActivity');
+  const activities = [
+    { icon: 'add', color: '#22C55E', text: 'Added "Rose Pink" to Color group', time: '2 hours ago', sql: 'INSERT INTO product_attributes' },
+    { icon: 'edit', color: '#2D82FF', text: 'Updated unit "Kilogram" factor', time: '5 hours ago', sql: 'UPDATE units SET factor_to_base' },
+    { icon: 'category', color: '#8C30F5', text: 'Created group "RAM Size"', time: '1 day ago', sql: 'INSERT INTO product_attribute_groups' },
+    { icon: 'delete', color: '#EF4444', text: 'Removed "Bronze" from Finish group', time: '2 days ago', sql: 'DELETE FROM product_attributes' },
+    { icon: 'toggle_on', color: '#F59E0B', text: 'Deactivated "Celsius" unit', time: '3 days ago', sql: 'UPDATE units SET is_active = 0' },
+    { icon: 'edit', color: '#2D82FF', text: 'Reordered Size group values', time: '4 days ago', sql: 'UPDATE product_attributes SET display_order' },
+  ];
+
+  let actHtml = '';
+  activities.forEach(a => {
+    actHtml += `
+      <div class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style="background:${a.color}15">
+          <span class="material-icons text-[16px]" style="color:${a.color}">${a.icon}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-slate-700">${a.text}</p>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[10px] text-slate-400 mono">${a.sql}</span>
+            <span class="text-[10px] text-slate-300">&middot;</span>
+            <span class="text-[10px] text-slate-400">${a.time}</span>
+          </div>
+        </div>
+      </div>`;
+  });
+  recentActivity.innerHTML = actHtml;
+}
+
+// ============ GLOBAL SEARCH ============
+function handleGlobalSearch() {
+  const q = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  if (!q) { renderGroups(); renderUnitsTable(); return; }
+
+  // Find matching tab
+  const groupMatch = attributeGroups.some(g => g.name.toLowerCase().includes(q) || g.display_name.toLowerCase().includes(q)) ||
+                     productAttributes.some(a => a.value.toLowerCase().includes(q));
+  const unitMatch = units.some(u => u.name.toLowerCase().includes(q) || u.symbol.toLowerCase().includes(q));
+
+  if (groupMatch && !unitMatch) switchTab('groups');
+  else if (unitMatch && !groupMatch) switchTab('units');
+  else if (groupMatch) switchTab('groups');
+
+  document.getElementById('groupSearch').value = q;
+  renderGroups();
+  renderUnitsTable();
+}
+
+// ============ INIT ============
+function init() {
+  renderGroups();
+  renderUnitsTable();
+  updateKPIs();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Product — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config={theme:{extend:{colors:{cc:{yellow:'#FFB800',orange:'#FF5100',pink:'#FF006B',purple:'#8C30F5',blue:'#2D82FF',dark:'#0F172A',light:'#F8FAFC',ice:'#F1F5F9'}},fontFamily:{heading:['Poppins','sans-serif'],body:['Inter','sans-serif']}}}}
+</script>
+<style>
+body{font-family:'Inter',sans-serif;background:#F1F5F9}
+h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+::selection{background:#FF5100;color:#fff}
+.scrollbar-thin::-webkit-scrollbar{width:6px}
+.scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+.scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+.sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed{width:72px}
+.sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+.sidebar.collapsed .nav-item .material-icons{margin-right:0}
+.nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A8B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+.nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+.nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+.nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+.main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+.main-area.expanded{margin-left:72px}
+.section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F8;overflow:hidden}
+.action-btn{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;color:#94A8B8}
+.action-btn:hover{background:#F1F5F9;color:#2D82FF}
+.action-btn.danger:hover{background:#FFE4E6;color:#FF006B}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-box{background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.show .modal-box{transform:translateY(0) scale(1)}
+.form-field{width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.8125rem;color:#1E293B;transition:all .15s ease;background:#fff}
+.form-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+.form-field::placeholder{color:#94A8B8}
+.form-label{display:block;text-xs;font-semibold text-slate-600;margin-bottom:4px}
+.form-hint{font-size:.6875rem;color:#94A8B8;margin-top:2px}
+.form-section-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748B;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #E2E8F0;display:flex;align-items:center;gap:8px}
+.form-section-title::after{content:'';flex:1;height:1.5px;background:#E2E8F8;border-radius:1px}
+.detail-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #F1F5F9}
+.detail-row:last-child{border-bottom:none}
+.spec-chip{display:inline-flex;align-items:center;gap:4px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:4px 10px;font-size:.75rem;color:#475569}
+.tag-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:.6875rem;font-weight:600;white-space:nowrap}
+.variant-card{background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:12px;transition:all .15s ease}
+.variant-card:hover{border-color:#2D82FF;box-shadow:0 4px 12px -4px rgba(45,130,255,.08)}
+.variant-card.oos{opacity:.5;border-style:dashed;border-color:#FF006B}
+.variant-card.selected{border-color:#2D82FF;box-shadow:0 0 0 2px rgba(45,130,255,.15)}
+.img-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;border:2px solid #E2E8F0;cursor:pointer;transition:all .15s ease;flex-shrink:0}
+.img-thumb:hover{border-color:#2D82FF;transform:scale(1.08)}
+.img-thumb.primary{border-color:#2D82FF;box-shadow:0 0 0 2px rgba(45,130,255,.2)}
+.video-thumb{width:80px;height:45px;border-radius:8px;object-fit:cover;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s ease;flex-shrink:0}
+.video-thumb:hover{border-color:#2D82FF}
+.video-thumb.primary{border-color:#2D82FF;box-shadow:0 0 0 2px rgba(45,130,255,.2)}
+.spec-input{display:grid;grid-template-columns:auto 1fr 2fr;gap:6px}
+.spec-input .spec-group{font-size:.6875rem;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.spec-input input,.spec-input textarea{width:100%;padding:6px 10px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.8125rem;color:#1E293B;transition:all .15s ease;background:#fff}
+.spec-input input:focus,.spec-input textarea:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 2px rgba(45,130,255,.1)}
+.spec-input textarea{resize:vertical;min-height:48px}
+.spec-remove{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;color:#94A8B8;flex-shrink:0;background:transparent;border:none}
+.spec-remove:hover{background:#FFE4E6;color:#FF00B8}
+.img-upload-area{border:2px dashed #CBD5E1;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .15s ease}
+.img-upload-area:hover{border-color:#2D82FF;background:#F0F4FF}
+.img-upload-area.dragover{border-color:#2D82FF;background:#DBEAFE}
+.tag-select-area{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1.5px solid #E2E8F8;border-radius:12px;min-height:68px}
+.tag-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .15s ease;border:1.5px solid #E2E8F8}
+.tag-pill:hover{border-color:#2D82FF;background:#E8F0FE}
+.tag-pill.selected{border-color:#2D82FF;background:#E8F0FE;color:#2D82FF}
+.toast-container{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;font-size:.875rem;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);animation:toast-in .35s cubic-bezier(.4,0,.2,1) forwards;border:1px solid transparent}
+.toast-item.removing{animation:toast-out .3s ease forwards}
+.toast-success{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+.toast-error{background:#FFF1F2;border-color:#FECDD3;color:#9F1239}
+.toast-info{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+@keyframes toast-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toast-out{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+.sidebar-overlay.show{display:block}
+@media(max-width:1023px){.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}.sidebar.mobile-open{transform:translateX(0)}.main-area{margin-left:0!important}}
+.mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0"><svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg></div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0"><p class="text-white text-sm font-semibold truncate">Arvind Sharma</p><p class="text-white/35 text-xs truncate">Super Admin</p></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">Products</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-72 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search products, SKUs..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue"><span class="material-icons text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span></button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block"><p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p><p class="text-[11px] text-slate-400">Super Admin</p></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm mb-6">
+      <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+      <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+      <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+      <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+      <a href="#" class="text-cc-blue font-medium flex items-center gap-1.5"><span class="material-icons text-[16px]">edit</span> Edit Product</a>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- ===== LEFT: FORM ===== -->
+      <div class="space-y-6">
+        <!-- Basic Info -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Basic Information</div>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Product Name <span class="form-hint">name VARCHAR(255) NOT NULL</span></label>
+              <input type="text" id="fName" value="TrueSound Pro Wireless Earbuds with ANC" class="form-field">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">SKU <span class="form-hint">sku VARCHAR(100) UNIQUE</span></label>
+                <input type="text" id="fSku" value="CC-EAR-001" class="form-field" style="text-transform:uppercase" readonly>
+              </div>
+              <div>
+                <label class="form-label">Category <span class="form-hint">category_id BIGINT FK → categories</span></label>
+                <select id="fCategory" class="form-field">
+                  <option value="1" selected>1 — Mobiles & Tablets</option>
+                  <option value="2">2 — Electronics</option>
+                  <option value="3">3 — Fashion</option>
+                  <option value="4">4 — Home & Furniture</option>
+                  <option value="5">5 — Beauty & Personal Care</option>
+                  <option value="6">6 — Appliances</option>
+                  <option value="7">7 — Sports & Fitness</option>
+                  <option value="8">8 — Toys & Baby Care</option>
+                  <option value="9">9 — Grocery & Gourmet</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Slug <span class="form-hint">slug VARCHAR(300) UNIQUE</span></label>
+              <input type="text" id="fSlug" value="truesound-pro-wireless-earbuds-with-anc" class="form-field" style="font-size:.75rem;font-family:monospace">
+            </div>
+            <div>
+              <label class="form-label">Short Description <span class="form-hint">short_description TEXT NULL</span></label>
+              <input type="text" id="fShortDesc" value="Experience premium active noise cancellation with deep bass drivers. 40H total battery life." class="form-field">
+            </div>
+            <div>
+              <label class="form-label">Full Description <span class="form-hint">description LONGTEXT NULL (HTML/Markdown)</span></label>
+              <textarea id="fDesc" rows="5" class="form-field resize-none" style="font-size:.8125rem" placeholder="Full product description with specifications, use HTML or markdown...">Experience premium active noise cancellation with deep bass drivers. Features 40H total battery life with lightning fast Type-C charging. Splashproof construction certified by IPX7. Built-in microphone for clear calls. Comes with a premium carry case and 3 sizes of ear tips.
+
+**Key Features:**
+- Active Noise Cancellation (ANC)
+- 12mm Dynamic Drivers
+- 40H Total Battery Life
+- Type-C Fast Charging
+- IPX7 Water Resistant
+- Built-in Microphone
+- Premium Carry Case
+- 3 Sizes of Ear Tips (S/M/L)
+
+**What's in the Box:**
+- Earbuds (L/R), Carry Case, Charging Cable, 3 Pairs Ear Tips (S/M/L), User Manual, Warranty Card</div>
+              </textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Pricing</div>
+          <div class="space-y-4">
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="form-label">Base Price (MRP) <span class="form-hint">base_price DECIMAL(12,2) NOT NULL</span></label>
+                <input type="number" id="fBasePrice" value="2999.00" step="0.01" class="form-field" style="font-family:monospace">
+              </div>
+              <div>
+                <label class="form-label">Sale Price <span class="form-hint">sale_price DECIMAL(12,2) NULL</span></label>
+                <input type="number" id="fSalePrice" value="1499.00" step="0.01" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Cost Price <span class="form-hint">cost_price DECIMAL(12,2) NULL</span></label>
+                <input type="number" id="fCostPrice" value="620.00" step="0.01" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Tax Rate (%) <span class="form-hint">tax_rate DECIMAL(5,2) DEFAULT 0.00</span></label>
+                <input type="number" id="fTaxRate" value="18.00" step="0.01" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Currency <span class="form-hint">currency CHAR(3) DEFAULT 'INR'</span></label>
+                <input type="text" value="INR" id="fCurrency" class="form-field" readonly>
+              </div>
+            </div>
+            <div class="bg-cc-blue/5 border border-internal border-cc-blue/20 rounded-xl p-3">
+              <p class="text-xs text-text-blue-800 font-medium flex items-center gap-2">
+                <span class="material-icons text-[16px]">calculate</span>
+                <span>Effective Price = <strong>₹1,499</strong> (sale_price) or <strong>₹1,772</strong> (sale_price + 18% GST on base_price)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dimensions & Weight -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Dimensions & Weight</div>
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label class="form-label">Weight (grams) <span class="form-hint">weight_grams INT UNSIGNED NULL</span></label>
+                <input type="number" id="fWeight" value="54" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Length (mm) <span class="form-hint">length_mm SMALLINT UNSIGNED NULL</span></label>
+                <input type="number" id="fLength" placeholder="NULL" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Width (mm) <span class="form-hint">width_mm SMALLINT UNSIGNED NULL</span></label>
+                <input type="number" id="fWidth" placeholder="NULL" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Height (mm) <span class="form-hint">height_mm SMALLINT UNSIGNED NULL</span></label>
+                <input type="number" id="fHeight" placeholder="NULL" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Unit <span class="form-hint">unit_id BIGINT NULL → FK units</span></label>
+                <select id="fUnitId" class="form-field">
+                  <option value="">Select unit (optional)</option>
+                  <option value="1">1 — Kilogram</option>
+                  <option value="2">2 — Gram</option>
+                  <option value="3">3 — Milligram</option>
+                  <option value="4">4 — Litre</option>
+                  <option value="5">5 — Millilitre</option>
+                  <option value="6">6 — Count</option>
+                  <option value="7">7 — Length (mm)</option>
+                  <option value="8">8 — Area (sq mm)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Unit Value <span class="form-hint">unit_value DECIMAL(10,2) NULL</span></label>
+                <input type="number" id="fUnitValue" placeholder="NULL" step="0.01" class="form-field" style="font-family:monospace">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Product Images <span class="font-normal normal-case">product_images (is_primary = 1 shown larger) • product_images → product ON DELETE CASCADE</span></div>
+          <div class="space-y-4">
+            <!-- Current Images -->
+            <div>
+              <p class="text-xs font-semibold text-slate-500 mb-2">Current Images (read-only)</p>
+              <div class="flex flex-wrap gap-2" id="currentImages">
+                <div class="relative group">
+                  <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80" class="img-thumb primary" alt="Primary image">
+                  <span class="absolute -top-1.5 -left-1.5 bg-cc-blue text-white text-[9px] font-bold rounded-md px-1.5 py-0.5 shadow-lg">PRIMARY</span>
+                </div>
+                <div class="relative group">
+                  <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=100&auto=format&fit=crop&q=80" class="img-thumb" alt="Image 2">
+                  </div>
+                </div>
+                <div class="relative">
+                  <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=100&auto=format&fit=crop&q=80" class="img-thumb" alt="Image 3">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Upload New Image -->
+            <div>
+              <p class="text-xs font-semibold text-slate-500 mb-2">Add New Image</p>
+              <div class="img-upload-area" id="imgDropZone">
+                <span class="material-icons text-3xl text-slate-300">cloud_upload</span>
+                <p class="text-xs text-slate-400 mt-1">Drop an image here or click to browse</p>
+                <input type="file" id="imgFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Videos -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Product Videos <span class="font-normal normal-case">product_videos → product ON DELETE CASCADE • video_type ENUM('upload','youtube','vimeo')</span></div>
+          <div class="space-y-4">
+            <!-- Current Videos -->
+            <div>
+              <p class="text-xs font-semibold text-slate-500 mb-2">Current Videos (read-only)</p>
+              <div class="flex flex-wrap gap-2">
+                <div class="relative group">
+                  <video src="" class="w-36 h-20 rounded-lg bg-slate-100 flex items-center justify-center border border border-slate-200">
+                    <span class="material-icons text-slate-300 text-2xl">play_circle</span>
+                  </video>
+                  <span class="absolute -top-1 -left-1 bg-cc-blue text-white text-[9px] font-bold rounded-md px-1.5 py-0.5 shadow-lg">UPLOAD</span>
+                </div>
+              </div>
+            </div>
+            <!-- Upload New Video -->
+            <div>
+              <p class="text-xs font-semibold text-slate-500 mb-2">Add New Video</p>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="form-label">Video Type <span class="form-hint">video_type ENUM</span></label>
+                  <select id="vType" class="form-field text-xs py-2.5">
+                    <option value="upload" selected>Upload from device</option>
+                    <option value="youtube">YouTube Embed</option>
+                    <option value="vimeo">Vimeo Embed</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Video URL / Embed ID <span class="form-hint">video_url VARCHAR(500) NOT NULL</span></label>
+                  <input type="text" id="vUrl" placeholder="S3/CDN URL or YouTube embed ID..." class="form-field text-xs" style="font-family:monospace">
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Thumbnail URL <span class="form-hint">thumbnail_url VARCHAR(500) NULL</span></label>
+                  <input type="text" id="vThumb" placeholder="S3/CDN thumbnail URL..." class="form-field text-xs" style="font-family:monospace">
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Sort Order <span class="form-hint">sort_order SMALLINT UNSIGNED DEFAULT 0</span></label>
+                  <input type="number" id="vSortOrder" value="0" min="0" class="form-field text-xs" style="font-family:monospace">
+                  </div>
+                </div>
+                <button type="button" onclick="addVideo()" class="flex items-center justify-center gap-2 bg-cc-blue hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition w-full text-sm">
+                <span class="material-icons text-[18px]video_call</span> Add Video
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specifications -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Product Specifications <span class="font-normal normal-case">product_specifications → spec_group VARCHAR(100) NULL, spec_key VARCHAR(100) NOT NULL, spec_value TEXT NOT NULL</span></div>
+          <div id="specsContainer" class="space-y-3">
+            <!-- Spec Row 1 -->
+            <div class="bg-slate-50 rounded-xl p-4">
+              <div class="spec-input">
+                <input type="text" value="General" class="spec-group" readonly>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" value="Connectivity" class="spec-key" readonly>
+                  <input type="text" value="Bluetooth 5.3" class="spec-value">
+                </div>
+                </div>
+                <button type="button" onclick="removeSpec(this)" class="spec-remove" title="Remove"><span class="material-icons text-[16px]">close</span></button>
+              </div>
+            </div>
+            <!-- Spec Row 2 -->
+            <div class="bg-slate-50 rounded-xl p-4">
+              <div class="spec-input">
+                <input type="text" value="General" class="spec-group" readonly>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" value="Battery" class="spec-key" readonly>
+                  <input type="text" value="40H total (8H earbuds + 32H case)" class="spec-value">
+                </div>
+              </div>
+                <button type="button" onclick="removeSpec(this)" class="spec-remove" title="Remove"><span class="material-icons text-[16px]">close</span></button>
+              </div>
+            </div>
+            <!-- Spec Row 3 -->
+            <div class="bg-slate-50 rounded-xl p-4">
+              <div class="spec-input">
+                <input type="text" value="Audio" class="spec-group" readonly>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" value="Driver" class="spec-key" readonly>
+                  <input type="text" value='12mm dynamic with ANC' class="spec-value">
+                </div>
+              </div>
+                <button type="button" onclick="removeSpec(this)" class="spec-remove" title="Remove"><span class="material-icons text-[16px]">close</span></button>
+              </div>
+            </div>
+            <!-- Spec Row 4 -->
+            <div class="bg-slate-50 rounded-xl p-4">
+              <div class="spec-input">
+                <input type="text" value="Build" class="spec-group" readonly>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" value="Water Resistance" class="spec-key" readonly>
+                  <input type="text" value="IPX5 splashproof" class="spec-value">
+                </div>
+              </div>
+                <button type="button" onclick="removeSpec(this)" class="spec-remove" title="Remove"><span class="material-icons text-[16px]">close</span></button>
+              </div>
+            </div>
+            <!-- Spec Row 5 -->
+            <div class="bg-slate-50 rounded-xl p-4">
+              <div class="spec-input">
+                <input type="text" value="Audio" class="spec-group" readonly>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" value="Codec" class="spec-key" readonly>
+                  <input type="text" value="aptX HD, AAC, SBC" class="spec-value">
+                </div>
+              </div>
+                <button type="button" onclick="removeSpec(this)" class="spec-remove" title="Remove"><span class="material-icons text-[16px]">close</span></button>
+              </div>
+            </div>
+            <!-- Add New Spec -->
+            <div class="bg-cc-blue/5 border border-dashed border-cc-blue/30 rounded-xl p-4">
+              <p class="text-xs font-semibold text-cc-blue mb-3 flex items-center gap-2">
+                <span class="material-icons text-[16px]">add_circle</span> Add Specification
+              </p>
+              <div class="spec-input">
+                <input type="text" value="Display" class="spec-group" placeholder="Group name...">
+                  <div class="grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Key" class="spec-key">
+                    <input type="text" placeholder="Value" class="spec-value">
+                  </div>
+                  <input type="text" placeholder="Value" class="spec-value">
+                  </div>
+                </div>
+                <button type="button" onclick="addSpec(this)" class="bg-cc-blue hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition flex items-center justify-center gap-1.5 w-full">
+                  <span class="material-icons text-[16px]">add</span> Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="section-card p-5 sm:p-6">
+          <div class="form-section-title">Product Tags <span class="font-normal normal-case">product_tags JOIN tags ON product_id — tag_type ENUM('featured','top_rated','new_arrival','best_seller','trending','offer','limited_edition','custom')</span></div>
+          <div class="tag-select-area" id="tagSelectArea">
+            <span class="tag-pill selected" style="background:#6C63FF18;color:#fff" onclick="toggleTag(this)">Featured</span>
+            <span class="tag-pill" style="background:#F59E0B18;color:#92400E" onclick="toggleTag(this)">Top Rated</span>
+            <span class="tag-pill" style="background:#10B9818;color:#fff" onclick="toggleTag(this)">New Arrival</span>
+            <span class="tag-pill" style="background:#EF4444;color:#fff" onclick="toggleTag(this)">Best Seller</span>
+            <span class="tag-pill" style="background:#3B82F6;color:#fff" onclick="toggleTag(this)">Trending</span>
+            <span class="tag-pill" style="background:#F97316;color:#fff" onclick="toggleTag(this)">On Offer</span>
+            <span class="tag-pill" style="

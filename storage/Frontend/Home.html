@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickCodex — Shop Electronics, Fashion, Home & More Online in India</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  input:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+
+  /* Product Cards */
+  .product-card {
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: #2D82FF;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08);
+    border-color: #2D82FF;
+  }
+  .product-card:hover::before { opacity: 1; }
+
+  .price-strike { text-decoration: line-through; color: #94A3B8; }
+
+  /* Category pill states */
+  .cat-pill {
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid transparent;
+  }
+  .cat-pill:hover {
+    border-color: #2D82FF;
+    background: #E8F0FE;
+    transform: translateY(-3px);
+  }
+
+  /* Marquee */
+  .marquee-track { animation: cc-marquee 35s linear infinite; }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes cc-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Section heading line */
+  .section-heading {
+    position: relative;
+    display: inline-block;
+  }
+  .section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 48px; height: 3px;
+    border-radius: 2px;
+    background: #FF5100;
+  }
+
+  /* Sidebar styling */
+  .sidebar-link {
+    transition: all 0.15s ease;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 2px 0;
+  }
+  .sidebar-link:hover {
+    background: #E8F0FE;
+    color: #2D82FF;
+    padding-left: 16px;
+  }
+  .sidebar-link.active {
+    background: #E8F0FE;
+    color: #2D82FF;
+    font-weight: 600;
+  }
+
+  /* Cart badge dynamic pulse */
+  @keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+  .stars { color: #FFB800; }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- ================= TOAST NOTIFICATIONS ================= -->
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= TOP UTILITY BAR ================= -->
+<div class="bg-cc-dark text-white text-xs relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between relative">
+    <p class="hidden sm:block text-white/80">Welcome to ClickCodex — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <span onclick="openDeliveryModal()" class="hover:text-white cursor-pointer transition flex items-center gap-1">
+        <span class="material-icons text-xs">location_on</span> Track Order
+      </span>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN HEADER ================= -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+
+    <!-- Mobile Menu Toggle Button -->
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow focus:outline-none" aria-label="Open Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+
+    <!-- Logo -->
+    <a href="#" onclick="filterByCategory('All')" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+
+    <!-- Deliver to -->
+    <div onclick="openDeliveryModal()" class="cursor-pointer hidden lg:flex flex-col text-white text-xs leading-tight px-3 border-x border-white/20 shrink-0 select-none hover:bg-white/10 py-1 rounded-lg transition">
+      <span class="text-white/60 flex items-center gap-1">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+        Deliver to
+      </span>
+      <span id="header-pincode" class="font-semibold text-white">Ratlam, MP 457001</span>
+    </div>
+
+    <!-- Search -->
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <select id="search-category" class="hidden sm:block bg-white text-slate-600 text-sm px-3 border-r border-slate-200 font-medium focus:ring-0 cursor-pointer">
+        <option value="All">All Categories</option>
+        <option value="Mobiles">Mobiles</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Home & Kitchen">Home & Furniture</option>
+        <option value="Beauty">Beauty</option>
+      </select>
+      <input type="text" id="search-input" onkeyup="handleSearch(event)" placeholder="Search for products, brands and more..."
+        class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white sm:rounded-none rounded-l-xl" />
+      <button onclick="executeSearch()" class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Right icons -->
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button onclick="toggleAuthModal()" class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span id="login-btn-txt" class="mt-0.5">Login</span>
+      </button>
+      <button onclick="toggleWishlistDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+        <span id="wishlist-badge" class="absolute -top-1 -right-0.5 bg-cc-pink text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg transition-transform scale-0">0</span>
+      </button>
+      <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.435M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.913-4.223 2.24-5.5H5.106M7.5 14.25L5.106 5.272M7.5 14.25L6.75 17.25m9.75-3h-9.75" /></svg>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span id="cart-badge" class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Nav -->
+  <nav class="border-t border-white/10 bg-black/10">
+    <ul class="max-w-7xl mx-auto px-4 flex items-center gap-5 overflow-x-auto scrollbar-none text-white text-sm py-2.5 whitespace-nowrap">
+      <li><a href="#" onclick="filterByCategory('All')" class="flex items-center gap-1.5 font-semibold hover:text-cc-yellow transition bg-white/10 px-3 py-1 rounded-lg">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        All
+      </a></li>
+      <li><a href="#" onclick="filterByCategory('Mobiles')" class="hover:text-cc-yellow transition">Mobiles</a></li>
+      <li><a href="#" onclick="filterByCategory('Electronics')" class="hover:text-cc-yellow transition">Electronics</a></li>
+      <li><a href="#" onclick="filterByCategory('Fashion')" class="hover:text-cc-yellow transition">Fashion</a></li>
+      <li><a href="#" onclick="filterByCategory('Furniture')" class="hover:text-cc-yellow transition">Home & Furniture</a></li>
+      <li><a href="#" onclick="filterByCategory('Appliances')" class="hover:text-cc-yellow transition">Appliances</a></li>
+      <li><a href="#" onclick="filterByCategory('Beauty')" class="hover:text-cc-yellow transition">Beauty & Toys</a></li>
+      <li><a href="#" onclick="filterByCategory('Grocery')" class="hover:text-cc-yellow transition">Grocery</a></li>
+      <li><a href="#deals" class="bg-cc-orange text-white font-semibold px-3 py-1 rounded-lg hover:bg-orange-600 transition text-xs uppercase tracking-wide">Deals of the Day</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ================= ANNOUNCEMENT MARQUEE ================= -->
+<div class="bg-cc-orange text-white text-xs sm:text-sm py-2 overflow-hidden font-medium">
+  <div class="flex marquee-track whitespace-nowrap">
+    <div class="flex gap-12 pr-12">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>Flash Sale LIVE now!</span>
+    </div>
+    <div class="flex gap-12 pr-12" aria-hidden="true">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>Flash Sale LIVE now!</span>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- ================= HERO ================= -->
+  <section class="grid grid-cols-1 lg:grid-cols-4 gap-5 mb-10">
+
+    <!-- Sidebar categories (desktop) -->
+    <aside class="hidden lg:block bg-white rounded-2xl shadow-sm p-3 h-fit border border-slate-100">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-2.5 pb-2">Categories</p>
+      <ul class="text-sm space-y-0.5" id="desktop-sidebar-list">
+        <li><button onclick="filterByCategory('Mobiles')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">phone_android</span>Mobiles & Tablets</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Electronics')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">laptop</span>Laptops & Computers</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Audio')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">headphones</span>Audio & Headphones</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Fashion')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">checkroom</span>Fashion & Apparel</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Furniture')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">weekend</span>Home & Furniture</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Beauty')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">spa</span>Beauty & Personal Care</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Sports')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">sports_cricket</span>Sports & Fitness</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Toys')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">smart_toy</span>Toys & Baby Care</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+        <li><button onclick="filterByCategory('Appliances')" class="w-full text-left sidebar-link flex justify-between items-center font-medium text-slate-700"><span class="flex items-center gap-2.5"><span class="material-icons text-slate-500 text-[18px]">kitchen</span>Appliances</span> <span class="text-slate-400 text-lg leading-none">›</span></button></li>
+      </ul>
+    </aside>
+
+    <!-- Hero banner -->
+    <div class="lg:col-span-3 bg-cc-purple rounded-2xl overflow-hidden relative text-white p-8 sm:p-12 flex flex-col justify-center min-h-[340px]">
+      <div class="relative z-10">
+        <span class="bg-cc-orange inline-flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full mb-5 uppercase tracking-wider">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+          Limited Time Offer
+        </span>
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight max-w-xl text-white">The Big Tech &amp; Style Sale</h1>
+        <p class="mt-4 text-white/90 max-w-md text-base sm:text-lg">Up to <span class="font-extrabold text-cc-yellow text-xl">70% off</span> on electronics, fashion &amp; home essentials.</p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="#deals" class="bg-white text-cc-purple font-bold px-7 py-3 rounded-xl hover:bg-cc-yellow hover:text-cc-dark transition shadow-md">Shop the Sale →</a>
+          <a href="#categories-section" class="border-2 border-white/30 text-white font-semibold px-7 py-3 rounded-xl hover:bg-white/10 transition">Explore Categories</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRUST STRIP ================= -->
+  <section class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+    <div class="trust-card bg-white rounded-2xl p-5 flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6 text-cc-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm text-slate-800">Free Delivery</p><p class="text-xs text-slate-500 mt-0.5">On orders ₹999+</p></div>
+    </div>
+    <div class="trust-card bg-white rounded-2xl p-5 flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-xl bg-cc-orange/10 flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6 text-cc-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm text-slate-800">Easy Returns</p><p class="text-xs text-slate-500 mt-0.5">7-day policy</p></div>
+    </div>
+    <div class="trust-card bg-white rounded-2xl p-5 flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-xl bg-cc-pink/10 flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6 text-cc-pink" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm text-slate-800">Secure Payments</p><p class="text-xs text-slate-500 mt-0.5">UPI, Cards, COD</p></div>
+    </div>
+    <div class="trust-card bg-white rounded-2xl p-5 flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-xl bg-cc-purple/10 flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6 text-cc-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm text-slate-800">24/7 Support</p><p class="text-xs text-slate-500 mt-0.5">Prompt Live Chat</p></div>
+    </div>
+  </section>
+
+  <!-- ================= SHOP BY CATEGORY ================= -->
+  <section id="categories-section" class="mb-12">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900">Shop by Category</h2>
+      <button onclick="filterByCategory('All')" class="text-sm font-semibold text-cc-blue hover:text-cc-dark font-semibold transition flex items-center gap-1">Reset <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-4" id="category-pill-container">
+      <!-- Generated dynamically in script for easier active state tracking -->
+    </div>
+  </section>
+
+  <!-- Dynamic Active Category Title -->
+  <div id="filter-status" class="mb-6 p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hidden items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full bg-cc-orange animate-pulse"></span>
+      <p class="text-sm text-slate-600">Showing results for category: <span id="active-category-lbl" class="font-bold text-cc-purple">All</span></p>
+    </div>
+    <button onclick="filterByCategory('All')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition">Clear Filter</button>
+  </div>
+
+  <!-- ================= DEAL OF THE DAY ================= -->
+  <section id="deals" class="mb-12">
+    <div class="bg-cc-orange rounded-t-2xl px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+      <h2 class="font-heading text-white text-xl font-bold flex items-center gap-2.5">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+        Deal of the Day
+      </h2>
+      <div id="live-timer" class="flex gap-2 text-white text-sm font-bold tracking-wide">
+        <span id="timer-hr" class="rounded-lg bg-black/20 px-3 py-1.5">00h</span>
+        <span class="text-white/60 self-center">:</span>
+        <span id="timer-min" class="rounded-lg bg-black/20 px-3 py-1.5">00m</span>
+        <span class="text-white/60 self-center">:</span>
+        <span id="timer-sec" class="rounded-lg bg-black/20 px-3 py-1.5">00s</span>
+      </div>
+      <a href="#" class="text-white text-sm font-semibold hover:underline underline-offset-2">View All Deals →</a>
+    </div>
+    <div id="deals-container" class="bg-white rounded-b-2xl shadow-sm border border-t-0 border-slate-100 p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <!-- Generated dynamically in script -->
+    </div>
+  </section>
+
+  <!-- ================= PROMO BANNER STRIP ================= -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
+    <div onclick="filterByCategory('Mobiles')" class="promo-card cursor-pointer rounded-2xl p-6 text-white flex flex-col justify-between min-h-[160px] bg-cc-pink relative">
+      <div class="relative z-10">
+        <p class="text-xs uppercase tracking-widest text-white/70 font-semibold">Mobiles</p>
+        <p class="font-heading font-bold text-xl mt-2 leading-snug text-white">Latest 5G Phones<br>From ₹9,999</p>
+      </div>
+      <span class="relative z-10 text-sm font-bold hover:underline underline-offset-2 w-fit mt-4 flex items-center gap-1 text-white">Shop Now <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+    </div>
+    <div onclick="filterByCategory('Fashion')" class="promo-card cursor-pointer rounded-2xl p-6 text-white flex flex-col justify-between min-h-[160px] bg-cc-purple relative">
+      <div class="relative z-10">
+        <p class="text-xs uppercase tracking-widest text-white/70 font-semibold">Fashion</p>
+        <p class="font-heading font-bold text-xl mt-2 leading-snug text-white">New Season Styles<br>Up to 60% Off</p>
+      </div>
+      <span class="relative z-10 text-sm font-bold hover:underline underline-offset-2 w-fit mt-4 flex items-center gap-1 text-white">Shop Now <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+    </div>
+    <div onclick="filterByCategory('Furniture')" class="promo-card cursor-pointer rounded-2xl p-6 text-white flex flex-col justify-between min-h-[160px] bg-cc-orange relative">
+      <div class="relative z-10">
+        <p class="text-xs uppercase tracking-widest text-white/70 font-semibold">Home & Kitchen</p>
+        <p class="font-heading font-bold text-xl mt-2 leading-snug text-white">Refresh Your Home<br>Starting ₹299</p>
+      </div>
+      <span class="relative z-10 text-sm font-bold hover:underline underline-offset-2 w-fit mt-4 flex items-center gap-1 text-white">Shop Now <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+    </div>
+  </section>
+
+  <!-- ================= MAIN PRODUCTS (TRENDING & TOP RATED COMBINED) ================= -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-5">
+      <h2 id="product-list-title" class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">Trending & Popular</h2>
+    </div>
+    <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <!-- Generated Dynamically -->
+    </div>
+  </section>
+
+  <!-- ================= NEWSLETTER ================= -->
+  <section class="bg-cc-blue rounded-2xl px-6 py-10 sm:py-14 text-center text-white mb-12 relative">
+    <div class="relative z-10">
+      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+        <svg class="w-4 h-4 text-cc-yellow" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        Exclusive Offer
+      </div>
+      <h2 class="font-heading text-2xl sm:text-3xl font-bold mb-3 text-white">Get ₹100 Off Your First Order</h2>
+      <p class="text-white/80 mb-6 text-sm sm:text-base max-w-md mx-auto">Subscribe to our newsletter for exclusive deals and early access to sales.</p>
+      <form class="max-w-lg mx-auto flex flex-col sm:flex-row rounded-xl overflow-hidden shadow-md bg-white p-1" onsubmit="handleSubscribe(event)">
+        <input id="newsletter-email" type="email" required placeholder="Enter your email address" class="flex-1 px-5 py-3 text-slate-700 text-sm focus:outline-none">
+        <button type="submit" class="bg-cc-orange hover:bg-orange-600 text-white px-6 py-3 font-bold text-sm transition whitespace-nowrap rounded-xl mt-1 sm:mt-0">Subscribe</button>
+      </form>
+      <div id="sub-success-msg" class="hidden text-cc-yellow text-sm mt-3 font-medium">✓ You're subscribed! Check your inbox for the coupon.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-cc-dark text-white/80 text-sm relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 relative z-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 100 100">
+            <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+            <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <span class="font-heading font-bold text-white text-lg">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">About Us</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Careers</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Press</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">ClickCodex Stories</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Help</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Payments</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Shipping</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Cancellation & Returns</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Policy</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Return Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Terms of Use</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Sitemap</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Sell With Us</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Register as Seller</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Seller Dashboard</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Advertise</a></li>
+      </ul>
+    </div>
+    <div class="col-span-2 sm:col-span-1">
+      <h4 class="font-heading font-semibold text-white mb-4">Get in Touch</h4>
+      <ul class="space-y-2.5 text-white/60">
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">phone</span>1800-233-4555</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">email</span>support@clickcodex.in</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">location_on</span>Ratlam, Madhya Pradesh</li>
+      </ul>
+      <div class="flex gap-2.5 mt-5">
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">f</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">𝕏</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">in</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-orange flex items-center justify-center transition text-white text-sm font-bold">yt</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-5 text-center text-xs text-white/40 relative z-10 pb-24 md:pb-5">
+    © 2026 ClickCodex Retail Pvt. Ltd. All rights reserved. &nbsp;|&nbsp; Made with <span class="material-icons text-red-500 text-[14px] align-middle select-none">favorite</span> in India
+  </div>
+</footer>
+
+<!-- ================= MOBILE APP-STYLE BOTTOM NAVIGATION ================= -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <button onclick="filterByCategory('All')" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">home</span>
+    <span class="text-[10px] font-semibold">Home</span>
+  </button>
+  <button onclick="toggleMobileSidebar(true)" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">grid_view</span>
+    <span class="text-[10px] font-semibold">Categories</span>
+  </button>
+  <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">shopping_cart</span>
+    <span class="text-[10px] font-semibold">Cart</span>
+    <span id="cart-badge-mobile" class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span>
+  </button>
+  <button onclick="toggleWishlistDrawer(true)" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">favorite_border</span>
+    <span class="text-[10px] font-semibold">Wishlist</span>
+    <span id="wishlist-badge-mobile" class="absolute top-0 right-2 bg-cc-blue text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md transition-all scale-0">0</span>
+  </button>
+  <button onclick="toggleAuthModal()" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">person_outline</span>
+    <span id="login-btn-txt-mobile" class="text-[10px] font-semibold">Profile</span>
+  </button>
+</div>
+
+<!-- ================= MOBILE CATEGORY DRAWER ================= -->
+<div id="mobile-sidebar" class="fixed inset-0 z-50 overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons">account_circle</span>
+        <span class="font-heading font-bold text-white" id="mobile-sidebar-user">Hello, Sign In</span>
+      </div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Shop Categories</p>
+      <div class="grid grid-cols-1 gap-1" id="mobile-sidebar-categories">
+        <!-- Generated Dynamically -->
+      </div>
+    </div>
+    <div class="border-t border-slate-100 p-4 bg-slate-50 space-y-2">
+      <button onclick="toggleAuthModal(); toggleMobileSidebar(false);" class="w-full text-center bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg">My Account / Login</button>
+      <p class="text-[10px] text-center text-slate-400">ClickCodex India v2.6</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PRODUCT DETAIL MODAL ================= -->
+<div id="product-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeProductModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-4xl w-[95%] max-h-[90vh] overflow-y-auto shadow-2xl relative z-10 flex flex-col md:flex-row p-6 gap-6 transition-all duration-300">
+    <button onclick="closeProductModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 focus:outline-none">
+      <span class="material-icons text-2xl">close</span>
+    </button>
+    <!-- Product Gallery Left -->
+    <div class="md:w-1/2 flex flex-col gap-4">
+      <div class="bg-slate-50 rounded-2xl p-4 flex items-center justify-center overflow-hidden aspect-square">
+        <img id="modal-product-img" src="" class="max-h-full max-w-full object-contain rounded-xl" alt="Product Image">
+      </div>
+    </div>
+    <!-- Product Specs Right -->
+    <div class="md:w-1/2 flex flex-col justify-between">
+      <div>
+        <span id="modal-product-badge" class="inline-block bg-cc-pink text-white text-[11px] font-bold px-2.5 py-1 rounded-md mb-2 uppercase">OFFER</span>
+        <h3 id="modal-product-title" class="font-heading text-xl sm:text-2xl font-bold text-slate-800 leading-snug">Product Title</h3>
+        <div class="flex items-center gap-1.5 mt-2">
+          <span class="stars" id="modal-product-stars">★★★★☆</span>
+          <span class="text-xs text-slate-400" id="modal-product-reviews">(1,241 reviews)</span>
+        </div>
+        <div class="mt-4 flex items-baseline gap-3 border-y border-slate-100 py-3">
+          <span id="modal-product-price" class="font-bold text-2xl text-cc-orange">₹000</span>
+          <span id="modal-product-strike" class="price-strike text-sm">₹000</span>
+          <span id="modal-product-discount" class="text-cc-pink font-semibold text-sm"></span>
+        </div>
+        <p class="text-sm text-slate-600 mt-4 leading-relaxed" id="modal-product-desc">
+          High fidelity specifications and product descriptions details are accurately parsed dynamically. Enjoy India-wide warranty and secure checkout pathways.
+        </p>
+      </div>
+      <div class="mt-6 flex flex-col gap-2">
+        <button id="modal-add-cart-btn" onclick="" class="w-full bg-cc-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2">
+          <span class="material-icons">shopping_cart</span> Add to Cart
+        </button>
+        <button id="modal-add-wishlist-btn" onclick="" class="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2">
+          <span class="material-icons text-cc-pink">favorite</span> Add to Wishlist
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SHOPPING CART DRAWER ================= -->
+<div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-orange">shopping_basket</span> Shopping Cart
+      </h3>
+      <button onclick="toggleCartDrawer(false)" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- Generated via script -->
+    </div>
+    <div class="border-t border-slate-100 p-5 bg-slate-50 space-y-4">
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-sm text-slate-600"><span>Bag Subtotal:</span><span id="cart-subtotal" class="font-semibold text-slate-800">₹0</span></div>
+        <div class="flex justify-between text-sm text-slate-600"><span>Delivery Charges:</span><span class="text-green-600 font-semibold">Free</span></div>
+        <div class="flex justify-between text-base font-bold text-slate-800 pt-2 border-t border-slate-200"><span>Grand Total:</span><span id="cart-grandtotal">₹0</span></div>
+      </div>
+      <button onclick="checkoutCart()" class="w-full text-center bg-cc-pink hover:bg-pink-700 text-white text-base font-bold py-3.5 rounded-xl transition shadow-md">Proceed to Secure Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= WISHLIST DRAWER ================= -->
+<div id="wishlist-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleWishlistDrawer(false)" class="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-pink">favorite</span> My Wishlist
+      </h3>
+      <button onclick="toggleWishlistDrawer(false)" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div id="wishlist-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- Generated via script -->
+    </div>
+  </div>
+</div>
+
+<!-- ================= AUTHENTICATION MODAL ================= -->
+<div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden hidden">
+  <div onclick="toggleAuthModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6 transition-all duration-300">
+    <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 focus:outline-none">
+      <span class="material-icons">close</span>
+    </button>
+    <div class="text-center mb-6">
+      <h3 class="font-heading font-bold text-2xl text-slate-800">Welcome back</h3>
+      <p class="text-xs text-slate-400 mt-1">Unlock exclusive India Deals & Loyalty Benefits</p>
+    </div>
+    <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number or Email</label>
+        <input type="text" id="auth-input" required placeholder="Enter mobile or email" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+        <input type="password" required placeholder="••••••••" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+      </div>
+      <button type="submit" class="w-full text-center bg-cc-blue hover:bg-blue-600 text-white text-sm font-bold py-3.5 rounded-xl transition shadow-md">Authenticate & Proceed</button>
+    </form>
+    <div class="text-center mt-4">
+      <a href="#" class="text-xs text-cc-blue font-semibold hover:underline">Forgot Password?</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DELIVERY/PINCODE MODAL ================= -->
+<div id="delivery-modal" class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeDeliveryModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6 transition-all duration-300">
+    <button onclick="closeDeliveryModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 focus:outline-none">
+      <span class="material-icons">close</span>
+    </button>
+    <div class="text-center mb-5">
+      <h3 class="font-heading font-bold text-xl text-slate-800">Select Delivery Location</h3>
+      <p class="text-xs text-slate-400 mt-1">Enter an active Indian Pincode to inspect delivery timelines</p>
+    </div>
+    <div class="space-y-4">
+      <div class="flex gap-2">
+        <input type="number" id="pincode-input" placeholder="e.g. 400001" class="flex-1 border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+        <button onclick="updatePincode()" class="bg-cc-orange hover:bg-orange-600 text-white px-5 rounded-xl font-bold text-xs transition">Apply</button>
+      </div>
+      <div class="bg-slate-50 p-3 rounded-xl">
+        <p class="text-xs font-semibold text-slate-600 mb-1">Popular Hubs:</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="quickSetPin('Mumbai, MH', '400001')" class="text-[10px] bg-white border border-slate-200 px-2.5 py-1 rounded-md hover:border-cc-blue">Mumbai (400001)</button>
+          <button onclick="quickSetPin('Delhi, DL', '110001')" class="text-[10px] bg-white border border-slate-200 px-2.5 py-1 rounded-md hover:border-cc-blue">Delhi (110001)</button>
+          <button onclick="quickSetPin('Bengaluru, KA', '560001')" class="text-[10px] bg-white border border-slate-200 px-2.5 py-1 rounded-md hover:border-cc-blue">Bengaluru (560001)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JAVASCRIPT LOGIC ================= -->
+<script>
+  // Mock Database of Products
+  const PRODUCTS = [
+    {
+      id: 1,
+      title: "TrueSound Pro Wireless Earbuds with ANC",
+      category: "Audio",
+      price: 1499,
+      strikePrice: 2999,
+      discount: "45% OFF",
+      rating: 4.3,
+      reviews: "2,341",
+      image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=80",
+      isDeal: true,
+      description: "Experience premium active noise-cancelling sound clarity. Features 40H total playtime, heavy bass drivers, and lightning fast Type-C charging. Splashproof construction certified."
+    },
+    {
+      id: 2,
+      title: "ClickCodex FitTrack Smart Watch, AMOLED",
+      category: "Electronics",
+      price: 2799,
+      strikePrice: 3999,
+      discount: "30% OFF",
+      rating: 4.8,
+      reviews: "5,120",
+      image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&auto=format&fit=crop&q=80",
+      isDeal: true,
+      description: "Stay beautifully integrated with this vibrant AMOLED tracking accessory. Multi-sport monitors, 14-day standby power, real-time stress indexes, and sleek IP68 metrics."
+    },
+    {
+      id: 3,
+      title: "Urban Trail Waterproof Laptop Backpack",
+      category: "Furniture",
+      price: 899,
+      strikePrice: 1199,
+      discount: "25% OFF",
+      rating: 4.2,
+      reviews: "986",
+      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=80",
+      isDeal: true,
+      description: "Ergonomically shaped daily work horse. Features a padded laptop segment (up to 15.6 inches), hidden internal layout pockets, and water-resistant materials."
+    },
+    {
+      id: 4,
+      title: "BoomBox Mini Portable Bluetooth Speaker",
+      category: "Audio",
+      price: 799,
+      strikePrice: 1599,
+      discount: "50% OFF",
+      rating: 4.5,
+      reviews: "3,004",
+      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&auto=format&fit=crop&q=80",
+      isDeal: true,
+      description: "Pocket-sized audio device with high dynamic range. Deep passive subwoofers, modern multi-color lighting, and dynamic connection options (TF, Bluetooth, Aux)."
+    },
+    {
+      id: 5,
+      title: "HomeChef Digital Air Fryer 4.5L",
+      category: "Appliances",
+      price: 3199,
+      strikePrice: 3999,
+      discount: "20% OFF",
+      rating: 4.9,
+      reviews: "1,752",
+      image: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?w=500&auto=format&fit=crop&q=80",
+      isDeal: true,
+      description: "Crisp texture outputs containing up to 85% less oils. Designed with an advanced 1500W heating element, touch navigation panels, and removable dishwasher-safe trays."
+    },
+    {
+      id: 6,
+      title: "SprintX Men's Running Shoes",
+      category: "Fashion",
+      price: 1299,
+      strikePrice: 1999,
+      discount: "35% OFF",
+      rating: 4.1,
+      reviews: "1,142",
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      tag: "NEW",
+      description: "Engineered mesh uppers allow comfortable aeration. Premium responsive midsoles deliver energy returns with every stride. Exceptional grip patterns on Indian streets."
+    },
+    {
+      id: 7,
+      title: "VisionMax 43\" 4K Smart LED TV",
+      category: "Electronics",
+      price: 21499,
+      strikePrice: 29999,
+      discount: "28% OFF",
+      rating: 4.7,
+      reviews: "12,987",
+      image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      tag: "BESTSELLER",
+      description: "Stunning ultra HD details combined with Dolby spatial algorithms. Direct integrations with Netflix, Prime, Hotstar, and sleek bezel-less screen-to-body ratios."
+    },
+    {
+      id: 8,
+      title: "Women's Printed A-Line Ethnic Kurti",
+      category: "Fashion",
+      price: 499,
+      strikePrice: 999,
+      discount: "50% OFF",
+      rating: 4.4,
+      reviews: "3,110",
+      image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Pure cotton daily comfort design curated for hot weather. Gorgeous printed pattern lines, durable stitch lines, and color-fast guarantees."
+    },
+    {
+      id: 9,
+      title: "RapidClick Wireless Gaming Mouse",
+      category: "Electronics",
+      price: 899,
+      strikePrice: 1499,
+      discount: "40% OFF",
+      rating: 4.6,
+      reviews: "1,532",
+      image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      tag: "NEW",
+      description: "DPI switch triggers between 800 and 4800 on-the-fly. Zero-latency receiver configurations combined with lightweight ergonomic structures to reduce wrist stress."
+    },
+    {
+      id: 10,
+      title: "HomeChef 750W Mixer Grinder",
+      category: "Appliances",
+      price: 1999,
+      strikePrice: 2999,
+      discount: "33% OFF",
+      rating: 4.5,
+      reviews: "1,042",
+      image: "https://images.unsplash.com/photo-1578643463396-0997cb5328c1?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Robust heavy copper motors grind tough raw ingredients effortlessly. Complete with three premium grade steel jars configured with shockproof locking mechanics."
+    },
+    {
+      id: 11,
+      title: "UV-Protect Aviator Sunglasses",
+      category: "Fashion",
+      price: 649,
+      strikePrice: 1299,
+      discount: "50% OFF",
+      rating: 4.3,
+      reviews: "2,987",
+      image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      tag: "BESTSELLER",
+      description: "Classically proportioned frame designs with full UV400 filters. Anti-scratch surface elements, comfortable nose segments, and flexible temple components."
+    },
+    {
+      id: 12,
+      title: "PixelPro DSLR Camera Kit 24MP",
+      category: "Electronics",
+      price: 34999,
+      strikePrice: 42999,
+      discount: "18% OFF",
+      rating: 4.9,
+      reviews: "842",
+      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Complete companion packages containing 18-55mm IS lenses. Cinematic Full HD capture capacities with exceptionally sharp autofocus tracking systems."
+    },
+    {
+      id: 13,
+      title: "ErgoComfort Mesh Office Chair",
+      category: "Furniture",
+      price: 6499,
+      strikePrice: 9999,
+      discount: "35% OFF",
+      rating: 4.7,
+      reviews: "1,204",
+      image: "https://images.unsplash.com/photo-1580481072645-022f9a6dbf27?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "High-density mesh material adapts smoothly for structural back comfort. Robust tilt mechanisms, premium nylon casters, and adjustability limits."
+    },
+    {
+      id: 14,
+      title: "Essence Eau De Parfum, 100ml",
+      category: "Beauty",
+      price: 1199,
+      strikePrice: 1999,
+      discount: "40% OFF",
+      rating: 4.4,
+      reviews: "2,987",
+      image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Intense scent elements comprising sophisticated aromatic woods and clean spices. Formulated to offer up to 12 hours of rich output projection."
+    },
+    {
+      id: 15,
+      title: "FlexFit Anti-Slip Yoga Mat 6mm",
+      category: "Sports",
+      price: 599,
+      strikePrice: 999,
+      discount: "40% OFF",
+      rating: 4.8,
+      reviews: "1,530",
+      image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "High density foam protects raw pressure joints safely. Features custom double-sided traction prints to prevent sliding during poses."
+    },
+    {
+      id: 16,
+      title: "ChargeUp 20000mAh Power Bank",
+      category: "Mobiles",
+      price: 1399,
+      strikePrice: 2499,
+      discount: "44% OFF",
+      rating: 4.6,
+      reviews: "4,410",
+      image: "https://images.unsplash.com/photo-1609592424109-dd77366b26ec?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Ultra-compact capacity with fast charging capabilities. Designed with two intelligent output lanes, safe current protections, and lightweight housing."
+    },
+    {
+      id: 17,
+      title: "BuildBlocks Creative Toy Set (120pcs)",
+      category: "Toys",
+      price: 899,
+      strikePrice: 1499,
+      discount: "40% OFF",
+      rating: 4.7,
+      reviews: "678",
+      image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500&auto=format&fit=crop&q=80",
+      isDeal: false,
+      description: "Safe non-toxic ABS pieces fit snugly. Helps optimize early spatial reasoning, motor control, and creativity in children."
+    }
+  ];
+
+  // App Categories Metadata with mapped colors from your image palette
+  const CATEGORIES = [
+    { name: "Mobiles", icon: "phone_android", bg: "bg-[#2D82FF]/10", text: "text-[#2D82FF]" },
+    { name: "Electronics", icon: "laptop", bg: "bg-[#8C30F5]/10", text: "text-[#8C30F5]" },
+    { name: "Fashion", icon: "checkroom", bg: "bg-[#FF006B]/10", text: "text-[#FF006B]" },
+    { name: "Furniture", icon: "weekend", bg: "bg-[#FF5100]/10", text: "text-[#FF5100]" },
+    { name: "Audio", icon: "headphones", bg: "bg-[#2D82FF]/10", text: "text-[#2D82FF]" },
+    { name: "Beauty", icon: "spa", bg: "bg-[#FFB800]/10", text: "text-[#FFB800]" },
+    { name: "Sports", icon: "sports_cricket", bg: "bg-[#8C30F5]/10", text: "text-[#8C30F5]" },
+    { name: "Toys", icon: "smart_toy", bg: "bg-[#FF006B]/10", text: "text-[#FF006B]" }
+  ];
+
+  // State Management
+  let cart = [];
+  let wishlist = [];
+  let selectedCategory = "All";
+  let currentUser = null;
+
+  // On App Mount
+  window.onload = function() {
+    renderCategoryPills();
+    renderProducts();
+    initDealTimer();
+    updateCartDOM();
+    updateWishlistDOM();
+    renderMobileSidebarCategories();
+  };
+
+  // Render Pincode Delivery Timelines
+  function openDeliveryModal() {
+    document.getElementById('delivery-modal').classList.remove('hidden');
+  }
+  function closeDeliveryModal() {
+    document.getElementById('delivery-modal').classList.add('hidden');
+  }
+  function updatePincode() {
+    const pin = document.getElementById('pincode-input').value;
+    if (pin.length === 6) {
+      document.getElementById('header-pincode').innerText = `Pincode: ${pin}`;
+      showToast(`Delivery area changed to ${pin}!`, "success");
+      closeDeliveryModal();
+    } else {
+      showToast("Please enter a valid 6-digit pin code.", "error");
+    }
+  }
+  function quickSetPin(city, code) {
+    document.getElementById('header-pincode').innerText = `${city} ${code}`;
+    showToast(`Switched deliver-to area to ${city}`, "success");
+    closeDeliveryModal();
+  }
+
+  // Toast System
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-3.5 rounded-xl shadow-xl font-medium text-sm text-white flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto max-w-xs`;
+    
+    if (type === "success") {
+      toast.classList.add('bg-slate-900', 'border-l-4', 'border-[#FF5100]');
+    } else {
+      toast.classList.add('bg-[#FF006B]');
+    }
+    
+    toast.innerHTML = `<span class="material-icons text-sm">${type === 'success' ? 'check_circle' : 'error'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger animate-in
+    setTimeout(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    }, 10);
+
+    // Auto dismiss
+    setTimeout(() => {
+      toast.classList.add('translate-y-2', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+
+  // Render category filters
+  function renderCategoryPills() {
+    const container = document.getElementById('category-pill-container');
+    container.innerHTML = "";
+    CATEGORIES.forEach(cat => {
+      container.innerHTML += `
+        <button onclick="filterByCategory('${cat.name}')" class="cat-pill bg-white rounded-2xl p-4 flex flex-col items-center text-center shadow-sm ${selectedCategory === cat.name ? 'border-2 border-[#FF5100] bg-slate-50' : ''}">
+          <div class="w-14 h-14 rounded-2xl ${cat.bg} flex items-center justify-center mb-2.5">
+            <span class="material-icons ${cat.text} text-[26px]">${cat.icon}</span>
+          </div>
+          <span class="text-xs font-semibold text-slate-700">${cat.name}</span>
+        </button>
+      `;
+    });
+  }
+
+  function renderMobileSidebarCategories() {
+    const mContainer = document.getElementById('mobile-sidebar-categories');
+    mContainer.innerHTML = "";
+    CATEGORIES.forEach(cat => {
+      mContainer.innerHTML += `
+        <button onclick="filterByCategory('${cat.name}'); toggleMobileSidebar(false);" class="w-full text-left flex items-center gap-3 p-3 rounded-xl hover:bg-[#2D82FF]/10 text-sm font-semibold text-slate-700 transition">
+          <span class="material-icons text-slate-500">${cat.icon}</span>
+          <span>${cat.name}</span>
+        </button>
+      `;
+    });
+  }
+
+  // Product Filtering System
+  function filterByCategory(category) {
+    selectedCategory = category;
+    
+    // Highlight sidebar items (desktop)
+    const links = document.querySelectorAll('#desktop-sidebar-list button');
+    links.forEach(btn => {
+      if (btn.innerText.includes(category)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Toggle filter label
+    const filterStatus = document.getElementById('filter-status');
+    const label = document.getElementById('active-category-lbl');
+    if (category === "All") {
+      filterStatus.classList.add('hidden');
+      filterStatus.classList.remove('flex');
+    } else {
+      filterStatus.classList.remove('hidden');
+      filterStatus.classList.add('flex');
+      label.innerText = category;
+    }
+
+    renderCategoryPills();
+    renderProducts();
+
+    // Scroll down to products grid on mobile
+    if (window.innerWidth < 768 && category !== "All") {
+      document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  // Main Render Loop
+  function renderProducts(filterKeyword = "") {
+    const dealsGrid = document.getElementById('deals-container');
+    const mainGrid = document.getElementById('products-grid');
+
+    // Filter product datasets
+    let matchedProducts = PRODUCTS.filter(p => {
+      const matchCategory = (selectedCategory === "All") || (p.category.toLowerCase() === selectedCategory.toLowerCase());
+      const matchSearch = p.title.toLowerCase().includes(filterKeyword.toLowerCase()) || p.description.toLowerCase().includes(filterKeyword.toLowerCase());
+      return matchCategory && matchSearch;
+    });
+
+    // Deals Grid
+    dealsGrid.innerHTML = "";
+    const dealsList = matchedProducts.filter(p => p.isDeal);
+    if (dealsList.length === 0) {
+      dealsGrid.innerHTML = `<p class="col-span-full py-8 text-center text-slate-400 text-sm font-medium">No live deal items matched criteria.</p>`;
+    } else {
+      dealsList.forEach(p => {
+        dealsGrid.innerHTML += generateProductHTML(p);
+      });
+    }
+
+    // Main Grid
+    mainGrid.innerHTML = "";
+    const mainList = matchedProducts.filter(p => !p.isDeal);
+    if (mainList.length === 0) {
+      mainGrid.innerHTML = `<p class="col-span-full py-12 text-center text-slate-400 text-sm font-medium">No other matching items found.</p>`;
+    } else {
+      mainList.forEach(p => {
+        mainGrid.innerHTML += generateProductHTML(p);
+      });
+    }
+  }
+
+  // Single Card HTML Template
+  function generateProductHTML(p) {
+    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+    const isWish = wishlist.includes(p.id);
+    const tagHTML = p.tag ? `<span class="absolute top-3 left-3 bg-[#2D82FF] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md z-10 uppercase tracking-wider shadow">${p.tag}</span>` : '';
+    const dealBadge = p.isDeal ? `<span class="absolute top-3 left-3 bg-[#FF5100] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md z-10 uppercase tracking-wider shadow">${p.discount}</span>` : '';
+
+    return `
+      <div class="product-card rounded-2xl p-3 bg-white flex flex-col justify-between">
+        <div class="relative cursor-pointer group" onclick="openProductModal(${p.id})">
+          ${tagHTML}
+          ${dealBadge}
+          <div class="rounded-xl overflow-hidden aspect-square w-full bg-slate-50 flex items-center justify-center mb-3">
+            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${p.title}">
+          </div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-[10px]">${p.category}</p>
+          <p class="text-xs sm:text-sm font-semibold line-clamp-2 h-10 text-slate-800 leading-snug mt-0.5 hover:text-cc-blue transition">${p.title}</p>
+          <div class="flex items-center gap-1 text-[10px] sm:text-xs stars mt-1.5">${stars} <span class="text-slate-400">(${p.reviews})</span></div>
+        </div>
+
+        <div class="mt-3">
+          <div class="flex items-baseline gap-1.5 mb-2.5">
+            <span class="font-bold text-base sm:text-lg text-cc-dark">₹${p.price.toLocaleString('en-IN')}</span>
+            ${p.strikePrice ? `<span class="price-strike text-[10px] sm:text-xs">₹${p.strikePrice.toLocaleString('en-IN')}</span>` : ''}
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="addToCart(${p.id})" class="flex-1 bg-[#2D82FF] hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 active:scale-95">
+              <span class="material-icons text-sm">add_shopping_cart</span> Add
+            </button>
+            <button onclick="toggleWishlistItem(${p.id})" class="bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 p-2 rounded-lg transition" aria-label="Wishlist">
+              <span class="material-icons text-sm text-[#FF006B]">${isWish ? 'favorite' : 'favorite_border'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Live Real-Time Search Handler
+  function handleSearch(event) {
+    const kw = event.target.value;
+    renderProducts(kw);
+  }
+
+  function executeSearch() {
+    const kw = document.getElementById('search-input').value;
+    renderProducts(kw);
+    showToast(`Showing results for "${kw || 'All'}"`, "success");
+  }
+
+  // Countdown Timer
+  function initDealTimer() {
+    let targetTime = new Date();
+    targetTime.setHours(targetTime.getHours() + 8);
+
+    function tick() {
+      const now = new Date();
+      const diff = targetTime - now;
+      if (diff <= 0) {
+        targetTime = new Date();
+        targetTime.setHours(targetTime.getHours() + 8);
+        return;
+      }
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('timer-hr').innerText = String(hrs).padStart(2, '0') + 'h';
+      document.getElementById('timer-min').innerText = String(mins).padStart(2, '0') + 'm';
+      document.getElementById('timer-sec').innerText = String(secs).padStart(2, '0') + 's';
+    }
+    setInterval(tick, 1000);
+    tick();
+  }
+
+  // Drawers Toggle Controllers
+  function toggleMobileSidebar(show) {
+    const sidebar = document.getElementById('mobile-sidebar');
+    if (show) {
+      sidebar.classList.remove('translate-x-[-100%]');
+    } else {
+      sidebar.classList.add('translate-x-[-100%]');
+    }
+  }
+
+  function toggleCartDrawer(show) {
+    const drawer = document.getElementById('cart-drawer');
+    if (show) {
+      drawer.classList.remove('translate-x-full');
+    } else {
+      drawer.classList.add('translate-x-full');
+    }
+  }
+
+  function toggleWishlistDrawer(show) {
+    const drawer = document.getElementById('wishlist-drawer');
+    if (show) {
+      drawer.classList.remove('translate-x-full');
+    } else {
+      drawer.classList.add('translate-x-full');
+    }
+  }
+
+  function toggleAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    modal.classList.toggle('hidden');
+  }
+
+  // Mock Authentication Flow
+  function handleAuthSubmit(e) {
+    e.preventDefault();
+    const value = document.getElementById('auth-input').value;
+    currentUser = value.split('@')[0];
+    
+    document.getElementById('login-btn-txt').innerText = currentUser;
+    document.getElementById('login-btn-txt-mobile').innerText = currentUser;
+    document.getElementById('mobile-sidebar-user').innerText = `Hello, ${currentUser}`;
+    
+    showToast(`Welcome back, ${currentUser}!`, "success");
+    toggleAuthModal();
+  }
+
+  // Product Modal Open Details
+  function openProductModal(id) {
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p) return;
+
+    document.getElementById('modal-product-img').src = p.image;
+    document.getElementById('modal-product-title').innerText = p.title;
+    document.getElementById('modal-product-desc').innerText = p.description;
+    document.getElementById('modal-product-price').innerText = `₹${p.price.toLocaleString('en-IN')}`;
+    document.getElementById('modal-product-strike').innerText = p.strikePrice ? `₹${p.strikePrice.toLocaleString('en-IN')}` : '';
+    document.getElementById('modal-product-discount').innerText = p.discount || '';
+    document.getElementById('modal-product-badge').innerText = p.tag || (p.isDeal ? "DEAL OFFER" : "POPULAR");
+
+    // Action updates
+    document.getElementById('modal-add-cart-btn').onclick = () => { addToCart(p.id); closeProductModal(); };
+    document.getElementById('modal-add-wishlist-btn').onclick = () => { toggleWishlistItem(p.id); closeProductModal(); };
+
+    document.getElementById('product-detail-modal').classList.remove('hidden');
+  }
+
+  function closeProductModal() {
+    document.getElementById('product-detail-modal').classList.add('hidden');
+  }
+
+  // Cart Functionality
+  function addToCart(id) {
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p) return;
+
+    const existingItem = cart.find(item => item.id === id);
+    if (existingItem) {
+      existingItem.qty += 1;
+    } else {
+      cart.push({ ...p, qty: 1 });
+    }
+
+    updateCartDOM();
+    showToast(`${p.title.slice(0, 20)}... added to cart!`, "success");
+  }
+
+  function modifyCartQty(id, change) {
+    const item = cart.find(item => item.id === id);
+    if (!item) return;
+
+    item.qty += change;
+    if (item.qty <= 0) {
+      cart = cart.filter(item => item.id !== id);
+    }
+    updateCartDOM();
+  }
+
+  function updateCartDOM() {
+    const container = document.getElementById('cart-drawer-items');
+    container.innerHTML = "";
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center py-20">
+          <span class="material-icons text-slate-300 text-6xl">shopping_cart</span>
+          <p class="text-sm text-slate-500 font-semibold mt-4">Your shopping cart is empty</p>
+        </div>
+      `;
+    } else {
+      cart.forEach(item => {
+        container.innerHTML += `
+          <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <img src="${item.image}" class="w-16 h-16 object-cover rounded-lg" alt="">
+            <div class="flex-1">
+              <p class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</p>
+              <p class="text-xs text-slate-500 mt-0.5">₹${item.price.toLocaleString('en-IN')} each</p>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center border border-slate-200 rounded-lg bg-white overflow-hidden">
+                  <button onclick="modifyCartQty(${item.id}, -1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">-</button>
+                  <span class="px-3 py-0.5 text-xs font-bold">${item.qty}</span>
+                  <button onclick="modifyCartQty(${item.id}, 1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">+</button>
+                </div>
+                <span class="text-xs font-bold text-cc-dark">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Calculations
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    const badgeCount = cart.reduce((acc, item) => acc + item.qty, 0);
+
+    document.getElementById('cart-subtotal').innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+    document.getElementById('cart-grandtotal').innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+    document.getElementById('cart-badge').innerText = badgeCount;
+    document.getElementById('cart-badge-mobile').innerText = badgeCount;
+  }
+
+  function checkoutCart() {
+    if (cart.length === 0) {
+      showToast("Your cart is empty!", "error");
+      return;
+    }
+    showToast("Secure order initiated! Thank you for choosing ClickCodex.", "success");
+    cart = [];
+    updateCartDOM();
+    toggleCartDrawer(false);
+  }
+
+  // Wishlist Functionality
+  function toggleWishlistItem(id) {
+    const index = wishlist.indexOf(id);
+    const p = PRODUCTS.find(prod => prod.id === id);
+
+    if (index > -1) {
+      wishlist.splice(index, 1);
+      showToast("Removed from wishlist.", "success");
+    } else {
+      wishlist.push(id);
+      showToast("Added to wishlist!", "success");
+    }
+
+    updateWishlistDOM();
+    renderProducts();
+  }
+
+  function updateWishlistDOM() {
+    const container = document.getElementById('wishlist-drawer-items');
+    container.innerHTML = "";
+
+    const badge = document.getElementById('wishlist-badge');
+    const mobileBadge = document.getElementById('wishlist-badge-mobile');
+
+    if (wishlist.length === 0) {
+      container.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center py-20">
+          <span class="material-icons text-slate-300 text-6xl font-light">favorite_border</span>
+          <p class="text-sm text-slate-500 font-semibold mt-4">Your wishlist is empty</p>
+        </div>
+      `;
+      badge.classList.add('scale-0');
+      mobileBadge.classList.add('scale-0');
+    } else {
+      wishlist.forEach(id => {
+        const item = PRODUCTS.find(prod => prod.id === id);
+        if (!item) return;
+
+        container.innerHTML += `
+          <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl justify-between">
+            <div class="flex items-center gap-3">
+              <img src="${item.image}" class="w-12 h-12 object-cover rounded-lg" alt="">
+              <div>
+                <p class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</p>
+                <p class="text-xs font-bold text-cc-dark mt-0.5">₹${item.price.toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="addToCart(${item.id}); toggleWishlistItem(${item.id});" class="bg-cc-blue text-white p-2 rounded-lg hover:bg-blue-600 text-xs font-bold" title="Move to Cart">
+                <span class="material-icons text-sm">shopping_cart</span>
+              </button>
+              <button onclick="toggleWishlistItem(${item.id})" class="text-slate-400 hover:text-red-500" title="Remove">
+                <span class="material-icons text-sm">delete</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      badge.classList.remove('scale-0');
+      badge.innerText = wishlist.length;
+      mobileBadge.classList.remove('scale-0');
+      mobileBadge.innerText = wishlist.length;
+    }
+  }
+
+  // Subscribe Handling
+  function handleSubscribe(e) {
+    e.preventDefault();
+    const email = document.getElementById('newsletter-email').value;
+    if (email) {
+      document.getElementById('sub-success-msg').classList.remove('hidden');
+      document.getElementById('newsletter-email').value = "";
+      showToast("Thank you for subscribing! Discount active.", "success");
+    }
+  }
+</script>
+</body>
+</html>

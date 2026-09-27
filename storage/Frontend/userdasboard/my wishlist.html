@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Wishlist — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  input:focus, select:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+  .stars { color: #FFB800; }
+  .price-strike { text-decoration: line-through; color: #94A3B8; }
+
+  .sidebar-link {
+    transition: all 0.15s ease;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #475569;
+  }
+  .sidebar-link:hover {
+    background: #E8F0FE;
+    color: #2D82FF;
+    padding-left: 20px;
+  }
+  .sidebar-link.active {
+    background: #E8F0FE;
+    color: #2D82FF;
+    font-weight: 600;
+  }
+  .sidebar-link.active .material-icons { color: #2D82FF; }
+
+  .wishlist-card {
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+    position: relative;
+    overflow: hidden;
+  }
+  .wishlist-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FF006B, #8C30F5);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .wishlist-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 24px -6px rgba(15, 23, 42, 0.1);
+    border-color: #FF006B;
+  }
+  .wishlist-card:hover::before { opacity: 1; }
+
+  .wishlist-card.list-view {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+  }
+  .wishlist-card.list-view .card-img-wrap {
+    border-radius: 12px 0 0 12px;
+    border-right: 1px solid #E2E8F0;
+  }
+
+  @keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+  .toast-in { animation: slideInRight 0.35s ease-out forwards; }
+  .toast-out { animation: slideOutRight 0.3s ease-in forwards; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease-out forwards; }
+  .fade-up-d1 { animation-delay: 0.05s; opacity: 0; }
+  .fade-up-d2 { animation-delay: 0.1s; opacity: 0; }
+  .fade-up-d3 { animation-delay: 0.15s; opacity: 0; }
+  .fade-up-d4 { animation-delay: 0.2s; opacity: 0; }
+  .fade-up-d5 { animation-delay: 0.25s; opacity: 0; }
+  .fade-up-d6 { animation-delay: 0.3s; opacity: 0; }
+
+  @keyframes heartBeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.3); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    60% { transform: scale(1); }
+  }
+  .heart-beat { animation: heartBeat 0.6s ease-in-out; }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+
+  .btn-primary {
+    background: #2D82FF;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .btn-primary:hover { background: #1D6FE0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,130,255,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-outline {
+    border: 1.5px solid #E2E8F0;
+    color: #475569;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    background: white;
+  }
+  .btn-outline:hover { border-color: #2D82FF; color: #2D82FF; background: #F0F6FF; }
+
+  .btn-danger-ghost {
+    color: #94A3B8;
+    font-weight: 500;
+    padding: 9px 14px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-danger-ghost:hover { color: #EF4444; background: #FEF2F2; }
+
+  .oos-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    border-radius: 12px;
+  }
+
+  .share-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all 0.2s ease;
+  }
+  .share-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .bulk-bar {
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .bulk-bar.show { transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .wishlist-card.list-view {
+      grid-template-columns: 100px 1fr;
+    }
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width: 380px;"></div>
+
+<!-- TOP UTILITY BAR -->
+<div class="bg-cc-dark text-white text-xs relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between relative">
+    <p class="hidden sm:block text-white/80">Welcome back, Rahul — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow focus:outline-none" aria-label="Open Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search for products, brands and more..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl" />
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" /></svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[22px]">account_circle</span>
+        <span class="mt-0.5">Rahul</span>
+      </button>
+      <button onclick="toggleWishlistDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[22px]">favorite</span>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+        <span id="wishlist-badge" class="absolute -top-1 -right-0.5 bg-cc-pink text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+      <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[22px]">shopping_cart</span>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span id="cart-badge" class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Account</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">My Wishlist</span>
+  </nav>
+
+  <div class="flex gap-6">
+    <!-- ===== ACCOUNT SIDEBAR (Desktop) ===== -->
+    <aside class="hidden lg:block w-64 shrink-0">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[80px]">
+        <!-- User Card -->
+        <div class="bg-gradient-to-br from-cc-blue to-cc-purple p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">R</div>
+            <div class="min-w-0">
+              <p class="font-heading font-bold text-sm truncate">Rahul Sharma</p>
+              <p class="text-white/70 text-xs truncate">rahul.sharma@email.com</p>
+            </div>
+          </div>
+        </div>
+        <!-- Nav Links -->
+        <div class="p-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-2 pb-1">Shopping</p>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">shopping_bag</span> My Orders
+          </button>
+          <button class="sidebar-link w-full text-left active">
+            <span class="material-icons text-[20px]">favorite</span> My Wishlist
+            <span id="sidebar-wl-count" class="ml-auto bg-cc-pink text-white text-[10px] font-bold rounded-full px-2 py-0.5">0</span>
+          </button>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart
+            <span id="sidebar-cart-count" class="ml-auto bg-cc-orange text-white text-[10px] font-bold rounded-full px-2 py-0.5">0</span>
+          </button>
+
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Account</p>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">person</span> Profile
+          </button>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses
+          </button>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">notifications</span> Notifications
+          </button>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">payment</span> Payment Methods
+          </button>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">rate_review</span> My Reviews
+          </button>
+
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Support</p>
+          <button class="sidebar-link w-full text-left">
+            <span class="material-icons text-[20px] text-slate-400">help</span> Help Center
+          </button>
+          <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500">
+            <span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="flex-1 min-w-0">
+
+      <!-- Page Header -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 mb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cc-pink/10 flex items-center justify-center">
+                <span class="material-icons text-cc-pink text-xl">favorite</span>
+              </div>
+              <div>
+                <h1 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">My Wishlist</h1>
+                <p class="text-sm text-slate-500 mt-0.5"><span id="wishlist-total-count">0</span> saved items</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <!-- Wishlist Selector -->
+            <div class="relative" id="wishlist-selector-wrap">
+              <button onclick="toggleWishlistSelector()" class="btn-outline text-xs">
+                <span class="material-icons text-[16px]">folder_open</span>
+                <span id="active-wishlist-name">My Wishlist</span>
+                <span class="material-icons text-[16px]">expand_more</span>
+              </button>
+              <div id="wishlist-selector-dropdown" class="share-dropdown absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 py-2 w-56 z-20">
+                <div class="px-3 py-2 border-b border-slate-100">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your Wishlists</p>
+                </div>
+                <button onclick="switchWishlist(1)" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition wishlist-opt" data-wl="1">
+                  <span class="material-icons text-cc-pink text-[18px]">favorite</span>
+                  <span class="flex-1">My Wishlist</span>
+                  <span class="text-xs text-slate-400 wl-opt-count" data-wl="1">0</span>
+                </button>
+                <button onclick="switchWishlist(2)" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition wishlist-opt" data-wl="2">
+                  <span class="material-icons text-cc-purple text-[18px]">bookmark</span>
+                  <span class="flex-1">Gift Ideas</span>
+                  <span class="text-xs text-slate-400 wl-opt-count" data-wl="2">0</span>
+                </button>
+                <button onclick="switchWishlist(3)" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition wishlist-opt" data-wl="3">
+                  <span class="material-icons text-cc-yellow text-[18px]">star</span>
+                  <span class="flex-1">Buy Later</span>
+                  <span class="text-xs text-slate-400 wl-opt-count" data-wl="3">0</span>
+                </button>
+                <div class="border-t border-slate-100 mt-1 pt-1">
+                  <button onclick="createNewWishlist()" class="w-full text-left px-3 py-2.5 text-sm text-cc-blue hover:bg-cc-ice flex items-center gap-2.5 transition font-medium">
+                    <span class="material-icons text-[18px]">add</span> Create New Wishlist
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Sort -->
+            <select id="sort-select" onchange="renderWishlist()" class="btn-outline text-xs cursor-pointer appearance-none pr-8 bg-no-repeat bg-[right_8px_center]" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%2364748B%22><path d=%22M7 10l5 5 5-5z%22/></svg>');">
+              <option value="recent">Recently Added</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="discount">Biggest Discount</option>
+              <option value="name">Name: A–Z</option>
+            </select>
+            <!-- View Toggle -->
+            <div class="flex bg-slate-100 rounded-xl p-1 gap-0.5">
+              <button onclick="setViewMode('grid')" id="view-grid-btn" class="p-2 rounded-lg transition bg-white shadow-sm text-cc-blue" title="Grid view">
+                <span class="material-icons text-[18px]">grid_view</span>
+              </button>
+              <button onclick="setViewMode('list')" id="view-list-btn" class="p-2 rounded-lg transition text-slate-400 hover:text-slate-600" title="List view">
+                <span class="material-icons text-[18px]">view_list</span>
+              </button>
+            </div>
+            <!-- Share -->
+            <div class="relative">
+              <button onclick="toggleShareMenu()" class="btn-outline text-xs" title="Share wishlist">
+                <span class="material-icons text-[16px]">share</span>
+                <span class="hidden sm:inline">Share</span>
+              </button>
+              <div id="share-dropdown" class="share-dropdown absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 py-2 w-48 z-20">
+                <button onclick="shareWishlist('whatsapp')" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition">
+                  <span class="w-7 h-7 rounded-lg bg-green-500 text-white flex items-center justify-center text-[14px] font-bold">W</span> WhatsApp
+                </button>
+                <button onclick="shareWishlist('telegram')" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition">
+                  <span class="w-7 h-7 rounded-lg bg-sky-500 text-white flex items-center justify-center text-[14px] font-bold">T</span> Telegram
+                </button>
+                <button onclick="shareWishlist('copy')" class="w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition">
+                  <span class="material-icons text-[18px] text-slate-500">link</span> Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select All / Bulk Actions Bar -->
+      <div id="bulk-action-bar" class="bulk-bar fixed bottom-0 md:relative md:bottom-auto left-0 right-0 md:left-auto md:right-auto bg-white border-t md:border border-slate-200 md:rounded-xl shadow-2xl md:shadow-sm z-40 md:z-auto px-5 py-3 flex items-center justify-between gap-4 mb-5 md:mb-5">
+        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll()" class="w-4.5 h-4.5 rounded accent-cc-blue cursor-pointer" style="width:18px;height:18px;">
+          <span class="text-sm font-medium text-slate-700">Select All</span>
+          <span id="selected-count-label" class="text-xs text-slate-400">(0 selected)</span>
+        </label>
+        <div class="flex items-center gap-2">
+          <button onclick="moveSelectedToCart()" class="btn-primary text-xs">
+            <span class="material-icons text-[16px]">shopping_cart</span> Move to Cart
+          </button>
+          <button onclick="removeSelected()" class="btn-danger-ghost text-xs">
+            <span class="material-icons text-[16px]">delete_outline</span> Remove
+          </button>
+        </div>
+      </div>
+
+      <!-- WISHLIST GRID CONTAINER -->
+      <div id="wishlist-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="empty-state" class="hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-10 sm:p-16 text-center">
+          <div class="w-24 h-24 mx-auto rounded-full bg-cc-ice flex items-center justify-center mb-6">
+            <span class="material-icons text-5xl text-slate-300">favorite_border</span>
+          </div>
+          <h3 class="font-heading text-xl font-bold text-slate-800 mb-2">Your wishlist is empty</h3>
+          <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6 leading-relaxed">Save items you love to your wishlist. Review them anytime and easily move them to your cart when you're ready to buy.</p>
+          <a href="#" class="btn-primary inline-flex text-sm px-8 py-3.5 rounded-xl">
+            <span class="material-icons text-[18px]">explore</span> Start Shopping
+          </a>
+        </div>
+      </div>
+
+      <!-- PRICE DROP ALERTS -->
+      <div id="price-drop-section" class="mt-6 hidden">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="material-icons text-green-600 text-xl">trending_down</span>
+            <h3 class="font-heading font-bold text-green-800 text-sm">Price Drop Alerts</h3>
+          </div>
+          <div id="price-drop-items" class="space-y-2">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">home</span>
+    <span class="text-[10px] font-semibold">Home</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">grid_view</span>
+    <span class="text-[10px] font-semibold">Categories</span>
+  </button>
+  <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">shopping_cart</span>
+    <span class="text-[10px] font-semibold">Cart</span>
+    <span id="cart-badge-mobile" class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span>
+  </button>
+  <button class="relative flex flex-col items-center justify-center text-cc-pink py-1">
+    <span class="material-icons text-2xl">favorite</span>
+    <span class="text-[10px] font-semibold">Wishlist</span>
+    <span id="wishlist-badge-mobile" class="absolute top-0 right-2 bg-cc-pink text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">person_outline</span>
+    <span class="text-[10px] font-semibold">Profile</span>
+  </button>
+</div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="mobile-sidebar" class="fixed inset-0 z-[60] overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">R</div>
+        <span class="font-heading font-bold">Rahul Sharma</span>
+      </div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1">
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">shopping_bag</span> My Orders
+      </button>
+      <button class="sidebar-link w-full text-left active">
+        <span class="material-icons text-[20px]">favorite</span> My Wishlist
+      </button>
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart
+      </button>
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">person</span> Profile
+      </button>
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses
+      </button>
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">notifications</span> Notifications
+      </button>
+      <button class="sidebar-link w-full text-left">
+        <span class="material-icons text-[20px] text-slate-400">help</span> Help Center
+      </button>
+      <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500">
+        <span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div id="cart-drawer" class="fixed inset-0 z-[70] overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-orange">shopping_basket</span> Shopping Cart
+      </h3>
+      <button onclick="toggleCartDrawer(false)" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+    <div class="border-t border-slate-100 p-5 bg-slate-50 space-y-3">
+      <div class="flex justify-between text-sm text-slate-600"><span>Subtotal:</span><span id="cart-subtotal" class="font-semibold text-slate-800">₹0</span></div>
+      <div class="flex justify-between text-sm text-slate-600"><span>Delivery:</span><span class="text-green-600 font-semibold">Free</span></div>
+      <div class="flex justify-between text-base font-bold text-slate-800 pt-2 border-t border-slate-200"><span>Total:</span><span id="cart-grandtotal">₹0</span></div>
+      <button class="w-full text-center bg-cc-pink hover:bg-pink-700 text-white text-sm font-bold py-3.5 rounded-xl transition shadow-md">Proceed to Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- WISHLIST QUICK DRAWER -->
+<div id="wishlist-drawer" class="fixed inset-0 z-[70] overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleWishlistDrawer(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-pink">favorite</span> My Wishlist
+      </h3>
+      <button onclick="toggleWishlistDrawer(false)" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="wishlist-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL (generic) -->
+<div id="confirm-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeConfirmModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6">
+    <button onclick="closeConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center">
+      <div id="confirm-icon" class="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
+        <span class="material-icons text-red-500 text-2xl">delete_outline</span>
+      </div>
+      <h3 id="confirm-title" class="font-heading font-bold text-lg text-slate-800 mb-2">Remove from Wishlist?</h3>
+      <p id="confirm-desc" class="text-sm text-slate-500 mb-6">This item will be removed from your wishlist. You can always add it back later.</p>
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 btn-outline justify-center">Cancel</button>
+        <button id="confirm-action-btn" onclick="" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW WISHLIST MODAL -->
+<div id="new-wishlist-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeNewWishlistModal()" class="absolute inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6">
+    <button onclick="closeNewWishlistModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center mb-5">
+      <div class="w-14 h-14 mx-auto rounded-full bg-cc-purple/10 flex items-center justify-center mb-4">
+        <span class="material-icons text-cc-purple text-2xl">playlist_add</span>
+      </div>
+      <h3 class="font-heading font-bold text-lg text-slate-800">Create New Wishlist</h3>
+      <p class="text-xs text-slate-400 mt-1">Organize your saved items into separate lists</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Wishlist Name</label>
+        <input type="text" id="new-wishlist-name" placeholder='e.g. "Birthday Ideas"' class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-purple focus:ring-1 focus:ring-cc-purple">
+      </div>
+      <div class="flex items-center gap-2.5">
+        <input type="checkbox" id="new-wishlist-public" class="accent-cc-purple cursor-pointer" style="width:16px;height:16px;">
+        <label for="new-wishlist-public" class="text-sm text-slate-600 cursor-pointer">Make this wishlist public (shareable via link)</label>
+      </div>
+      <button onclick="saveNewWishlist()" class="w-full bg-cc-purple hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition text-sm">Create Wishlist</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+// ========== MOCK DATA (simulating wishlists + wishlist_items + products join) ==========
+const WISHLISTS_DB = [
+  { id: 1, user_id: 1, name: 'My Wishlist', is_public: false, created_at: '2025-12-01' },
+  { id: 2, user_id: 1, name: 'Gift Ideas', is_public: true, created_at: '2025-12-15' },
+  { id: 3, user_id: 1, name: 'Buy Later', is_public: false, created_at: '2026-01-02' }
+];
+
+const PRODUCTS_DB = [
+  { id: 1, uuid: 'p-001', name: 'TrueSound Pro Wireless Earbuds with ANC', slug: 'truesound-pro-anc', category_name: 'Audio', base_price: 2999, sale_price: 1499, effective_price: 1499, average_rating: 4.3, review_count: 2341, total_sold: 15200, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&auto=format&fit=crop&q=80' },
+  { id: 2, uuid: 'p-002', name: 'FitTrack AMOLED Smart Watch', slug: 'fittrack-amoled', category_name: 'Electronics', base_price: 3999, sale_price: 2799, effective_price: 2799, average_rating: 4.8, review_count: 5120, total_sold: 22100, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&auto=format&fit=crop&q=80' },
+  { id: 3, uuid: 'p-003', name: 'Urban Trail Waterproof Laptop Backpack 15.6"', slug: 'urban-trail-backpack', category_name: 'Accessories', base_price: 1199, sale_price: 899, effective_price: 899, average_rating: 4.2, review_count: 986, total_sold: 8400, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=80' },
+  { id: 4, uuid: 'p-004', name: 'BoomBox Mini Portable Bluetooth Speaker', slug: 'boombox-mini-speaker', category_name: 'Audio', base_price: 1599, sale_price: 799, effective_price: 799, average_rating: 4.5, review_count: 3004, total_sold: 18500, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&auto=format&fit=crop&q=80' },
+  { id: 5, uuid: 'p-005', name: 'HomeChef Digital Air Fryer 4.5L', slug: 'homechef-airfryer', category_name: 'Appliances', base_price: 3999, sale_price: 3199, effective_price: 3199, average_rating: 4.6, review_count: 1892, total_sold: 9800, is_in_stock: false, primary_image: 'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=400&auto=format&fit=crop&q=80' },
+  { id: 6, uuid: 'p-006', name: 'NovaGlow LED Ring Light 10" with Tripod', slug: 'novaglow-ring-light', category_name: 'Electronics', base_price: 1299, sale_price: 649, effective_price: 649, average_rating: 4.1, review_count: 756, total_sold: 5200, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&auto=format&fit=crop&q=80' },
+  { id: 7, uuid: 'p-007', name: 'Cotton Luxe Men\'s Slim Fit Casual Shirt', slug: 'cotton-luxe-shirt', category_name: 'Fashion', base_price: 1499, sale_price: 599, effective_price: 599, average_rating: 4.4, review_count: 4231, total_sold: 31200, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&auto=format&fit=crop&q=80' },
+  { id: 8, uuid: 'p-008', name: 'ProCam 4K Action Camera Waterproof', slug: 'procam-4k-action', category_name: 'Electronics', base_price: 8999, sale_price: 4999, effective_price: 4999, average_rating: 4.7, review_count: 1456, total_sold: 6300, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&auto=format&fit=crop&q=80' },
+  { id: 9, uuid: 'p-009', name: 'AromaZen Essential Oil Diffuser 300ml', slug: 'aromazen-diffuser', category_name: 'Home', base_price: 999, sale_price: 449, effective_price: 449, average_rating: 4.0, review_count: 623, total_sold: 4100, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=400&auto=format&fit=crop&q=80' },
+  { id: 10, uuid: 'p-010', name: 'SwiftCharge 65W GaN Fast Charger', slug: 'swiftcharge-65w-gan', category_name: 'Accessories', base_price: 1999, sale_price: 999, effective_price: 999, average_rating: 4.5, review_count: 2890, total_sold: 24600, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&auto=format&fit=crop&q=80' },
+  { id: 11, uuid: 'p-011', name: 'ErgoFlex Mesh Office Chair with Lumbar', slug: 'ergoflex-office-chair', category_name: 'Furniture', base_price: 12999, sale_price: 7499, effective_price: 7499, average_rating: 4.6, review_count: 872, total_sold: 3100, is_in_stock: true, primary_image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400&auto=format&fit=crop&q=80' },
+  { id: 12, uuid: 'p-012', name: 'SilkDream Women\'s Printed Kurta Set', slug: 'silkdream-kurta-set', category_name: 'Fashion', base_price: 2499, sale_price: 1199, effective_price: 1199, average_rating: 4.3, review_count: 1678, total_sold: 12800, is_in_stock: false, primary_image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&auto=format&fit=crop&q=80' },
+];
+
+// Simulate wishlist_items join
+let wishlistItems = [
+  { id: 1, wishlist_id: 1, product_id: 1, variant_id: null, added_at: '2026-01-10T14:30:00' },
+  { id: 2, wishlist_id: 1, product_id: 2, variant_id: null, added_at: '2026-01-09T09:15:00' },
+  { id: 3, wishlist_id: 1, product_id: 5, variant_id: null, added_at: '2026-01-08T18:45:00' },
+  { id: 4, wishlist_id: 1, product_id: 7, variant_id: null, added_at: '2026-01-07T11:20:00' },
+  { id: 5, wishlist_id: 1, product_id: 8, variant_id: null, added_at: '2026-01-06T16:00:00' },
+  { id: 6, wishlist_id: 1, product_id: 10, variant_id: null, added_at: '2026-01-05T08:30:00' },
+  { id: 7, wishlist_id: 1, product_id: 11, variant_id: null, added_at: '2026-01-04T13:10:00' },
+  { id: 8, wishlist_id: 1, product_id: 12, variant_id: null, added_at: '2026-01-03T20:45:00' },
+  { id: 9, wishlist_id: 2, product_id: 4, variant_id: null, added_at: '2026-01-02T10:00:00' },
+  { id: 10, wishlist_id: 2, product_id: 9, variant_id: null, added_at: '2026-01-01T15:30:00' },
+  { id: 11, wishlist_id: 3, product_id: 3, variant_id: null, added_at: '2025-12-28T09:00:00' },
+  { id: 12, wishlist_id: 3, product_id: 6, variant_id: null, added_at: '2025-12-25T12:00:00' },
+];
+
+let cart = [];
+let currentWishlistId = 1;
+let viewMode = 'grid';
+let selectedItems = new Set();
+let nextWlItemId = 13;
+
+// ========== HELPERS ==========
+function getProduct(productId) {
+  return PRODUCTS_DB.find(p => p.id === productId);
+}
+
+function getDiscount(base, sale) {
+  if (!sale || sale >= base) return 0;
+  return Math.round(((base - sale) / base) * 100);
+}
+
+function formatPrice(n) {
+  return '₹' + n.toLocaleString('en-IN');
+}
+
+function getStars(rating) {
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.3 ? 1 : 0;
+  const empty = 5 - full - half;
+  return '<span class="stars text-sm">' + '★'.repeat(full) + (half ? '½' : '') + '<span class="text-slate-300">' + '★'.repeat(empty) + '</span></span>';
+}
+
+function getWishlistItems(wishlistId) {
+  return wishlistItems.filter(wi => wi.wishlist_id === wishlistId).map(wi => {
+    const product = getProduct(wi.product_id);
+    return { ...wi, product };
+  }).filter(wi => wi.product);
+}
+
+function getWishlistCount(wishlistId) {
+  return wishlistItems.filter(wi => wi.wishlist_id === wishlistId).length;
+}
+
+// ========== TOAST ==========
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const colors = {
+    success: { bg: 'bg-green-600', icon: 'check_circle' },
+    error: { bg: 'bg-red-500', icon: 'error' },
+    info: { bg: 'bg-cc-blue', icon: 'info' },
+    warning: { bg: 'bg-amber-500', icon: 'warning' },
+    cart: { bg: 'bg-cc-orange', icon: 'shopping_cart' },
+    heart: { bg: 'bg-cc-pink', icon: 'favorite' }
+  };
+  const c = colors[type] || colors.info;
+  const toast = document.createElement('div');
+  toast.className = `toast-in pointer-events-auto flex items-center gap-3 ${c.bg} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  toast.innerHTML = `<span class="material-icons text-lg">${c.icon}</span><span class="flex-1">${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove('toast-in');
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 2800);
+}
+
+// ========== BADGE UPDATES ==========
+function updateBadges() {
+  const totalWl = wishlistItems.length;
+  const totalCart = cart.reduce((s, c) => s + c.qty, 0);
+  ['wishlist-badge', 'wishlist-badge-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = totalWl; el.style.transform = totalWl > 0 ? 'scale(1)' : 'scale(0)'; }
+  });
+  ['cart-badge', 'cart-badge-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = totalCart;
+  });
+  document.getElementById('sidebar-wl-count').textContent = totalWl;
+  document.getElementById('sidebar-cart-count').textContent = totalCart;
+
+  // Update wishlist selector counts
+  document.querySelectorAll('.wl-opt-count').forEach(el => {
+    el.textContent = getWishlistCount(parseInt(el.dataset.wl));
+  });
+}
+
+// ========== RENDER WISHLIST ==========
+function renderWishlist() {
+  const grid = document.getElementById('wishlist-grid');
+  const emptyState = document.getElementById('empty-state');
+  const items = getWishlistItems(currentWishlistId);
+  const sort = document.getElementById('sort-select').value;
+
+  // Sort
+  const sorted = [...items];
+  switch (sort) {
+    case 'price-low': sorted.sort((a, b) => a.product.effective_price - b.product.effective_price); break;
+    case 'price-high': sorted.sort((a, b) => b.product.effective_price - a.product.effective_price); break;
+    case 'discount': sorted.sort((a, b) => getDiscount(b.product.base_price, b.product.sale_price) - getDiscount(a.product.base_price, a.product.sale_price)); break;
+    case 'name': sorted.sort((a, b) => a.product.name.localeCompare(b.product.name)); break;
+    default: sorted.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
+  }
+
+  document.getElementById('wishlist-total-count').textContent = items.length;
+
+  if (sorted.length === 0) {
+    grid.innerHTML = '';
+    grid.className = 'hidden';
+    emptyState.classList.remove('hidden');
+    document.getElementById('bulk-action-bar').classList.remove('show');
+    checkPriceDrops(items);
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  grid.className = viewMode === 'grid'
+    ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'
+    : 'grid grid-cols-1 sm:grid-cols-2 gap-4';
+
+  grid.innerHTML = sorted.map((item, idx) => {
+    const p = item.product;
+    const disc = getDiscount(p.base_price, p.sale_price);
+    const oos = !p.is_in_stock;
+    const isSelected = selectedItems.has(item.id);
+    const delayClass = `fade-up fade-up-d${Math.min(idx + 1, 6)}`;
+    const addedDate = new Date(item.added_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (viewMode === 'list') {
+      return `
+        <div class="wishlist-card list-view bg-white rounded-2xl ${delayClass}" data-wi-id="${item.id}">
+          <div class="card-img-wrap relative bg-slate-50 p-3 flex items-center justify-center aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
+            <img src="${p.primary_image}" alt="${p.name}" class="max-h-full max-w-full object-contain rounded-lg" loading="lazy">
+            ${oos ? '<div class="oos-overlay"><span class="bg-white text-red-500 font-bold text-xs px-4 py-2 rounded-full shadow-lg border border-red-100">Out of Stock</span></div>' : ''}
+            ${disc > 0 ? `<span class="absolute top-2 left-2 bg-cc-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">${disc}% OFF</span>` : ''}
+            <label class="absolute bottom-2 left-2 z-10 cursor-pointer">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item.id})" class="w-4 h-4 rounded accent-cc-blue cursor-pointer">
+            </label>
+          </div>
+          <div class="p-4 flex flex-col justify-between">
+            <div>
+              <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">${p.category_name}</p>
+              <h3 class="font-heading font-semibold text-sm text-slate-800 leading-snug line-clamp-2 mb-2">${p.name}</h3>
+              <div class="flex items-center gap-1.5 mb-3">
+                ${getStars(p.average_rating)}
+                <span class="text-xs text-slate-400">(${p.review_count.toLocaleString()})</span>
+              </div>
+              <div class="flex items-baseline gap-2.5 mb-1">
+                <span class="font-bold text-lg ${oos ? 'text-slate-600' : 'text-cc-orange'}">${formatPrice(p.effective_price)}</span>
+                ${p.sale_price && p.sale_price < p.base_price ? `<span class="price-strike text-xs">${formatPrice(p.base_price)}</span>` : ''}
+              </div>
+              ${!oos && p.base_price > 999 ? '<p class="text-[11px] text-green-600 font-medium mb-2">Free delivery available</p>' : '<div class="mb-2"></div>'}
+            </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+              ${oos
+                ? `<button disabled class="flex-1 bg-slate-100 text-slate-400 font-medium py-2.5 rounded-xl text-xs cursor-not-allowed flex items-center justify-center gap-1.5"><span class="material-icons text-[16px]">notifications_none</span> Notify Me</button>`
+                : `<button onclick="moveToCart(${item.id})" class="flex-1 btn-primary justify-center text-xs py-2.5"><span class="material-icons text-[16px]">shopping_cart</span> Move to Cart</button>`
+              }
+              <button onclick="confirmRemove(${item.id})" class="btn-danger-ghost text-xs py-2.5" title="Remove"><span class="material-icons text-[18px]">delete_outline</span></button>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2">Added on ${addedDate}</p>
+          </div>
+        </div>`;
+    }
+
+    // Grid view
+    return `
+      <div class="wishlist-card bg-white rounded-2xl ${delayClass}" data-wi-id="${item.id}">
+        <div class="card-img-wrap relative bg-slate-50 p-4 flex items-center justify-center aspect-square overflow-hidden">
+          <img src="${p.primary_image}" alt="${p.name}" class="max-h-full max-w-full object-contain rounded-lg transition-transform duration-300 hover:scale-105" loading="lazy">
+          ${oos ? '<div class="oos-overlay"><span class="bg-white text-red-500 font-bold text-xs px-4 py-2 rounded-full shadow-lg border border-red-100">Out of Stock</span></div>' : ''}
+          ${disc > 0 ? `<span class="absolute top-2.5 left-2.5 bg-cc-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">${disc}% OFF</span>` : ''}
+          <label class="absolute top-2.5 right-2.5 z-10 cursor-pointer bg-white/80 backdrop-blur-sm rounded-lg p-1 hover:bg-white transition">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item.id})" class="w-3.5 h-3.5 rounded accent-cc-blue cursor-pointer">
+          </label>
+        </div>
+        <div class="p-3.5">
+          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">${p.category_name}</p>
+          <h3 class="font-heading font-semibold text-[13px] text-slate-800 leading-snug line-clamp-2 mb-2 min-h-[2.5em]">${p.name}</h3>
+          <div class="flex items-center gap-1.5 mb-2.5">
+            ${getStars(p.average_rating)}
+            <span class="text-[11px] text-slate-400">(${p.review_count.toLocaleString()})</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="font-bold text-base ${oos ? 'text-slate-600' : 'text-cc-orange'}">${formatPrice(p.effective_price)}</span>
+            ${p.sale_price && p.sale_price < p.base_price ? `<span class="price-strike text-[11px]">${formatPrice(p.base_price)}</span>` : ''}
+          </div>
+          ${!oos && p.effective_price >= 999 ? '<p class="text-[10px] text-green-600 font-medium mb-3">Free delivery</p>' : '<div class="mb-3"></div>'}
+          <div class="flex items-center gap-1.5">
+            ${oos
+              ? `<button disabled class="flex-1 bg-slate-100 text-slate-400 font-medium py-2 rounded-lg text-[11px] cursor-not-allowed flex items-center justify-center gap-1"><span class="material-icons text-[14px]">notifications_none</span> Notify</button>`
+              : `<button onclick="moveToCart(${item.id})" class="flex-1 btn-primary justify-center text-[11px] py-2 rounded-lg"><span class="material-icons text-[14px]">shopping_cart</span> Move to Cart</button>`
+            }
+            <button onclick="confirmRemove(${item.id})" class="btn-danger-ghost py-2 px-2.5 rounded-lg" title="Remove">
+              <span class="material-icons text-[16px]">delete_outline</span>
+            </button>
+          </div>
+          <p class="text-[9px] text-slate-400 mt-2 text-right">${addedDate}</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Show bulk bar if items exist
+  document.getElementById('bulk-action-bar').classList.add('show');
+  updateSelectAllState();
+  checkPriceDrops(items);
+  updateBadges();
+}
+
+// ========== PRICE DROP DETECTION ==========
+function checkPriceDrops(items) {
+  const section = document.getElementById('price-drop-section');
+  const container = document.getElementById('price-drop-items');
+  // Simulate: items where discount > 40% are "price drops"
+  const drops = items.filter(i => getDiscount(i.product.base_price, i.product.sale_price) >= 45);
+  if (drops.length === 0) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+  container.innerHTML = drops.map(i => {
+    const p = i.product;
+    const disc = getDiscount(p.base_price, p.sale_price);
+    return `<div class="flex items-center gap-3 bg-white rounded-xl p-3 border border-green-100">
+      <img src="${p.primary_image}" class="w-10 h-10 rounded-lg object-contain" alt="${p.name}">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-medium text-slate-800 truncate">${p.name}</p>
+        <p class="text-[11px] text-green-600 font-semibold">${disc}% off — ${formatPrice(p.sale_price)} <span class="price-strike text-slate-400">${formatPrice(p.base_price)}</span></p>
+      </div>
+      ${p.is_in_stock ? `<button onclick="moveToCart(${i.id})" class="shrink-0 text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1.5 rounded-lg transition">Add to Cart</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ========== MOVE TO CART ==========
+function moveToCart(wishlistItemId) {
+  const wi = wishlistItems.find(w => w.id === wishlistItemId);
+  if (!wi) return;
+  const product = getProduct(wi.product_id);
+  if (!product || !product.is_in_stock) {
+    showToast('This product is currently out of stock', 'warning');
+    return;
+  }
+  // Check if already in cart
+  const existing = cart.find(c => c.product_id === product.id);
+  if (existing) {
+    existing.qty++;
+    showToast(`${product.name.split(' ').slice(0, 3).join(' ')}... quantity updated in cart`, 'cart');
+  } else {
+    cart.push({ product_id: product.id, name: product.name, price: product.effective_price, image: product.primary_image, qty: 1 });
+    showToast(`${product.name.split(' ').slice(0, 3).join(' ')}... moved to cart`, 'cart');
+  }
+  // Remove from wishlist
+  wishlistItems = wishlistItems.filter(w => w.id !== wishlistItemId);
+  selectedItems.delete(wishlistItemId);
+  renderWishlist();
+  renderCartDrawer();
+  renderWishlistDrawer();
+  updateBadges();
+}
+
+// ========== REMOVE FROM WISHLIST ==========
+let pendingRemoveId = null;
+let pendingRemoveAction = null;
+
+function confirmRemove(wishlistItemId) {
+  pendingRemoveId = wishlistItemId;
+  pendingRemoveAction = 'single';
+  const wi = wishlistItems.find(w => w.id === wishlistItemId);
+  const productName = wi ? getProduct(wi.product_id)?.name?.split(' ').slice(0, 4).join(' ') + '...' : 'this item';
+  document.getElementById('confirm-title').textContent = 'Remove from Wishlist?';
+  document.getElementById('confirm-desc').textContent = `"${productName}" will be removed from your wishlist. You can always add it back later.`;
+  document.getElementById('confirm-action-btn').textContent = 'Remove';
+  document.getElementById('confirm-action-btn').className = 'flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('confirm-action-btn').onclick = executeRemove;
+  document.getElementById('confirm-icon').innerHTML = '<span class="material-icons text-red-500 text-2xl">delete_outline</span>';
+  document.getElementById('confirm-icon').className = 'w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4';
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function removeSelected() {
+  if (selectedItems.size === 0) { showToast('No items selected', 'warning'); return; }
+  pendingRemoveAction = 'bulk';
+  document.getElementById('confirm-title').textContent = `Remove ${selectedItems.size} Items?`;
+  document.getElementById('confirm-desc').textContent = `These ${selectedItems.size} items will be removed from your wishlist permanently.`;
+  document.getElementById('confirm-action-btn').textContent = `Remove ${selectedItems.size} Items`;
+  document.getElementById('confirm-action-btn').className = 'flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('confirm-action-btn').onclick = executeRemove;
+  document.getElementById('confirm-icon').innerHTML = '<span class="material-icons text-red-500 text-2xl">delete_sweep</span>';
+  document.getElementById('confirm-icon').className = 'w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4';
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function executeRemove() {
+  if (pendingRemoveAction === 'single' && pendingRemoveId !== null) {
+    wishlistItems = wishlistItems.filter(w => w.id !== pendingRemoveId);
+    selectedItems.delete(pendingRemoveId);
+    pendingRemoveId = null;
+    showToast('Item removed from wishlist', 'heart');
+  } else if (pendingRemoveAction === 'bulk') {
+    wishlistItems = wishlistItems.filter(w => !selectedItems.has(w.id));
+    showToast(`${selectedItems.size} items removed from wishlist`, 'heart');
+    selectedItems.clear();
+  }
+  closeConfirmModal();
+  renderWishlist();
+  renderWishlistDrawer();
+  updateBadges();
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').classList.add('hidden');
+  pendingRemoveId = null;
+  pendingRemoveAction = null;
+}
+
+// ========== MOVE SELECTED TO CART ==========
+function moveSelectedToCart() {
+  if (selectedItems.size === 0) { showToast('No items selected', 'warning'); return; }
+  const itemsToMove = wishlistItems.filter(w => selectedItems.has(w.id));
+  let moved = 0, skipped = 0;
+  itemsToMove.forEach(wi => {
+    const product = getProduct(wi.product_id);
+    if (!product || !product.is_in_stock) { skipped++; return; }
+    const existing = cart.find(c => c.product_id === product.id);
+    if (existing) { existing.qty++; } else { cart.push({ product_id: product.id, name: product.name, price: product.effective_price, image: product.primary_image, qty: 1 }); }
+    moved++;
+    wishlistItems = wishlistItems.filter(w => w.id !== wi.id);
+  });
+  selectedItems.clear();
+  if (moved > 0) showToast(`${moved} item${moved > 1 ? 's' : ''} moved to cart`, 'cart');
+  if (skipped > 0) showToast(`${skipped} item${skipped > 1 ? 's' : ''} out of stock — skipped`, 'warning');
+  renderWishlist();
+  renderCartDrawer();
+  renderWishlistDrawer();
+  updateBadges();
+}
+
+// ========== SELECTION ==========
+function toggleSelect(wiId) {
+  if (selectedItems.has(wiId)) selectedItems.delete(wiId);
+  else selectedItems.add(wiId);
+  updateSelectAllState();
+}
+
+function toggleSelectAll() {
+  const cb = document.getElementById('select-all-cb');
+  const items = getWishlistItems(currentWishlistId);
+  if (cb.checked) {
+    items.forEach(i => selectedItems.add(i.id));
+  } else {
+    selectedItems.clear();
+  }
+  // Update individual checkboxes
+  document.querySelectorAll('[data-wi-id]').forEach(card => {
+    const id = parseInt(card.dataset.wiId);
+    const cbx = card.querySelector('input[type="checkbox"]');
+    if (cbx) cbx.checked = selectedItems.has(id);
+  });
+  updateSelectAllState();
+}
+
+function updateSelectAllState() {
+  const items = getWishlistItems(currentWishlistId);
+  const cb = document.getElementById('select-all-cb');
+  const label = document.getElementById('selected-count-label');
+  if (items.length === 0) { cb.checked = false; label.textContent = '(0 selected)'; return; }
+  cb.checked = items.length > 0 && items.every(i => selectedItems.has(i.id));
+  label.textContent = `(${selectedItems.size} selected)`;
+}
+
+// ========== VIEW MODE ==========
+function setViewMode(mode) {
+  viewMode = mode;
+  document.getElementById('view-grid-btn').className = `p-2 rounded-lg transition ${mode === 'grid' ? 'bg-white shadow-sm text-cc-blue' : 'text-slate-400 hover:text-slate-600'}`;
+  document.getElementById('view-list-btn').className = `p-2 rounded-lg transition ${mode === 'list' ? 'bg-white shadow-sm text-cc-blue' : 'text-slate-400 hover:text-slate-600'}`;
+  renderWishlist();
+}
+
+// ========== WISHLIST SWITCHING ==========
+function toggleWishlistSelector() {
+  document.getElementById('wishlist-selector-dropdown').classList.toggle('show');
+}
+
+function switchWishlist(id) {
+  currentWishlistId = id;
+  selectedItems.clear();
+  const wl = WISHLISTS_DB.find(w => w.id === id);
+  document.getElementById('active-wishlist-name').textContent = wl ? wl.name : 'My Wishlist';
+  document.getElementById('wishlist-selector-dropdown').classList.remove('show');
+  // Highlight active option
+  document.querySelectorAll('.wishlist-opt').forEach(el => {
+    el.classList.toggle('bg-cc-ice', parseInt(el.dataset.wl) === id);
+    el.classList.toggle('font-semibold', parseInt(el.dataset.wl) === id);
+  });
+  renderWishlist();
+}
+
+// ========== CREATE NEW WISHLIST ==========
+function createNewWishlist() {
+  document.getElementById('wishlist-selector-dropdown').classList.remove('show');
+  document.getElementById('new-wishlist-modal').classList.remove('hidden');
+  document.getElementById('new-wishlist-name').value = '';
+  document.getElementById('new-wishlist-public').checked = false;
+  setTimeout(() => document.getElementById('new-wishlist-name').focus(), 100);
+}
+
+function closeNewWishlistModal() {
+  document.getElementById('new-wishlist-modal').classList.add('hidden');
+}
+
+function saveNewWishlist() {
+  const name = document.getElementById('new-wishlist-name').value.trim();
+  if (!name) { showToast('Please enter a wishlist name', 'warning'); return; }
+  const isPublic = document.getElementById('new-wishlist-public').checked;
+  const newId = WISHLISTS_DB.length + 1;
+  WISHLISTS_DB.push({ id: newId, user_id: 1, name, is_public: isPublic, created_at: new Date().toISOString() });
+  // Add option to dropdown
+  const dropdown = document.getElementById('wishlist-selector-dropdown');
+  const btn = document.createElement('button');
+  btn.className = 'w-full text-left px-3 py-2.5 text-sm hover:bg-cc-ice flex items-center gap-2.5 transition wishlist-opt';
+  btn.dataset.wl = newId;
+  btn.setAttribute('onclick', `switchWishlist(${newId})`);
+  btn.innerHTML = `<span class="material-icons text-cc-blue text-[18px]">favorite_border</span><span class="flex-1">${name}</span><span class="text-xs text-slate-400 wl-opt-count" data-wl="${newId}">0</span>`;
+  const addBtn = dropdown.querySelector('button[onclick="createNewWishlist()"]').parentElement;
+  addBtn.before(btn);
+  closeNewWishlistModal();
+  switchWishlist(newId);
+  showToast(`Wishlist "${name}" created`, 'success');
+}
+
+// ========== SHARE ==========
+function toggleShareMenu() {
+  document.getElementById('share-dropdown').classList.toggle('show');
+}
+
+function shareWishlist(platform) {
+  document.getElementById('share-dropdown').classList.remove('show');
+  const wl = WISHLISTS_DB.find(w => w.id === currentWishlistId);
+  const url = `https://clickcodex.in/wishlist/${wl?.id || 1}`;
+  if (platform === 'copy') {
+    navigator.clipboard?.writeText(url).then(() => showToast('Wishlist link copied to clipboard', 'info')).catch(() => showToast('Link: ' + url, 'info'));
+  } else if (platform === 'whatsapp') {
+    window.open(`https://wa.me/?text=Check out my wishlist on ClickCodex: ${url}`, '_blank');
+  } else if (platform === 'telegram') {
+    window.open(`https://t.me/share/url?url=${url}&text=Check out my ClickCodex wishlist`, '_blank');
+  }
+}
+
+// ========== CART DRAWER ==========
+function toggleCartDrawer(open) {
+  const el = document.getElementById('cart-drawer');
+  if (open) { el.classList.remove('translate-x-full', 'pointer-events-none'); renderCartDrawer(); }
+  else { el.classList.add('translate-x-full', 'pointer-events-none'); }
+}
+
+function renderCartDrawer() {
+  const container = document.getElementById('cart-drawer-items');
+  if (cart.length === 0) {
+    container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-6">
+      <span class="material-icons text-5xl text-slate-200 mb-3">shopping_cart</span>
+      <p class="text-sm font-medium text-slate-500">Your cart is empty</p>
+      <p class="text-xs text-slate-400 mt-1">Move items from your wishlist to get started</p>
+    </div>`;
+    document.getElementById('cart-subtotal').textContent = '₹0';
+    document.getElementById('cart-grandtotal').textContent = '₹0';
+    return;
+  }
+  let subtotal = 0;
+  container.innerHTML = cart.map((item, idx) => {
+    const lineTotal = item.price * item.qty;
+    subtotal += lineTotal;
+    return `<div class="flex gap-3 bg-slate-50 rounded-xl p-3 fade-up">
+      <img src="${item.image}" class="w-16 h-16 rounded-lg object-contain bg-white p-1.5 shrink-0" alt="${item.name}">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-slate-800 line-clamp-2 leading-snug">${item.name}</p>
+        <p class="text-sm font-bold text-cc-orange mt-1">${formatPrice(item.price)}</p>
+        <div class="flex items-center gap-2 mt-2">
+          <button onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:border-cc-blue hover:text-cc-blue transition text-sm font-bold">−</button>
+          <span class="text-sm font-semibold w-6 text-center">${item.qty}</span>
+          <button onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:border-cc-blue hover:text-cc-blue transition text-sm font-bold">+</button>
+          <button onclick="removeFromCart(${idx})" class="ml-auto text-slate-400 hover:text-red-500 transition"><span class="material-icons text-[18px]">delete_outline</span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cart-subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('cart-grandtotal').textContent = formatPrice(subtotal);
+}
+
+function updateCartQty(idx, delta) {
+  cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+  renderCartDrawer();
+  updateBadges();
+}
+
+function removeFromCart(idx) {
+  const name = cart[idx].name.split(' ').slice(0, 3).join(' ');
+  cart.splice(idx, 1);
+  renderCartDrawer();
+  updateBadges();
+  showToast(`${name}... removed from cart`, 'info');
+}
+
+function checkoutCart() {
+  if (cart.length === 0) { showToast('Your cart is empty', 'warning'); return; }
+  showToast('Redirecting to secure checkout...', 'success');
+}
+
+// ========== WISHLIST DRAWER ==========
+function toggleWishlistDrawer(open) {
+  const el = document.getElementById('wishlist-drawer');
+  if (open) { el.classList.remove('translate-x-full', 'pointer-events-none'); renderWishlistDrawer(); }
+  else { el.classList.add('translate-x-full', 'pointer-events-none'); }
+}
+
+function renderWishlistDrawer() {
+  const container = document.getElementById('wishlist-drawer-items');
+  const items = getWishlistItems(currentWishlistId);
+  if (items.length === 0) {
+    container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-6">
+      <span class="material-icons text-5xl text-slate-200 mb-3">favorite_border</span>
+      <p class="text-sm font-medium text-slate-500">No saved items</p>
+      <p class="text-xs text-slate-400 mt-1">Browse products and tap the heart icon</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = items.map(item => {
+    const p = item.product;
+    return `<div class="flex gap-3 bg-slate-50 rounded-xl p-3">
+      <img src="${p.primary_image}" class="w-14 h-14 rounded-lg object-contain bg-white p-1.5 shrink-0" alt="${p.name}">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-slate-800 line-clamp-1">${p.name}</p>
+        <p class="text-sm font-bold text-cc-orange mt-0.5">${formatPrice(p.effective_price)}</p>
+        <div class="flex gap-1.5 mt-1.5">
+          ${p.is_in_stock ? `<button onclick="moveToCart(${item.id}); toggleWishlistDrawer(false);" class="text-[10px] bg-cc-blue text-white px-2.5 py-1 rounded-md font-medium hover:bg-blue-600 transition">Move to Cart</button>` : `<span class="text-[10px] text-red-500 font-medium">Out of Stock</span>`}
+          <button onclick="confirmRemove(${item.id}); toggleWishlistDrawer(false);" class="text-[10px] text-slate-400 hover:text-red-500 transition"><span class="material-icons text-[14px]">close</span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== MOBILE SIDEBAR ==========
+function toggleMobileSidebar(open) {
+  const el = document.getElementById('mobile-sidebar');
+  if (open) el.classList.remove('translate-x-[-100%]', 'pointer-events-none');
+  else el.classList.add('translate-x-[-100%]', 'pointer-events-none');
+}
+
+// ========== CLOSE DROPDOWNS ON OUTSIDE CLICK ==========
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#wishlist-selector-wrap')) document.getElementById('wishlist-selector-dropdown')?.classList.remove('show');
+  if (!e.target.closest('#share-dropdown') && !e.target.closest('[onclick*="toggleShareMenu"]')) document.getElementById('share-dropdown')?.classList.remove('show');
+});
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  renderWishlist();
+  updateBadges();
+  switchWishlist(1);
+});
+</script>
+</body>
+</html>

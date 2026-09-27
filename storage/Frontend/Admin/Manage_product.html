@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config={theme:{extend:{colors:{cc:{yellow:'#FFB800',orange:'#FF5100',pink:'#FF006B',purple:'#8C30F5',blue:'#2D82FF',dark:'#0F172A',light:'#F8FAFC',ice:'#F1F5F9'}},fontFamily:{heading:['Poppins','sans-serif'],body:['Inter','sans-serif']}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A8B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .stat-mini{background:#fff;border-radius:12px;border:1.5px solid #E2E8F0;padding:16px 20px;transition:all .2s ease}
+  .stat-mini:hover{border-color:#2D82FF;box-shadow:0 4px 12px -4px rgba(45,130,255,.1)}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}.badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-yellow{background:#FEF3C7;color:#92400E}.badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}.badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}.badge-cyan{background:#ECFEFF;color:#155E75}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:10px 14px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2;white-space:nowrap}
+  .data-table thead th:first-child{border-radius:10px 0 0 0;padding-left:48px}
+  .data-table tbody td{padding:10px 14px;font-size:.8125rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr.selected-row{background:#E8F0FE!important}
+  .data-table tbody tr.bulk-highlight{background:#FEF3C7!important}
+  .data-table tbody tr.deleted-row td:not(:first-child){opacity:.35}
+  .data-table tbody tr.deleted-row td:first-child{opacity:.35}
+  .stars-filled{color:#FFB800}.stars-empty{color:#E2E8F0}
+  .action-btn{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;color:#94A8B8}
+  .action-btn:hover{background:#F1F5F9;color:#2D82FF}
+  .action-btn.danger:hover{background:#FFE4E6;color:#FF006B}
+  /* Inline toggle */
+  .inline-toggle{width:34px;height:19px;border-radius:10px;background:#E2E8F0;position:relative;cursor:pointer;transition:background .2s ease;flex-shrink:0;display:inline-block}
+  .inline-toggle.on{background:#2D82FF}
+  .inline-toggle .it-thumb{width:15px;height:15px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .inline-toggle.on .it-thumb{transform:translateX(15px)}
+  /* Checkbox */
+  .row-check{width:18px;height:18px;border-radius:5px;border:1.5px solid #CBD5E1;appearance:none;-webkit-appearance:none;background:#fff;cursor:pointer;transition:all .15s ease;flex-shrink:0;position:relative}
+  .row-check:checked{background:#2D82FF;border-color:#2D82FF}
+  .row-check:checked::after{content:'';position:absolute;left:5px;top:1.5px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  /* Bulk bar */
+  .bulk-bar{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1),padding .3s ease,padding-top:0;padding-bottom:0}
+  .bulk-bar.show{max-height:80px;padding:12px 16px}
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+  .modal-overlay.show{opacity:1;pointer-events:auto}
+  .modal-box{background:#fff;border-radius:20px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+  .modal-overlay.show .modal-box{transform:translateY(0) scale(1)}
+  .form-field{width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.8125rem;color:#1E293B;transition:all .15s ease;background:#fff}
+  .form-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .form-field::placeholder{color:#94A3B8}
+  .detail-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #F1F5F9}
+  .detail-row:last-child{border-bottom:none}
+  .spec-chip{display:inline-flex;align-items:center;gap:4px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:4px 10px;font-size:.75rem;color:#475569}
+  .tag-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:.6875rem;font-weight:600;white-space:nowrap}
+  .img-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s ease;flex-shrink:0}
+  .img-thumb:hover{border-color:#2D82FF;transform:scale(1.08)}
+  .img-thumb.primary{border-color:#2D82FF;box-shadow:0 0 0 2px rgba(45,130,255,.2)}
+  .toast-container{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .toast-item{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;font-size:.875rem;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);animation:toast-in .35s cubic-bezier(.4,0,.2,1) forwards;border:1px solid transparent}
+  .toast-item.removing{animation:toast-out .3s ease forwards}
+  .toast-success{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+  .toast-error{background:#FFF1F2;border-color:#FECDD3;color:#9F1239}
+  .toast-info{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+  @keyframes toast-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes toast-out{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}.sidebar.mobile-open{transform:translateX(0)}.main-area{margin-left:0!important}}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0"><svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg></div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0"><p class="text-white text-sm font-semibold truncate">Arvind Sharma</p><p class="text-white/35 text-xs truncate">Super Admin</p></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm"><a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a><span class="material-icons text-slate-300 text-[16px]">chevron_right</span><a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a><span class="material-icons text-slate-300 text-[16px]">chevron_right</span><span class="text-slate-700 font-medium">Products</span></div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-72 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search by name, SKU, uuid..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="searchInput" oninput="filterTable()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue"><span class="material-icons text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span></button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block"><p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p><p class="text-[11px] text-slate-400">Super Admin</p></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Products Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Manage <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">products</span> — list, search, bulk actions, inline stock/active toggles</p>
+      </div>
+      <button onclick="openModal()" class="flex items-center gap-2 bg-cc-blue hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-md shadow-cc-blue/20">
+        <span class="material-icons text-[18px]">add</span> Add Product
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[18px]">inventory_2</span></div><div><p class="text-lg font-bold text-slate-800">12,847</p><p class="text-[10px] text-slate-400 mono">is_active=1, deleted_at=NULL</p></div></div></div>
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-cc-yellow/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-yellow text-[18px]">star</span></div><div><p class="text-lg font-bold text-slate-800">847</p><p class="text-[10px] text-slate-400 mono">is_featured=1</p></div></div></div>
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0"><span class="material-icons text-cc-pink text-[18px]">remove_shopping_cart</span></div><div><p class="text-lg font-bold text-slate-800">23</p><p class="text-[10px] text-slate-400 mono">is_in_stock=0</p></div></div></div>
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"><span class="material-icons text-slate-500 text-[18px]">delete</span></div><div><p class="text-lg font-bold text-slate-800">312</p><p class="text-[10px] text-slate-400 mono">deleted_at IS NOT NULL</p></div></div></div>
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-cc-purple/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-purple text-[18px]">style</span></div><div><p class="text-lg font-bold text-slate-800">2,341</p><p class="text-[10px] text-slate-400 mono">with variants</p></div></div></div>
+      <div class="stat-mini"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[18px]">sell</span></div><div><p class="text-lg font-bold text-slate-800">₹2.4Cr</p><p class="text-[10px] text-slate-400 mono">SUM(sale_price)</p></div></div></div>
+    </div>
+
+    <!-- Schema Bar -->
+    <div class="bg-cc-dark rounded-xl px-5 py-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/45 mono overflow-x-auto scrollbar-none">
+      <span class="text-white/60 font-semibold font-sans shrink-0">products:</span>
+      <span>id PK</span><span class="text-white/15">|</span><span>uuid CHAR(36)</span><span class="text-white/15">|</span><span>category_id FK</span><span class="text-white/15">|</span><span>name</span><span class="text-white/15">|</span><span>slug UNIQUE</span><span class="text-white/15">|</span><span>sku UNIQUE</span><span class="text-white/15">|</span><span>base_price</span><span class="text-white/15">|</span><span>sale_price NULL</span><span class="text-white/15">|</span><span>cost_price NULL</span><span class="text-white/15">|</span><span>tax_rate DEFAULT 0.00</span><span class="text-white/15">|</span><span>is_featured</span><span class="text-white/15">|</span><span>is_in_stock</span><span class="text-white/15">|</span><span>unit_id FK → units</span><span class="text-white/15">|</span><span>deleted_at (soft delete)</span>
+    </div>
+
+    <!-- Filters + Bulk Bar -->
+    <div class="section-card p-4 space-y-3">
+      <div class="flex flex-wrap items-center gap-2.5">
+        <select id="filterCategory" onchange="filterTable()" class="form-field w-auto text-xs py-2 pr-8"><option value="">All Categories</option><option value="Mobiles & Tablets">Mobiles & Tablets</option><option value="Electronics">Electronics</option><option value="Fashion">Fashion</option><option value="Home & Furniture">Home & Furniture</option><option value="Appliances">Appliances</option><option value="Beauty & Personal Care">Beauty & Personal Care</option><option value="Sports & Fitness">Sports & Fitness</option></select>
+        <select id="filterStatus" onchange="filterTable()" class="form-field w-auto text-xs py-2 pr-8"><option value="">All Status</option><option value="active">is_active = 1</option><option value="inactive">is_active = 0</option><option value="deleted">Soft Deleted</option></select>
+        <select id="filterStock" onchange="filterTable()" class="form-field w-auto text-xs py-2 pr-8"><option value="">All Stock</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
+        <select id="filterFeatured" onchange="filterTable()" class="form-field w-auto text-xs py-2 pr-8"><option value="">Featured</option><option value="yes">is_featured = 1</option><option value="no">is_featured = 0</option></select>
+        <div class="ml-auto text-xs text-slate-400 mono" id="resultCount">Showing 10 of 12,847</div>
+      </div>
+      <!-- Bulk Action Bar -->
+      <div class="bulk-bar bg-cc-blue/5 border border-cc-blue/20 rounded-xl" id="bulkBar">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-semibold text-cc-blue flex items-center gap-1.5"><span class="material-icons text-[18px]">checklist</span> <span id="selectedCount">0</span> selected</span>
+          <button onclick="bulkAction('activate')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition"><span class="material-icons text-[14px] text-green-600">toggle_on</span> Set Active</button>
+          <button onclick="bulkAction('deactivate')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition"><span class="material-icons text-[14px] text-red-500">toggle_off</span> Set Inactive</button>
+          <button onclick="bulkAction('stock-in')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition"><span class="material-icons text-[14px]">add_shopping_cart</span> Set In Stock</button>
+          <button onclick="bulkAction('stock-out')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition"><span class="material-icons text-[14px]">remove_shopping_cart</span> Set Out of Stock</button>
+          <button onclick="bulkAction('featured')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-yellow-50 hover:border-yellow-200 hover:text-yellow-700 transition"><span class="material-icons text-[14px] text-cc-yellow">star</span> Set Featured</button>
+          <button onclick="bulkAction('unfeatured')" class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition"><span class="material-icons text-[14px]">star_border</span> Un-Featured</button>
+          <button onclick="bulkAction('soft-delete')" class="flex items-center gap-1.5 bg-white border border-red-200 text-red-600 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-50 transition"><span class="material-icons text-[14px]">delete_outline</span> Soft Delete</button>
+          <button onclick="bulkAction('restore')" class="flex items-center gap-1.5 bg-white border border-green-200 text-green-600 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-green-50 transition"><span class="material-icons text-[14px]">restore</span> Restore</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table + Detail -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="xl:col-span-2 section-card">
+        <div class="overflow-x-auto max-h-[72vh] overflow-y-auto scrollbar-thin">
+          <table class="data-table" id="productsTable">
+            <thead>
+              <tr>
+                <th style="width:36px"><input type="checkbox" class="row-check" onchange="toggleAll(this)"></th>
+                <th>Product</th>
+                <th>category_id</th>
+                <th>SKU</th>
+                <th>base / sale</th>
+                <th>Stock</th>
+                <th>Active</th>
+                <th>★</th>
+                <th>sold</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-idx="0" data-cat="Mobiles & Tablets" data-status="active" data-stock="in" data-featured="yes" data-search="truesound pro wireless earbuds anc cc-ear-001">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">TrueSound Pro Wireless Earbuds</p><p class="text-[10px] text-slate-400 mono truncate">uuid: a1b2c3d4-...</p></div></div></td>
+                <td><span class="badge badge-blue text-[10px]">Mobiles & Tablets</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-EAR-001</td>
+                <td><div class="mono text-xs"><span class="text-slate-400">₹2,999</span><br><span class="text-green-600 font-semibold">₹1,499</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'TrueSound Pro Earbuds')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'TrueSound Pro Earbuds')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.3</span></span></td>
+                <td class="mono text-xs font-semibold">1,847</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('TrueSound Pro Earbuds')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="1" data-cat="Electronics" data-status="active" data-stock="in" data-featured="yes" data-search="fittrack smart watch amoled cc-wat-012">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">FitTrack Smart Watch AMOLED</p><p class="text-[10px] text-slate-400 mono truncate">uuid: e5f6a7b8-...</p></div></div></td>
+                <td><span class="badge badge-purple text-[10px]">Electronics</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-WAT-012</td>
+                <td><div class="mono text-xs"><span class="text-slate-400">₹3,999</span><br><span class="text-green-600 font-semibold">₹2,799</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'FitTrack Smart Watch')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'FitTrack Smart Watch')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.8</span></span></td>
+                <td class="mono text-xs font-semibold">3,204</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('FitTrack Smart Watch')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="2" data-cat="Home & Furniture" data-status="active" data-stock="in" data-featured="no" data-search="urban trail waterproof laptop backpack cc-bpk-034">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">Urban Trail Waterproof Laptop Backpack</p><p class="text-[10px] text-slate-400 mono truncate">uuid: i9j0k1l2-...</p></div></div></td>
+                <td><span class="badge badge-slate text-[10px]">Home & Furniture</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-BPK-034</td>
+                <td><div class="mono text-xs"><span class="text-slate-700 font-semibold">₹1,199</span><br><span class="text-slate-400">NULL</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'Urban Trail Backpack')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'Urban Trail Backpack')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.2</span></span></td>
+                <td class="mono text-xs font-semibold">986</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('Urban Trail Backpack')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="3" data-cat="Electronics" data-status="active" data-stock="out" data-featured="yes" data-search="boombox mini portable bluetooth speaker cc-spk-007">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">BoomBox Mini Portable BT Speaker</p><p class="text-[10px] text-slate-400 mono truncate">uuid: m3n4o5p6-...</p></div></div></td>
+                <td><span class="badge badge-purple text-[10px]">Electronics</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-SPK-007</td>
+                <td><div class="mono text-xs"><span class="text-slate-400 line-through">₹1,599</span><br><span class="text-green-600 font-semibold">₹799</span></div></td>
+                <td><div class="inline-toggle" onclick="toggleStock(this,'BoomBox Mini Speaker')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'BoomBox Mini Speaker')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.5</span></span></td>
+                <td class="mono text-xs font-semibold">3,004</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('BoomBox Mini Speaker')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="4" data-cat="Appliances" data-status="active" data-stock="in" data-featured="no" data-search="homechef digital air fryer 4.5l cc-afr-021">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">HomeChef Digital Air Fryer 4.5L</p><p class="text-[10px] text-slate-400 mono truncate">uuid: q7r8s9t0-...</p></div></div></td>
+                <td><span class="badge badge-orange text-[10px]">Appliances</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-AFR-021</td>
+                <td><div class="mono text-xs"><span class="text-slate-400 line-through">₹3,999</span><br><span class="text-green-600 font-semibold">₹3,199</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'HomeChef Air Fryer')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'HomeChef Air Fryer')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.1</span></span></td>
+                <td class="mono text-xs font-semibold">756</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('HomeChef Air Fryer')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="5" data-cat="Fashion" data-status="active" data-stock="out" data-featured="no" data-search="cotton embroidered kurti set cc-fsh-089">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1434389677669-e08b4cda3a20?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">Cotton Embroidered Kurti Set</p><p class="text-[10px] text-slate-400 mono truncate">uuid: u1v2w3x4-...</p></div></div></td>
+                <td><span class="badge badge-pink text-[10px]">Fashion</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-FSH-089</td>
+                <td><div class="mono text-xs"><span class="text-slate-400 line-through">₹1,899</span><br><span class="text-green-600 font-semibold">₹1,299</span></div></td>
+                <td><div class="inline-toggle" onclick="toggleStock(this,'Cotton Kurti Set')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'Cotton Kurti Set')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">3.9</span></span></td>
+                <td class="mono text-xs font-semibold">421</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('Cotton Kurti Set')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="6" data-cat="Beauty & Personal Care" data-status="active" data-stock="in" data-featured="yes" data-search="glowvision vitamin c face serum cc-bty-045">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1620916566398-39f1143ad7ec?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">GlowVision Vitamin C Face Serum</p><p class="text-[10px] text-slate-400 mono truncate">uuid: y5z6a7b8-...</p></div></div></td>
+                <td><span class="badge badge-pink text-[10px]">Beauty & Personal Care</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-BTY-045</td>
+                <td><div class="mono text-xs"><span class="text-slate-400 line-through">₹899</span><br><span class="text-green-600 font-semibold">₹649</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'GlowVision Serum')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'GlowVision Serum')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.6</span></span></td>
+                <td class="mono text-xs font-semibold">2,103</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('GlowVision Serum')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr data-idx="7" data-cat="Sports & Fitness" data-status="active" data-stock="in" data-featured="no" data-search="prostride running shoes cc-spt-112">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=80&auto=format&fit=crop&q=80" class="img-thumb"><div class="min-w-0"><p class="font-medium text-slate-700 text-sm truncate max-w-[150px]">ProStride Running Shoes</p><p class="text-[10px] text-slate-400 mono truncate">uuid: a9b0c1d2-...</p></div></div></td>
+                <td><span class="badge badge-green text-[10px]">Sports & Fitness</span></td>
+                <td class="mono text-xs font-semibold text-slate-600">CC-SPT-112</td>
+                <td><div class="mono text-xs"><span class="text-slate-400 line-through">₹3,499</span><br><span class="text-green-600 font-semibold">₹2,199</span></div></td>
+                <td><div class="inline-toggle on" onclick="toggleStock(this,'ProStride Running Shoes')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle on" onclick="toggleActive(this,'ProStride Running Shoes')"><div class="it-thumb"></div></div></td>
+                <td><span class="text-xs">★<span class="font-semibold">4.4</span></span></td>
+                <td class="mono text-xs font-semibold">1,542</td>
+                <td><div class="flex items-center gap-0.5"><button class="action-btn" onclick="event.stopPropagation();openModal()" title="Edit"><span class="material-icons text-[15px]">edit</span></button><button class="action-btn danger" onclick="event.stopPropagation();softDelete('ProStride Running Shoes')" title="Soft Delete"><span class="material-icons text-[15px]">delete_outline</span></button></div></td>
+              </tr>
+              <tr class="deleted-row" data-idx="8" data-cat="Electronics" data-status="deleted" data-stock="out" data-featured="no" data-search="techblast wireless charging pad cc-acc-099">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=80&auto=format&fit=crop&q=80" class="img-thumb" style="filter:grayscale(100%)"><div class="min-w-0"><p class="font-medium text-slate-400 text-sm truncate max-w-[150px] line-through">TechBlast Wireless Charging Pad</p><p class="text-[10px] text-slate-300 mono truncate">uuid: e3f4g5h6-...</p></div></div></td>
+                <td><span class="badge badge-slate text-[10px]">Electronics</span></td>
+                <td class="mono text-xs text-slate-400">CC-ACC-099</td>
+                <td><div class="mono text-xs text-slate-400"><span class="line-through">₹1,299</span><br><span class="line-through">₹899</span></div></td>
+                <td><div class="inline-toggle" onclick="toggleStock(this,'TechBlast Charging Pad')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle" onclick="toggleActive(this,'TechBlast Charging Pad')"><div class="it-thumb"></div></div></td>
+                <td class="text-xs text-slate-400">★<span class="font-semibold text-slate-400">3.2</span></td>
+                <td class="mono text-xs text-slate-400">0</td>
+                <td><button class="action-btn" onclick="event.stopPropagation();restoreProduct('TechBlast Charging Pad')" title="Restore" style="color:#22C55E"><span class="material-icons text-[15px]">restore</span></button></td>
+              </tr>
+              <tr class="deleted-row" data-idx="9" data-cat="Fashion" data-status="deleted" data-stock="out" data-featured="no" data-search="luxeart leather wallet cc-fsh-201">
+                <td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+                <td><div class="flex items-center gap-2.5"><img src="https://images.unsplash.com/photo-1627123424574-724758594e93?w=80&auto=format&fit=crop&q=80" class="img-thumb" style="filter:grayscale(100%)"><div class="min-w-0"><p class="font-medium text-slate-400 text-sm truncate max-w-[150px] line-through">LuxeArt Leather Wallet</p><p class="text-[10px] text-slate-300 mono truncate">uuid: i7j8k9l0-...</p></div></div></td>
+                <td><span class="badge badge-slate text-[10px]">Fashion</span></td>
+                <td class="mono text-xs text-slate-400">CC-FSH-201</td>
+                <td><div class="mono text-xs text-slate-400"><span class="line-through">₹799</span></div></td>
+                <td><div class="inline-toggle" onclick="toggleStock(this,'LuxeArt Wallet')"><div class="it-thumb"></div></div></td>
+                <td><div class="inline-toggle" onclick="toggleActive(this,'LuxeArt Wallet')"><div class="it-thumb"></div></div></td>
+                <td class="text-xs text-slate-400">★<span class="font-semibold text-slate-400">2.8</span></td>
+                <td class="mono text-xs text-slate-400">0</td>
+                <td><button class="action-btn" onclick="event.stopPropagation();restoreProduct('LuxeArt Wallet')" title="Restore" style="color:#22C55E"><span class="material-icons text-[15px]">restore</span></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="section-card" id="detailPanel">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="material-icons text-cc-blue text-[22px]">info</span><div><h2 class="font-heading text-lg font-bold text-slate-900">Product Record</h2><p class="text-xs text-slate-400 mono">SELECT * FROM products WHERE id = <span id="dId">1</span></p></div></div>
+          <div class="flex gap-1.5" id="dActions"><button onclick="openModal()" class="action-btn" title="Edit"><span class="material-icons text-[16px]">edit</span></button><button onclick="softDelete('—')" class="action-btn danger" title="Soft Delete"><span class="material-icons text-[16px]">delete_outline</span></button></div>
+        </div>
+        <div class="p-5 space-y-5">
+          <div class="flex gap-4">
+            <img id="dImg" src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80" class="w-24 h-24 rounded-2xl object-cover border border-slate-200">
+            <div class="min-w-0">
+              <h3 class="font-heading text-lg font-bold text-slate-800 leading-snug" id="dName">TrueSound Pro Wireless Earbuds</h3>
+              <p class="text-xs text-cc-blue mono mt-1" id="dSlug">slug: truesound-pro-wireless-earbuds-anc</p>
+              <p class="text-xs text-slate-400 mono mt-0.5" id="dUuid">uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890</p>
+              <div class="flex flex-wrap gap-1.5 mt-2" id="dFlags"></div>
+            </div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">product_images <span class="font-normal normal-case">WHERE is_primary = 1</span></p>
+            <div class="flex gap-2" id="dImages"></div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Core Fields</p>
+            <div class="space-y-0">
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">id</span><span class="text-sm font-semibold text-slate-700 mono" id="dFieldId">1</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">category_id</span><span class="text-sm text-slate-700" id="dCatId"></span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">sku</span><span class="text-sm text-cc-blue font-semibold mono" id="dSku">CC-EAR-001</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">base_price</span><span class="text-sm text-slate-700 mono" id="dBasePrice">₹2,999.00</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">sale_price</span><span class="text-sm text-green-600 font-semibold mono" id="dSalePrice">₹1,499.00</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">cost_price</span><span class="text-sm text-slate-600 mono" id="dCostPrice">₹620.00</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">currency</span><span class="text-sm text-slate-700 mono" id="dCurrency">INR (DEFAULT)</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">tax_rate</span><span class="text-sm text-slate-700 mono" id="dTaxRate">18.00 <span class="text-slate-400 font-sans">% (GST)</span></span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">weight_grams</span><span class="text-sm text-slate-700 mono" id="dWeight">54g</span></div>
+              <div class="detail-row"><span class="mono text-[10px] text-slate-400 w-32 shrink-0 pt-0.5">unit_id</span><span class="text-sm text-slate-700 mono" id="dUnit">NULL</span></div>
+            </div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Denormalized Counters <span class="font-normal normal-case">(updated by triggers/jobs)</span></p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-slate-50 rounded-lg p-2.5 text-center"><p class="text-lg font-bold text-slate-800 font-heading" id="dTotalSold">1,847</p><p class="text-[10px] text-slate-400 mono">total_sold INT</p></div>
+              <div class="bg-slate-50 rounded-lg p-2.5 text-center"><p class="text-lg font-bold text-slate-800 font-heading" id="dWishlistCount">423</p><p class="text-[10px] text-slate-400 mono">wishlist_count INT</p></div>
+              <div class="bg-slate-50 rounded-lg p-2.5 text-center"><p class="text-lg font-bold text-slate-800 font-heading" id="dReviewCount">2,341</p><p class="text-[10px] text-slate-400 mono">review_count INT</p></div>
+              <div class="bg-slate-50 rounded-lg p-2.5 text-center"><p class="text-lg font-bold text-cc-yellow font-heading">★ 4.3</p><p class="text-[10px] text-slate-400 mono">average_rating DECIMAL(3,2)</p></div>
+            </div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">product_specifications</p>
+            <div class="flex flex-wrap gap-1.5" id="dSpecs"></div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">product_tags ← JOIN tags</p>
+            <div class="flex flex-wrap gap-1.5" id="dTags"></div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">product_variants ← JOIN variant_attribute_values, product_attributes</p>
+            <div class="space-y-1.5" id="dVariants"></div>
+          </div>
+          <div class="text-[10px] mono text-slate-400 space-y-0.5 pt-2 border-t border-slate-100">
+            <p>created_at: <span id="dCreated" class="text-slate-500">2024-06-15 10:30:00</span></p>
+            <p>updated_at: <span id="dUpdated" class="text-slate-500">2026-02-10 07:15:00</span></p>
+            <p>deleted_at: <span id="dDeleted" class="text-slate-500">NULL</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="h-4"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Add Product</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition"><span class="material-icons">close</span></button>
+    </div>
+    <form onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-600 mb-1">name <span class="mono text-slate-400 font-normal">VARCHAR(255) NOT NULL</span></label><input type="text" id="fName" class="form-field" placeholder="Product name" required></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">sku <span class="mono text-slate-400 font-normal">VARCHAR(100) UNIQUE</span></label><input type="text" id="fSku" class="form-field" placeholder="CC-XXX-000" required></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">category_id <span class="mono text-slate-400 font-normal">BIGINT FK → categories</span></label>
+          <select id="fCategory" class="form-field" required>
+            <option value="">Select category</option>
+            <option value="1">1 — Mobiles & Tablets</option><option value="2">2 — Electronics</option><option value="3">3 — Fashion</option><option value="4">4 — Home & Furniture</option><option value="5">5 — Beauty & Personal Care</option><option value="6">6 — Appliances</option><option value="7">7 — Sports & Fitness</option><option value="8">8 — Toys & Baby Care</option><option value="9">9 — Grocery & Gourmet</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1">slug <span class="mono text-slate-400 font-normal">VARCHAR(300) UNIQUE</span></label><input type="text" id="fSlug" class="form-field" placeholder="auto-generated-from-name"></div>
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1">short_description <span class="mono text-slate-400 font-normal">TEXT NULL</span></label><input type="text" id="fShortDesc" class="form-field" placeholder="Brief description..."></div>
+      <div class="grid grid-cols-3 gap-4">
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">base_price <span class="mono text-slate-400 font-normal">DECIMAL(12,2)</span></label><input type="number" id="fBasePrice" class="form-field" step="0.01" placeholder="0.00" required></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">sale_price <span class="mono text-slate-400 font-normal">DECIMAL(12,2) NULL</span></label><input type="number" id="fSalePrice" class="form-field" step="0.01" placeholder="NULL"></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">cost_price <span class="mono text-slate-400 font-normal">DECIMAL(12,2) NULL</span></label><input type="number" id="fCostPrice" class="form-field" step="0.01" placeholder="NULL"></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">tax_rate <span class="mono text-slate-400 font-normal">DECIMAL(5,2) DEFAULT 0.00</span></label><input type="number" id="fTaxRate" class="form-field" step="0.01" value="18.00"></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">weight_grams <span class="mono text-slate-400 font-normal">INT UNSIGNED NULL</span></label><input type="number" id="fWeight" class="form-field" placeholder="NULL"></div>
+        <div><label class="block text-xs font-semibold text-slate-600 mb-1">sort_order <span class="mono text-slate-400 font-normal">SMALLINT DEFAULT 0</span></label><input type="number" id="fSortOrder" class="form-field" value="0" min="0"></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="flex items-end gap-2"><input type="checkbox" id="fIsActive" checked class="w-5 h-5 rounded border-slate-300 text-cc-blue accent-cc-blue"><label for="fIsActive" class="text-xs text-slate-600 pb-1">is_active <span class="mono text-slate-400 font-normal">DEFAULT 1</span></label></div>
+        <div class="flex items-end gap-2"><input type="checkbox" id="fIsFeatured" class="w-5 h-5 rounded border-slate-300 text-cc-yellow accent-cc-yellow"><label for="fIsFeatured" class="text-xs text-slate-600 pb-1">is_featured <span class="mono text-slate-400 font-normal">DEFAULT 0</span></label></div>
+        <div class="flex items-end gap-2"><input type="checkbox" id="fIsInStock" checked class="w-5 h-5 rounded border-slate-300 text-green-600 accent-green-600"><label for="fIsInStock" class="text-xs text-slate-600 pb-1">is_in_stock <span class="mono text-slate-400 font-normal">DEFAULT 1</span></label></div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition">Insert Product</button>
+        <button type="button" onclick="closeModal()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- SOFT DELETE CONFIRM -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box max-w-sm">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4"><span class="material-icons text-cc-pink text-4xl">delete_outline</span></div>
+      <h3 class="font-heading text-xl font-bold text-slate-900 mb-2">Soft Delete Product?</h3>
+      <p class="text-sm text-slate-500 mb-1">You are about to soft-delete <strong class="text-slate-700" id="deleteName">—</strong></p>
+      <p class="text-xs text-slate-400 mono mb-4">UPDATE products SET deleted_at = NOW() WHERE id = ...</p>
+      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-5 text-left">
+        <p class="text-xs text-yellow-800 flex items-start gap-2"><span class="material-icons text-yellow-600 text-[16px] mt-0.5 shrink-0">warning</span><span><strong>Soft delete</strong> — sets <span class="mono">deleted_at</span> timestamp. Product won't appear in storefront but remains in database. All FK references (<span class="mono">order_items</span>, <span class="mono">reviews</span>, <span class="mono">wishlist_items</span>) remain intact. Use restore to set <span class="mono">deleted_at = NULL</span>.</span></p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="executeSoftDelete()" class="flex-1 bg-cc-pink hover:bg-pink-700 text-white font-bold py-3 rounded-xl transition">Soft Delete</button>
+        <button onclick="closeModal('deleteModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 rounded-xl transition">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('mobile-open');o.classList.toggle('show');document.body.style.overflow=s.classList.contains('mobile-open')?'hidden':''}
+function collapseSidebar(){const s=document.getElementById('sidebar'),m=document.getElementById('mainArea'),i=document.getElementById('collapseIcon');s.classList.toggle('collapsed');m.classList.toggle('expanded');i.textContent=s.classList.contains('collapsed')?'chevron_right':'menu_open'}
+function closeModal(id){(id?document.getElementById(id):document.getElementById('formModal')).classList.remove('show');document.body.style.overflow=''}
+function openModal(){document.getElementById('formModal').classList.add('show');document.body.style.overflow='hidden'}
+
+// SELECT ALL / BULK
+function toggleAll(el){
+  const checked=el.checked;
+  document.querySelectorAll('#productsTable tbody .row-check').forEach(c=>{c.checked=checked});
+  updateBulk();
+}
+function updateBulk(){
+  let count=0;
+  document.querySelectorAll('#productsTable tbody .row-check:checked').forEach(()=>count++);
+  const bar=document.getElementById('bulkBar');
+  const cntEl=document.getElementById('selectedCount');
+  cntEl.textContent=count;
+  if(count>0){bar.classList.add('show')}else{bar.classList.remove('show')}
+}
+
+// INLINE TOGGLES
+function toggleStock(el,name){
+  const isOn=el.classList.toggle('on');
+  const row=el.closest('tr');
+  if(!row)return;
+  if(isOn){
+    row.classList.remove('deleted-row');
+    const badge=row.querySelectorAll('.badge')[2];
+    if(badge){badge.className='badge badge-green text-[10px]';badge.innerHTML='<span class="material-icons text-[10px]">check</span> 1';
+    }
+    showToast('success','<strong>'+name+'</strong> — UPDATE products SET is_in_stock = 1 WHERE id = ...');
+  }else{
+    const badge=row.querySelectorAll('.badge')[2];
+    if(badge){badge.className='badge badge-red text-[10px]';badge.innerHTML='<span class="material-icons text-[10px]">close</span> 0';
+    }
+    showToast('info','<strong>'+name+'</strong> — UPDATE products SET is_in_stock = 0 WHERE id = ...');
+  }
+}
+function toggleActive(el,name){
+  const isOn=el.classList.toggle('on');
+  const row=el.closest('tr');
+  if(!row)return;
+  if(isOn){
+    row.classList.remove('deleted-row');
+    const badge=row.querySelectorAll('.badge')[3];
+    if(badge){badge.className='badge badge-green text-[10px]';badge.textContent='Active';
+    }
+    showToast('success','<strong>'+name+'</strong> — UPDATE products SET is_active = 1 WHERE id = ...');
+  }else{
+    const badge=row.querySelectorAll('.badge')[3];
+    if(badge){badge.className='badge badge-red text-[10px]';badge.textContent='Inactive';
+    }
+    showToast('info','<strong>'+name+'</strong> — UPDATE products SET is_active = 0 WHERE id = ...');
+  }
+}
+
+// FILTERS
+function filterTable(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const cat=document.getElementById('filterCategory').value;
+  const st=document.getElementById('filterStatus').value;
+  const sk=document.getElementById('filterStock').value;
+  const ft=document.getElementById('filterFeatured').value;
+  let count=0;
+  document.querySelectorAll('#productsTable tbody tr').forEach(r=>{
+    const ds=r.dataset.search||'';
+    const dc=r.dataset.cat||'';
+    const dst=r.dataset.status||'';
+    const dsk=r.dataset.stock||'';
+    const dft=r.dataset.featured||'';
+    let show=true;
+    if(q&&!ds.includes(q))show=false;
+    if(cat&&dc!==cat)show=false;
+    if(st==='active'&&dst!=='active')show=false;
+    if(st==='inactive'&&dst!=='active')show=false;
+    if(st==='deleted'&&dst!=='deleted')show=false;
+    if(sk==='in'&&dsk!=='in')show=false;
+    if(sk==='out'&&dsk!=='out')show=false;
+    if(ft==='yes'&&dft!=='yes')show=false;
+    if(ft==='no'&&dft==='yes')show=false;
+    r.style.display=show?'':'none';
+    if(show)count++;
+  });
+  document.getElementById('resultCount').textContent='Showing '+count+' of 12,847';
+}
+
+// SOFT DELETE / RESTORE
+function softDelete(name){if(name==='—')name=document.getElementById('dName').textContent;document.getElementById('deleteName').textContent=name;document.getElementById('deleteModal').classList.add('show');document.body.style.overflow='hidden'}
+function executeSoftDelete(){const name=document.getElementById('deleteName').textContent;closeModal('deleteModal');showToast('error','<strong>'+name+'</strong> soft-deleted — UPDATE products SET deleted_at = NOW() WHERE id = ...')}
+function restoreProduct(name){showToast('success','<strong>'+name+'</strong> restored — UPDATE products SET deleted_at = NULL WHERE id = ...')}
+
+// MODAL
+function handleFormSubmit(e){e.preventDefault();closeModal();showToast('success','Product inserted — INSERT INTO products (name, sku, category_id, base_price, ...) VALUES (...)')}
+
+// TOAST
+function showToast(type,msg){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  const icons={success:'check_circle',error:'error',info:'info'};
+  const cls={success:'toast-success',error:'toast-error',info:'toast-info'};
+  t.className='toast-item '+cls[type];
+  t.innerHTML='<span class="material-icons text-[20px]">'+icons[type]+'</span><span>'+msg+'</span><button onclick="this.closest(\'.toast-item\').classList.add(\'removing\');setTimeout(()=>this.closest(\'.toast-item\').remove(),300)" class="text-current opacity-50 hover:opacity-100 transition ml-2"><span class="material-icons text-[16px]">close</span></button>';
+  c.appendChild(t);
+  setTimeout(()=>{if(t.parentNode){t.classList.add('removing');setTimeout(()=>t.remove(),300)}},5000);
+}
+
+// ESCAPE
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeModal('deleteModal')}});
+</script>
+</body>
+</html>

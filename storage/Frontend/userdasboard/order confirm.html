@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B', purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A', light: '#F8FAFC', ice: '#F1F5F9' }
+        },
+        fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  .scrollbar-none::-webkit-scrollbar{display:none}
+  .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+  input:focus,select:focus,textarea:focus{outline:none}
+  ::selection{background:#FF5100;color:#fff}
+
+  @keyframes checkDraw{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+  @keyframes circleGrow{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(80px) rotate(360deg);opacity:0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.3)}50%{box-shadow:0 0 0 12px rgba(16,185,129,0)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+  .fade-up{animation:fadeUp .5s ease-out forwards}
+  .fade-up-d1{animation-delay:.1s;opacity:0}
+  .fade-up-d2{animation-delay:.2s;opacity:0}
+  .fade-up-d3{animation-delay:.3s;opacity:0}
+  .fade-up-d4{animation-delay:.4s;opacity:0}
+  .fade-up-d5{animation-delay:.5s;opacity:0}
+
+  .success-circle{animation:circleGrow .6s cubic-bezier(.4,0,.2,1) forwards}
+  .success-check{stroke-dasharray:60;stroke-dashoffset:60;animation:checkDraw .5s .5s ease-out forwards}
+  .pulse-glow{animation:pulseGlow 2s ease-in-out infinite}
+
+  .confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall 1.5s ease-out forwards;opacity:0}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+
+  .timeline-dot{width:14px;height:14px;border-radius:50%;border:3px solid #E2E8F0;background:#fff;position:relative;z-index:2;flex-shrink:0;transition:all .3s ease}
+  .timeline-dot.active{border-color:#10B981;background:#10B981;box-shadow:0 0 0 4px rgba(16,185,129,.15)}
+  .timeline-dot.pending{border-color:#CBD5E1}
+  .timeline-line{width:2px;flex:1;min-height:24px;background:#E2E8F0;margin-left:6px}
+  .timeline-line.active{background:#10B981}
+
+  .order-item-row{border-bottom:1px solid #F1F5F9;transition:background .15s ease}
+  .order-item-row:last-child{border-bottom:none}
+  .order-item-row:hover{background:#F8FAFC}
+
+  .action-card{transition:all .25s ease;border:1.5px solid #E2E8F0}
+  .action-card:hover{border-color:#2D82FF;transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.06)}
+
+  .rec-card{transition:all .25s ease;border:1.5px solid #E2E8F0}
+  .rec-card:hover{border-color:#2D82FF;transform:translateY(-4px);box-shadow:0 12px 24px rgba(15,23,42,.08)}
+
+  .step-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-circle.completed{background:#10B981;color:#fff}
+  .step-circle.active{background:#2D82FF;color:#fff;box-shadow:0 0 0 5px rgba(45,130,255,.12)}
+  .step-line-s{height:3px;flex:1;border-radius:2px}
+  .step-line-s.completed{background:#10B981}
+  .step-line-s.upcoming{background:#E2E8F0}
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<!-- TOP BAR -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Order Placed Successfully — Thank you for shopping with ClickCodex</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <!-- Stepper: All 3 completed -->
+    <div class="flex-1 max-w-md mx-auto hidden sm:flex items-center gap-0 px-4">
+      <div class="flex flex-col items-center gap-1"><div class="step-circle completed"><span class="material-icons text-[16px]">check</span></div><span class="text-[10px] font-semibold text-green-500">Address</span></div>
+      <div class="step-line-s completed"></div>
+      <div class="flex flex-col items-center gap-1"><div class="step-circle completed"><span class="material-icons text-[16px]">check</span></div><span class="text-[10px] font-semibold text-green-500">Payment</span></div>
+      <div class="step-line-s completed"></div>
+      <div class="flex flex-col items-center gap-1"><div class="step-circle active"><span class="material-icons text-[16px]">check_circle</span></div><span class="text-[10px] font-semibold text-cc-blue">Confirmed</span></div>
+    </div>
+    <div class="sm:hidden flex-1 text-center"><p class="text-green-300 text-[10px] font-bold uppercase tracking-wider">Order Confirmed</p></div>
+    <div class="flex items-center gap-3 text-white shrink-0">
+      <a href="#" class="flex items-center gap-1.5 text-xs hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[20px]">home</span><span class="hidden md:inline">Home</span></a>
+      <a href="#" class="flex items-center gap-1.5 text-xs hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[20px]">person</span><span class="hidden md:inline">Account</span></a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- ===== SUCCESS HERO ===== -->
+  <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-10 mb-6 relative overflow-hidden">
+    <!-- Confetti particles -->
+    <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+    <div class="relative z-10 text-center max-w-lg mx-auto">
+      <!-- Animated checkmark -->
+      <div class="w-24 h-24 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-6 success-circle pulse-glow">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path class="success-check" d="M5 13l4 4L19 7" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <h1 class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 fade-up">Order Placed Successfully!</h1>
+      <p class="text-sm text-slate-500 mt-2 fade-up fade-up-d1">Thank you for your purchase. We're preparing your order for shipment.</p>
+
+      <!-- Order Number -->
+      <div class="mt-5 inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-cc-ice rounded-xl px-5 py-3 fade-up fade-up-d2">
+        <div class="flex items-center gap-2">
+          <span class="material-icons text-cc-blue text-lg">receipt</span>
+          <span class="text-xs text-slate-500 font-medium">Order Number</span>
+        </div>
+        <span class="font-heading font-bold text-lg text-cc-blue tracking-wide" id="order-number-display">ORD-20260118-0001</span>
+        <button onclick="copyOrderNumber()" class="text-slate-400 hover:text-cc-blue transition" title="Copy"><span class="material-icons text-[18px]">content_copy</span></button>
+      </div>
+
+      <p class="text-xs text-slate-400 mt-3 fade-up fade-up-d3">
+        Placed on <span id="order-date-display" class="font-medium text-slate-600">18 Jan 2026, 3:42 PM</span>
+        &nbsp;·&nbsp; Payment via <span id="payment-method-display" class="font-medium text-slate-600">UPI</span>
+      </p>
+
+      <!-- Quick Actions -->
+      <div class="flex flex-wrap justify-center gap-3 mt-6 fade-up fade-up-d4">
+        <a href="#" class="bg-cc-blue hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md inline-flex items-center gap-2 text-sm">
+          <span class="material-icons text-[18px]">local_shipping</span> Track Order
+        </a>
+        <button onclick="downloadInvoice()" class="border-2 border-slate-200 hover:border-cc-blue text-slate-700 hover:text-cc-blue font-semibold px-6 py-3 rounded-xl transition inline-flex items-center gap-2 text-sm bg-white">
+          <span class="material-icons text-[18px]">download</span> Download Invoice
+        </button>
+        <a href="#" class="border-2 border-slate-200 hover:border-cc-orange text-slate-700 hover:text-cc-orange font-semibold px-6 py-3 rounded-xl transition inline-flex items-center gap-2 text-sm bg-white">
+          <span class="material-icons text-[18px]">home</span> Continue Shopping
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex flex-col lg:flex-row gap-6">
+
+    <!-- LEFT COLUMN -->
+    <div class="flex-1 min-w-0 space-y-5">
+
+      <!-- ===== ORDER STATUS TIMELINE ===== -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up fade-up-d2">
+        <h2 class="font-heading font-bold text-base text-slate-900 flex items-center gap-2 mb-5">
+          <span class="material-icons text-cc-blue text-xl">timeline</span> Order Status
+        </h2>
+        <div id="status-timeline" class="flex flex-col">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ===== ORDER ITEMS ===== -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up fade-up-d3">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="font-heading font-bold text-base text-slate-900 flex items-center gap-2">
+            <span class="material-icons text-cc-orange text-xl">shopping_bag</span> Order Items
+            <span class="text-xs bg-cc-ice text-slate-500 font-bold px-2.5 py-0.5 rounded-full" id="item-count-badge">6 items</span>
+          </h2>
+        </div>
+        <div id="order-items-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ===== SHIPPING ADDRESS ===== -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up fade-up-d4">
+        <h2 class="font-heading font-bold text-base text-slate-900 flex items-center gap-2 mb-4">
+          <span class="material-icons text-green-600 text-xl">location_on</span> Shipping Address
+        </h2>
+        <div class="bg-slate-50 rounded-xl p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-semibold text-sm text-slate-800" id="ship-name"></p>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed" id="ship-address-lines"></p>
+              <p class="text-xs text-slate-400 mt-1.5 flex items-center gap-1">
+                <span class="material-icons text-[14px]">phone</span> <span id="ship-phone"></span>
+              </p>
+            </div>
+            <span class="text-[10px] bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-full shrink-0">Deliver Here</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== WHAT HAPPENS NEXT ===== -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up fade-up-d5">
+        <h2 class="font-heading font-bold text-base text-slate-900 flex items-center gap-2 mb-4">
+          <span class="material-icons text-cc-purple text-xl">info</span> What Happens Next?
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="text-center p-4 rounded-xl bg-cc-ice">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-cc-blue/10 flex items-center justify-center mb-3">
+              <span class="material-icons text-cc-blue text-xl">confirmation_number</span>
+            </div>
+            <p class="font-semibold text-sm text-slate-800">Order Confirmed</p>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Your order has been placed and confirmed. You'll receive an SMS and email confirmation.</p>
+          </div>
+          <div class="text-center p-4 rounded-xl bg-cc-ice">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-cc-orange/10 flex items-center justify-center mb-3">
+              <span class="material-icons text-cc-orange text-xl">inventory_2</span>
+            </div>
+            <p class="font-semibold text-sm text-slate-800">Packing & Quality Check</p>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Our warehouse team carefully packs your items with a quality inspection before dispatch.</p>
+          </div>
+          <div class="text-center p-4 rounded-xl bg-cc-ice">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-green-100 flex items-center justify-center mb-3">
+              <span class="material-icons text-green-600 text-xl">local_shipping</span>
+            </div>
+            <p class="font-semibold text-sm text-slate-800">Shipped & Delivered</p>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Your order will be shipped via our delivery partner. Track it in real-time from your account.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="lg:w-[380px] shrink-0">
+      <div class="lg:sticky lg:top-[80px] space-y-4">
+
+        <!-- ===== PAYMENT SUMMARY ===== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up fade-up-d1">
+          <div class="bg-gradient-to-r from-cc-dark to-slate-800 text-white px-5 py-4">
+            <h3 class="font-heading font-bold text-sm flex items-center gap-2">
+              <span class="material-icons text-cc-yellow text-lg">receipt_long</span> Payment Summary
+            </h3>
+          </div>
+          <div class="p-5 space-y-2.5" id="payment-summary-breakdown">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="px-5 pb-4">
+            <div class="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2.5">
+              <span class="material-icons text-green-600 text-lg">check_circle</span>
+              <div>
+                <p class="text-xs font-bold text-green-800" id="payment-status-text">Payment Successful</p>
+                <p class="text-[10px] text-green-600 mt-0.5" id="payment-txn-text">TXN ID: —</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== DELIVERY ESTIMATE ===== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up fade-up-d2">
+          <h4 class="font-heading font-semibold text-sm text-slate-800 flex items-center gap-2 mb-3">
+            <span class="material-icons text-cc-blue text-lg">schedule</span> Estimated Delivery
+          </h4>
+          <div class="flex items-center gap-3 bg-cc-blue/5 rounded-xl p-4">
+            <div class="w-12 h-12 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0">
+              <span class="material-icons text-cc-blue text-2xl">event</span>
+            </div>
+            <div>
+              <p class="font-heading font-bold text-base text-cc-blue" id="est-delivery-text"></p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Your order will be delivered by this date</p>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-3 flex items-start gap-1">
+            <span class="material-icons text-[12px] mt-0.5">info</span>
+            Delivery date may vary depending on pincode accessibility and weather conditions. You'll receive SMS updates at each stage.
+          </p>
+        </div>
+
+        <!-- ===== NEED HELP? ===== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up fade-up-d3">
+          <h4 class="font-heading font-semibold text-sm text-slate-800 flex items-center gap-2 mb-3">
+            <span class="material-icons text-cc-orange text-lg">support_agent</span> Need Help?
+          </h4>
+          <div class="space-y-2">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+              <div class="w-9 h-9 rounded-lg bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[18px]">chat</span></div>
+              <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue transition">Live Chat Support</p><p class="text-[10px] text-slate-400">Get instant help from our team</p></div>
+              <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+              <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[18px]">phone</span></div>
+              <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue transition">Call Us: 1800-233-4555</p><p class="text-[10px] text-slate-400">Toll-free, 9 AM – 9 PM IST</p></div>
+              <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+              <div class="w-9 h-9 rounded-lg bg-cc-purple/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-purple text-[18px]">email</span></div>
+              <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue transition">Email Support</p><p class="text-[10px] text-slate-400">support@clickcodex.in</p></div>
+              <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- ===== RETURN POLICY ===== -->
+        <div class="bg-cc-ice rounded-2xl p-5 fade-up fade-up-d4">
+          <div class="flex items-start gap-3">
+            <span class="material-icons text-cc-blue text-xl mt-0.5">autorenew</span>
+            <div>
+              <p class="text-sm font-semibold text-slate-700">Easy 7-Day Returns</p>
+              <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Not satisfied? Return eligible items within 7 days of delivery for a full refund. No questions asked.</p>
+              <a href="#" class="text-xs text-cc-blue font-semibold mt-2 inline-flex items-center gap-1 hover:underline">Learn about return policy <span class="material-icons text-[14px]">open_in_new</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RECOMMENDATIONS ===== -->
+  <section class="mt-8 mb-6 fade-up fade-up-d5">
+    <h2 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+      <span class="material-icons text-cc-yellow text-xl">auto_awesome</span> You May Also Like
+    </h2>
+    <div id="recs-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <!-- Rendered by JS -->
+    </div>
+  </section>
+
+</main>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
+  <div class="px-4 py-3 flex items-center justify-between gap-3">
+    <a href="#" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+      <span class="material-icons text-[18px]">local_shipping</span> Track Order
+    </a>
+    <a href="#" class="flex-1 border-2 border-cc-orange text-cc-orange hover:bg-cc-orange hover:text-white font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+      <span class="material-icons text-[18px]">home</span> Shop More
+    </a>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div id="invoice-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeInvoiceModal()" class="absolute inset-0 bg-black/50 cursor-pointer" style="backdrop-filter:blur(4px)"></div>
+  <div class="bg-white rounded-2xl max-w-md w-[92%] shadow-2xl relative z-10 p-6 max-h-[85vh] overflow-y-auto" style="animation:fadeUp .3s ease-out">
+    <button onclick="closeInvoiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center mb-5">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-cc-blue flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+        </div>
+        <span class="font-heading font-bold text-lg text-slate-800">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Tax Invoice</p>
+    </div>
+    <div id="invoice-content" class="space-y-4 text-sm">
+      <!-- Filled by JS -->
+    </div>
+    <button onclick="closeInvoiceModal()" class="w-full mt-5 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm">Close</button>
+  </div>
+</div>
+
+
+<script>
+// =====================================================
+// MOCK DATA — maps to orders + order_items + order_status_history
+// =====================================================
+
+// Simulates: SELECT * FROM orders WHERE order_number = 'ORD-20260118-0001'
+const ORDER = {
+  id: 1,
+  uuid: 'ord-a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  order_number: 'ORD-20260118-0001',
+  user_id: 1,
+  // Shipping snapshot (denormalized at order time)
+  shipping_name: 'Rahul Sharma',
+  shipping_phone: '9876543210',
+  shipping_line1: '42, Shri Nagar Colony, Near Railway Station',
+  shipping_line2: 'Behind State Bank of India',
+  shipping_city: 'Ratlam',
+  shipping_state: 'Madhya Pradesh',
+  shipping_country: 'India',
+  shipping_postal: '457001',
+  // Financials
+  subtotal: 18492.00,
+  discount_amount: 7195.00,
+  shipping_charge: 0.00,
+  tax_amount: 2032.00,
+  total_amount: 13329.00,
+  currency: 'INR',
+  // Offer/coupon context
+  offer_id: 2,
+  coupon_code: 'SAVE20',
+  // Status
+  status: 'confirmed',
+  payment_status: 'paid',
+  // Timestamps
+  placed_at: '2026-01-18T15:42:00',
+  confirmed_at: '2026-01-18T15:43:00',
+  shipped_at: null,
+  delivered_at: null,
+  cancelled_at: null,
+  created_at: '2026-01-18T15:42:00',
+  updated_at: '2026-01-18T15:43:00'
+};
+
+// Simulates: SELECT * FROM order_items WHERE order_id = 1 ORDER BY id
+const ORDER_ITEMS = [
+  {
+    id: 1, order_id: 1, product_id: 1, variant_id: 101,
+    product_name: 'TrueSound Pro Wireless Earbuds with ANC',
+    product_sku: 'TS-PRO-ANC-BLK',
+    variant_label: 'Color: Midnight Black',
+    image_url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=120&auto=format&fit=crop&q=80',
+    unit_price: 2999.00, sale_price: 1499.00,
+    quantity: 1, tax_rate: 18.00, tax_amount: 269.82, line_total: 1499.00
+  },
+  {
+    id: 2, order_id: 1, product_id: 2, variant_id: 205,
+    product_name: 'FitTrack AMOLED Smart Watch',
+    product_sku: 'FT-AMOLED-LRG',
+    variant_label: 'Strap Size: Large',
+    image_url: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=120&auto=format&fit=crop&q=80',
+    unit_price: 3999.00, sale_price: 2799.00,
+    quantity: 1, tax_rate: 18.00, tax_amount: 503.82, line_total: 2799.00
+  },
+  {
+    id: 3, order_id: 1, product_id: 3, variant_id: null,
+    product_name: 'Urban Trail Waterproof Laptop Backpack 15.6"',
+    product_sku: 'UT-BP-156-NVY',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=120&auto=format&fit=crop&q=80',
+    unit_price: 1199.00, sale_price: 899.00,
+    quantity: 2, tax_rate: 12.00, tax_amount: 215.76, line_total: 1798.00
+  },
+  {
+    id: 4, order_id: 1, product_id: 6, variant_id: 310,
+    product_name: "Cotton Luxe Men's Slim Fit Casual Shirt",
+    product_sku: 'CL-SH-LNV-L',
+    variant_label: 'Size: L, Color: Navy',
+    image_url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=120&auto=format&fit=crop&q=80',
+    unit_price: 1499.00, sale_price: 599.00,
+    quantity: 3, tax_rate: 5.00, tax_amount: 89.85, line_total: 1797.00
+  },
+  {
+    id: 5, order_id: 1, product_id: 5, variant_id: null,
+    product_name: 'HomeChef Digital Air Fryer 4.5L',
+    product_sku: 'HC-AF-45L-STD',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=120&auto=format&fit=crop&q=80',
+    unit_price: 3999.00, sale_price: 3199.00,
+    quantity: 1, tax_rate: 12.00, tax_amount: 383.88, line_total: 3199.00
+  },
+  {
+    id: 6, order_id: 1, product_id: 8, variant_id: null,
+    product_name: 'SwiftCharge 65W GaN Fast Charger',
+    product_sku: 'SC-65W-GAN',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=120&auto=format&fit=crop&q=80',
+    unit_price: 1999.00, sale_price: 999.00,
+    quantity: 1, tax_rate: 18.00, tax_amount: 179.82, line_total: 999.00
+  }
+];
+
+// Simulates: SELECT * FROM order_status_history WHERE order_id = 1 ORDER BY created_at DESC
+const STATUS_HISTORY = [
+  { id: 2, order_id: 1, status: 'confirmed', note: 'Your order has been confirmed and is being prepared for shipment.', is_public: true, changed_by: 1, created_at: '2026-01-18T15:43:00' },
+  { id: 1, order_id: 1, status: 'pending', note: 'Order placed successfully. Awaiting confirmation.', is_public: true, changed_by: null, created_at: '2026-01-18T15:42:00' }
+];
+
+// Simulates: SELECT * FROM payment_transactions WHERE order_id = 1
+const PAYMENT_TXN = {
+  id: 1, order_id: 1, gateway: 'razorpay',
+  gateway_txn_id: 'TXN1K9A2B3X4YZ',
+  amount: 13329.00, currency: 'INR',
+  status: 'success',
+  processed_at: '2026-01-18T15:42:38'
+};
+
+// Recommendation products (not in this order)
+const REC_PRODUCTS = [
+  { name: 'NovaGlow LED Ring Light 10"', price: 649, image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=300&auto=format&fit=crop&q=80' },
+  { name: 'AromaZen Oil Diffuser 300ml', price: 449, image: 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=300&auto=format&fit=crop&q=80' },
+  { name: 'ErgoFlex Mesh Office Chair', price: 7499, image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=300&auto=format&fit=crop&q=80' },
+  { name: 'ProCam 4K Action Camera', price: 4999, image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300&auto=format&fit=crop&q=80' },
+  { name: 'BoomBox Mini Speaker', price: 799, image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&auto=format&fit=crop&q=80' },
+  { name: 'SilkDream Kurta Set', price: 1199, image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300&auto=format&fit=crop&q=80' }
+];
+
+
+// ==================== HELPERS ====================
+function formatPrice(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function formatTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+function formatDateTime(iso) { return formatDate(iso) + ', ' + formatTime(iso); }
+
+// ==================== TOAST ====================
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const colors = { success:'bg-green-600', error:'bg-red-500', info:'bg-cc-blue' };
+  const icons = { success:'check_circle', error:'error', info:'info' };
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${colors[type]||colors.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${icons[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.replace('toast-in','toast-out'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ==================== CONFETTI ====================
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  const colors = ['#FF5100','#FFB800','#2D82FF','#8C30F5','#FF006B','#10B981','#F59E0B'];
+  for (let i = 0; i < 50; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = Math.random() * 30 + '%';
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.8) + 's';
+    piece.style.animationDuration = (1 + Math.random() * 1.5) + 's';
+    piece.style.width = (5 + Math.random() * 8) + 'px';
+    piece.style.height = (5 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => { container.innerHTML = ''; }, 3500);
+}
+
+// ==================== COPY ORDER NUMBER ====================
+function copyOrderNumber() {
+  navigator.clipboard.writeText(ORDER.order_number).then(() => {
+    showToast('Order number copied to clipboard', 'info');
+  }).catch(() => {
+    showToast('Order: ' + ORDER.order_number, 'info');
+  });
+}
+
+// ==================== RENDER STATUS TIMELINE ====================
+function renderTimeline() {
+  const container = document.getElementById('status-timeline');
+  // Define all possible statuses in order
+  const allStatuses = [
+    { key: 'pending', label: 'Order Placed', icon: 'shopping_cart' },
+    { key: 'confirmed', label: 'Order Confirmed', icon: 'check_circle' },
+    { key: 'processing', label: 'Processing', icon: 'inventory_2' },
+    { key: 'shipped', label: 'Shipped', icon: 'local_shipping' },
+    { key: 'delivered', label: 'Delivered', icon: 'home' }
+  ];
+
+  const historyMap = {};
+  STATUS_HISTORY.forEach(h => { historyMap[h.status] = h; });
+
+  // Find the index of the current status
+  const statusOrder = ['pending','confirmed','processing','shipped','delivered'];
+  const currentIdx = statusOrder.indexOf(ORDER.status);
+
+  let html = '';
+  allStatuses.forEach((s, idx) => {
+    const isCompleted = idx <= currentIdx;
+    const isCurrent = idx === currentIdx;
+    const history = historyMap[s.key];
+
+    html += `<div class="flex gap-4">`;
+    html += `<div class="flex flex-col items-center">`;
+    html += `<div class="timeline-dot ${isCompleted ? 'active' : 'pending'}">`;
+    if (isCompleted) html += `<span class="material-icons text-white text-[10px]">check</span>`;
+    html += `</div>`;
+    if (idx < allStatuses.length - 1) html += `<div class="timeline-line ${isCompleted ? 'active' : ''}"></div>`;
+    html += `</div>`;
+    html += `<div class="pb-5 flex-1 min-w-0">`;
+    html += `<div class="flex items-start justify-between gap-2">`;
+    html += `<div>`;
+    html += `<p class="text-sm font-semibold ${isCompleted ? 'text-slate-800' : 'text-slate-400'}">${s.label}</p>`;
+    if (history) {
+      html += `<p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">${history.note}</p>`;
+    } else if (!isCompleted) {
+      html += `<p class="text-[11px] text-slate-400 mt-0.5">Pending</p>`;
+    }
+    html += `</div>`;
+    if (history) {
+      html += `<p class="text-[10px] text-slate-400 shrink-0 whitespace-nowrap">${formatDateTime(history.created_at)}</p>`;
+    }
+    html += `</div></div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ==================== RENDER ORDER ITEMS ====================
+function renderOrderItems() {
+  const container = document.getElementById('order-items-list');
+  const totalQty = ORDER_ITEMS.reduce((s, i) => s + i.quantity, 0);
+  document.getElementById('item-count-badge').textContent = totalQty + ' items';
+
+  container.innerHTML = ORDER_ITEMS.map(item => {
+    const disc = item.unit_price > item.sale_price
+      ? Math.round(((item.unit_price - item.sale_price) / item.unit_price) * 100) : 0;
+
+    return `
+    <div class="order-item-row px-5 sm:px-6 py-4 flex gap-4">
+      <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden">
+        <img src="${item.image_url}" alt="${item.product_name}" class="max-h-full max-w-full object-contain p-1.5" loading="lazy">
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-slate-800 line-clamp-1 leading-snug">${item.product_name}</p>
+        ${item.variant_label ? `<p class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1"><span class="material-icons text-[12px]">sell</span>${item.variant_label}</p>` : ''}
+        <p class="text-[10px] text-slate-400 mt-0.5">SKU: ${item.product_sku}</p>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+          <span class="text-xs text-slate-500">Qty: <span class="font-semibold text-slate-700">${item.quantity}</span></span>
+          <span class="text-xs text-slate-500">Tax (${item.tax_rate}%): <span class="font-medium text-slate-600">${formatPrice(item.tax_amount)}</span></span>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="font-bold text-sm text-cc-orange">${formatPrice(item.line_total)}</p>
+        ${disc > 0 ? `<p class="text-[10px] text-slate-400 mt-0.5"><span class="line-through">${formatPrice(item.unit_price)}</span> <span class="text-green-600 font-medium">${disc}% off</span></p>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== RENDER SHIPPING ADDRESS ====================
+function renderShippingAddress() {
+  document.getElementById('ship-name').textContent = ORDER.shipping_name;
+  const lines = [ORDER.shipping_line1, ORDER.shipping_line2, ORDER.shipping_city + ', ' + ORDER.shipping_state, ORDER.shipping_country + ' — ' + ORDER.shipping_postal].filter(Boolean);
+  document.getElementById('ship-address-lines').textContent = lines.join(', ');
+  document.getElementById('ship-phone').textContent = '+91 ' + ORDER.shipping_phone.replace(/(\d{5})(\d{5})/, '$1 $2');
+}
+
+// ==================== RENDER PAYMENT SUMMARY ====================
+function renderPaymentSummary() {
+  const container = document.getElementById('payment-summary-breakdown');
+  container.innerHTML = `
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Price (${ORDER_ITEMS.reduce((s,i)=>s+i.quantity,0)} items)</span><span class="font-medium text-slate-800">${formatPrice(ORDER.subtotal)}</span></div>
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Discount</span><span class="font-medium text-green-600">−${formatPrice(ORDER.discount_amount)}</span></div>
+    ${ORDER.coupon_code ? `<div class="flex justify-between text-sm"><span class="text-slate-500 flex items-center gap-1"><span class="material-icons text-[12px] text-cc-purple">local_offer</span> Coupon (${ORDER.coupon_code})</span><span class="font-medium text-green-600">applied</span></div>` : ''}
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Delivery</span><span class="font-medium ${ORDER.shipping_charge === 0 ? 'text-green-600' : 'text-slate-800'}">${ORDER.shipping_charge === 0 ? 'FREE' : formatPrice(ORDER.shipping_charge)}</span></div>
+    <div class="flex justify-between text-sm"><span class="text-slate-500">Tax (GST)</span><span class="font-medium text-slate-800">${formatPrice(ORDER.tax_amount)}</span></div>
+    <div class="border-t-2 border-dashed border-slate-200 pt-3 flex justify-between items-baseline">
+      <span class="font-heading font-bold text-slate-900">Total Paid</span>
+      <span class="font-heading font-extrabold text-xl text-cc-orange">${formatPrice(ORDER.total_amount)}</span>
+    </div>
+  `;
+
+  // Payment status
+  const statusText = document.getElementById('payment-status-text');
+  const txnText = document.getElementById('payment-txn-text');
+  if (ORDER.payment_status === 'paid') {
+    statusText.textContent = 'Payment Successful';
+    txnText.textContent = 'TXN ID: ' + PAYMENT_TXN.gateway_txn_id + ' via ' + PAYMENT_TXN.gateway.charAt(0).toUpperCase() + PAYMENT_TXN.gateway.slice(1);
+  } else {
+    statusText.textContent = 'Payment: ' + ORDER.payment_status;
+    txnText.textContent = '';
+  }
+}
+
+// ==================== DELIVERY ESTIMATE ====================
+function renderDeliveryEstimate() {
+  const est = new Date(); est.setDate(est.getDate() + 4);
+  document.getElementById('est-delivery-text').textContent = est.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+// ==================== RECOMMENDATIONS ====================
+function renderRecommendations() {
+  const grid = document.getElementById('recs-grid');
+  grid.innerHTML = REC_PRODUCTS.map(p => `
+    <div class="rec-card bg-white rounded-xl overflow-hidden">
+      <div class="bg-slate-50 p-3 aspect-square flex items-center justify-center">
+        <img src="${p.image}" class="max-h-full max-w-full object-contain" alt="${p.name}" loading="lazy">
+      </div>
+      <div class="p-3">
+        <p class="text-[11px] font-semibold text-slate-800 line-clamp-2 leading-snug min-h-[2em]">${p.name}</p>
+        <p class="font-bold text-sm text-cc-orange mt-1.5">${formatPrice(p.price)}</p>
+        <a href="#" class="block w-full mt-2 bg-cc-blue/10 hover:bg-cc-blue hover:text-white text-cc-blue text-[11px] font-semibold py-2 rounded-lg transition text-center">Add to Cart</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== INVOICE ====================
+function downloadInvoice() {
+  const modal = document.getElementById('invoice-modal');
+  const content = document.getElementById('invoice-content');
+
+  const totalQty = ORDER_ITEMS.reduce((s,i) => s + i.quantity, 0);
+
+  content.innerHTML = `
+    <div class="grid grid-cols-2 gap-4 text-xs">
+      <div>
+        <p class="text-slate-400 font-medium">Invoice To</p>
+        <p class="font-semibold text-slate-800 mt-1">${ORDER.shipping_name}</p>
+        <p class="text-slate-500 mt-0.5">${ORDER.shipping_line1}</p>
+        ${ORDER.shipping_line2 ? `<p class="text-slate-500">${ORDER.shipping_line2}</p>` : ''}
+        <p class="text-slate-500">${ORDER.shipping_city}, ${ORDER.shipping_state} ${ORDER.shipping_postal}</p>
+        <p class="text-slate-500">Phone: +91 ${ORDER.shipping_phone}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-slate-400 font-medium">Invoice Details</p>
+        <p class="font-semibold text-slate-800 mt-1">#${ORDER.order_number}</p>
+        <p class="text-slate-500 mt-0.5">Date: ${formatDate(ORDER.placed_at)}</p>
+        <p class="text-slate-500">Payment: ${ORDER.payment_status.toUpperCase()}</p>
+        <p class="text-slate-500">TXN: ${PAYMENT_TXN.gateway_txn_id}</p>
+      </div>
+    </div>
+
+    <table class="w-full text-xs mt-4">
+      <thead>
+        <tr class="border-b-2 border-slate-200">
+          <th class="text-left py-2 text-slate-500 font-semibold">#</th>
+          <th class="text-left py-2 text-slate-500 font-semibold">Item</th>
+          <th class="text-center py-2 text-slate-500 font-semibold">Qty</th>
+          <th class="text-right py-2 text-slate-500 font-semibold">Rate</th>
+          <th class="text-right py-2 text-slate-500 font-semibold">Tax</th>
+          <th class="text-right py-2 text-slate-500 font-semibold">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ORDER_ITEMS.map((item, idx) => `
+          <tr class="border-b border-slate-100">
+            <td class="py-2 text-slate-400">${idx + 1}</td>
+            <td class="py-2 text-slate-700 font-medium max-w-[140px] truncate">${item.product_name}</td>
+            <td class="py-2 text-center text-slate-600">${item.quantity}</td>
+            <td class="py-2 text-right text-slate-600">${formatPrice(item.sale_price)}</td>
+            <td class="py-2 text-right text-slate-400">${formatPrice(item.tax_amount)}</td>
+            <td class="py-2 text-right font-semibold text-slate-800">${formatPrice(item.line_total)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div class="border-t-2 border-slate-200 mt-2 pt-3 space-y-1.5 text-xs">
+      <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span class="text-slate-800">${formatPrice(ORDER.subtotal)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Discount</span><span class="text-green-600">−${formatPrice(ORDER.discount_amount)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Shipping</span><span class="text-green-600">${ORDER.shipping_charge === 0 ? 'FREE' : formatPrice(ORDER.shipping_charge)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Tax (GST)</span><span class="text-slate-800">${formatPrice(ORDER.tax_amount)}</span></div>
+      <div class="flex justify-between font-bold text-sm pt-2 border-t border-dashed border-slate-200"><span class="text-slate-900">Grand Total</span><span class="text-cc-orange text-base">${formatPrice(ORDER.total_amount)}</span></div>
+    </div>
+
+    <div class="mt-4 bg-cc-ice rounded-lg p-3 text-[10px] text-slate-500 leading-relaxed">
+      <p class="font-semibold text-slate-600 mb-1">GST Breakdown (Intra-State):</p>
+      <p>CGST @ ${ORDER.tax_amount / 2 < 1 ? (ORDER.tax_amount).toFixed(2) : Math.round(ORDER.tax_amount / 2)} | SGST @ ${ORDER.tax_amount / 2 < 1 ? (ORDER.tax_amount).toFixed(2) : Math.round(ORDER.tax_amount / 2)}</p>
+      <p class="mt-1">ClickCodex Retail Pvt. Ltd. | GSTIN: 23AABCC1234F1Z5 | PAN: AABCC1234F</p>
+      <p>Registered Address: 42, Industrial Area, Ratlam, MP 457001</p>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeInvoiceModal() {
+  document.getElementById('invoice-modal').classList.add('hidden');
+}
+
+// ==================== INIT ====================
+function init() {
+  // Set header display values
+  document.getElementById('order-number-display').textContent = ORDER.order_number;
+  document.getElementById('order-date-display').textContent = formatDateTime(ORDER.placed_at);
+  document.getElementById('payment-method-display').textContent = PAYMENT_TXN.gateway === 'cod' ? 'Cash on Delivery' : PAYMENT_TXN.gateway.charAt(0).toUpperCase() + PAYMENT_TXN.gateway.slice(1) + ' (Paid)';
+
+  renderTimeline();
+  renderOrderItems();
+  renderShippingAddress();
+  renderPaymentSummary();
+  renderDeliveryEstimate();
+  renderRecommendations();
+
+  // Launch confetti after a short delay
+  setTimeout(launchConfetti, 400);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

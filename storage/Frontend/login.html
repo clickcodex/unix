@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickCodex — Login, Register or Recover Account</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            orange: '#FF5100',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  input:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+</style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+<!-- ================= TOAST NOTIFICATIONS ================= -->
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= SIMULATED SMS / OTP NOTIFICATION GATEWAY ================= -->
+<div id="sms-gateway" class="fixed top-4 left-1/2 -translate-x-1/2 z-[110] max-w-sm w-[90%] bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700/50 flex items-start gap-3 transition-all duration-300 transform -translate-y-32 opacity-0 pointer-events-none">
+  <span class="material-icons text-cc-orange">sms</span>
+  <div class="flex-1">
+    <p class="text-xs font-bold text-slate-400">SMS Gateway Simulator</p>
+    <p id="sms-text" class="text-xs text-white mt-0.5">Your ClickCodex OTP is 482019. Valid for 10 minutes.</p>
+  </div>
+  <button onclick="dismissSmsSimulator()" class="text-slate-400 hover:text-white"><span class="material-icons text-sm">close</span></button>
+</div>
+
+<!-- ================= TOP LOGO BAR ================= -->
+<header class="w-full bg-white border-b border-slate-100 py-4 px-6 shrink-0">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2 group">
+      <div class="w-9 h-9 rounded-xl bg-cc-blue flex items-center justify-center shadow-md">
+        <svg width="22" height="22" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl text-cc-dark leading-none">Click<span class="text-cc-orange">Codex</span></span>
+    </a>
+    <a href="#" class="text-xs font-semibold text-slate-500 hover:text-cc-blue transition flex items-center gap-1">
+      <span class="material-icons text-sm">arrow_back</span> Back to Shop
+    </a>
+  </div>
+</header>
+
+<!-- ================= MAIN CONTAINER ================= -->
+<main class="flex-1 flex items-center justify-center px-4 py-8">
+  <div class="bg-white rounded-3xl shadow-xl border border-slate-100 max-w-4xl w-full min-h-[580px] overflow-hidden flex flex-col md:flex-row">
+    
+    <!-- Left Panel: Brand Features Banner (Solid Dodger Blue Background) -->
+    <div class="hidden md:flex md:w-1/2 bg-cc-blue p-10 flex-col justify-between text-white relative">
+      <div class="absolute inset-0 opacity-[0.03]" style="background-image:repeating-linear-gradient(90deg,white 0,white 1px,transparent 1px,transparent 40px);"></div>
+      
+      <div class="relative z-10">
+        <span class="bg-white/10 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Fastest Growing</span>
+        <h2 class="font-heading text-3xl font-extrabold mt-6 leading-tight text-white">India's Smartest Shopping Gateway</h2>
+        <p class="text-white/80 text-sm mt-3 leading-relaxed">Join millions of Indian shoppers enjoying super-fast delivery, secure digital payments, and exclusive daily price cuts.</p>
+      </div>
+
+      <div class="space-y-4 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+            <span class="material-icons text-white text-lg">local_shipping</span>
+          </div>
+          <span class="text-xs font-semibold">Free Delivery above ₹999 anywhere in India</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+            <span class="material-icons text-white text-lg">security</span>
+          </div>
+          <span class="text-xs font-semibold">Safe checkout with UPI, NetBanking & COD</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+            <span class="material-icons text-white text-lg">autorenew</span>
+          </div>
+          <span class="text-xs font-semibold">Easy 7-day return policy</span>
+        </div>
+      </div>
+
+      <p class="text-[10px] text-white/50 relative z-10">© 2026 ClickCodex Retail Private Limited.</p>
+    </div>
+
+    <!-- Right Panel: Dynamic Form Container -->
+    <div class="w-full md:w-1/2 p-6 sm:p-10 flex flex-col justify-between">
+      
+      <div>
+        <!-- Tab Headers -->
+        <div id="tab-headers-container" class="flex border-b border-slate-100 mb-6">
+          <button onclick="switchTab('login')" id="tab-login" class="flex-1 pb-3 text-sm font-bold text-slate-800 border-b-2 border-cc-blue transition-all">Sign In</button>
+          <button onclick="switchTab('register')" id="tab-register" class="flex-1 pb-3 text-sm font-medium text-slate-400 border-b-2 border-transparent transition-all">Create Account</button>
+        </div>
+
+        <!-- ================= LOGIN FORM CONTAINER ================= -->
+        <div id="form-login" class="space-y-4">
+          <div class="space-y-1">
+            <h3 class="font-heading font-extrabold text-xl text-slate-800">Welcome Back</h3>
+            <p class="text-xs text-slate-400">Access your account details, track items & review orders.</p>
+          </div>
+
+          <!-- Login Method Selector -->
+          <div class="flex gap-2 bg-slate-50 p-1 rounded-xl">
+            <button onclick="switchLoginMethod('password')" id="btn-login-pass" class="flex-1 text-xs font-bold py-2 px-3 rounded-lg bg-white text-slate-800 shadow-sm transition">Password</button>
+            <button onclick="switchLoginMethod('otp')" id="btn-login-otp" class="flex-1 text-xs font-medium py-2 px-3 rounded-lg text-slate-500 transition">Mobile OTP</button>
+          </div>
+
+          <!-- Password Login Option -->
+          <form id="login-password-fields" onsubmit="handlePasswordLogin(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile or Email ID</label>
+              <input type="text" id="login-identifier" required placeholder="e.g. 9876543210 or name@domain.com" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-semibold text-slate-600">Password</label>
+                <button type="button" onclick="switchTab('forgot')" class="text-xs text-cc-blue font-semibold hover:underline">Forgot?</button>
+              </div>
+              <div class="relative">
+                <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-slate-200 pl-4 pr-10 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+                <button type="button" onclick="togglePasswordVisibility('login-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <span class="material-icons text-[18px]">visibility</span>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="w-full bg-cc-blue hover:bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm hover:brightness-105 active:scale-95 transition-all mt-2">Sign In with Password</button>
+          </form>
+
+          <!-- OTP Login Option -->
+          <form id="login-otp-fields" onsubmit="handleOtpRequest(event)" class="space-y-3 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">10-Digit Mobile Number</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-bold border-r border-slate-200 pr-2">+91</span>
+                <input type="number" id="login-mobile-otp" required placeholder="9876543210" class="w-full border border-slate-200 pl-16 pr-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+              </div>
+            </div>
+            <button type="submit" class="w-full bg-cc-orange hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold text-sm active:scale-95 transition-all mt-2">Send One-Time Password</button>
+          </form>
+
+          <!-- OTP Input Form Block -->
+          <div id="otp-entry-section" class="space-y-3 pt-2 border-t border-slate-100 hidden">
+            <div class="text-center">
+              <p class="text-xs text-slate-500">We have sent a 6-digit OTP code to <span id="target-mobile-lbl" class="font-bold text-slate-700"></span></p>
+            </div>
+            <div class="flex gap-2 justify-center my-3" id="otp-input-group">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+              <input type="text" maxLength="1" class="otp-input w-12 h-12 text-center text-lg font-bold border border-slate-200 rounded-xl focus:border-cc-blue focus:ring-1 focus:ring-cc-blue">
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span id="countdown-lbl" class="text-slate-400">Resend in <span id="countdown-sec" class="font-bold text-slate-600">59</span>s</span>
+              <button onclick="triggerResendOtp()" id="btn-resend-otp" class="text-cc-blue font-bold opacity-50 cursor-not-allowed" disabled>Resend Code</button>
+            </div>
+            <button onclick="verifyOtpLogin()" class="w-full bg-cc-blue hover:bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm hover:brightness-105 active:scale-95 transition-all mt-2">Verify & Login</button>
+          </div>
+        </div>
+
+        <!-- ================= REGISTER FORM CONTAINER ================= -->
+        <div id="form-register" class="space-y-4 hidden">
+          <div class="space-y-1">
+            <h3 class="font-heading font-extrabold text-xl text-slate-800">Create an Account</h3>
+            <p class="text-xs text-slate-400">Register in under 30 seconds to start secure tracking.</p>
+          </div>
+
+          <form onsubmit="handleRegistration(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+              <input type="text" id="reg-name" required placeholder="Enter first and last name" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-bold border-r border-slate-200 pr-2">+91</span>
+                <input type="number" id="reg-mobile" required placeholder="9876543210" class="w-full border border-slate-200 pl-16 pr-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Email ID</label>
+              <input type="email" id="reg-email" required placeholder="name@domain.com" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Set Password</label>
+              <div class="relative">
+                <input type="password" id="reg-password" onkeyup="checkPasswordStrength()" required placeholder="Minimum 6 characters" class="w-full border border-slate-200 pl-4 pr-10 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+                <button type="button" onclick="togglePasswordVisibility('reg-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <span class="material-icons text-[18px]">visibility</span>
+                </button>
+              </div>
+              <!-- Strength Indicator -->
+              <div class="mt-2 flex items-center gap-1.5">
+                <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden flex flex-row">
+                  <div id="strength-seg-1" class="w-1/3 h-full border-r border-white bg-slate-200 transition-all"></div>
+                  <div id="strength-seg-2" class="w-1/3 h-full border-r border-white bg-slate-200 transition-all"></div>
+                  <div id="strength-seg-3" class="w-1/3 h-full bg-slate-200 transition-all"></div>
+                </div>
+                <span id="strength-label" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Empty</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5 pt-1">
+              <input type="checkbox" id="reg-terms" required class="mt-1 rounded border-slate-300 text-cc-blue focus:ring-cc-blue">
+              <label for="reg-terms" class="text-xs text-slate-500 leading-normal">I agree to ClickCodex's <a href="#" class="text-cc-blue font-semibold hover:underline">Terms of Use</a> &amp; <a href="#" class="text-cc-blue font-semibold hover:underline">Privacy Policy</a>.</label>
+            </div>
+            <button type="submit" class="w-full bg-cc-orange hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold text-sm active:scale-95 transition-all mt-2">Register &amp; Continue</button>
+          </form>
+        </div>
+
+        <!-- ================= FORGOT PASSWORD CONTAINER ================= -->
+        <div id="form-forgot" class="space-y-4 hidden">
+          <div class="space-y-1">
+            <h3 class="font-heading font-extrabold text-xl text-slate-800">Forgot Password?</h3>
+            <p class="text-xs text-slate-400">Enter your registered details below. We'll send a password recovery token link to regain secure log access.</p>
+          </div>
+
+          <form onsubmit="handleForgotSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Enter Mobile or Email Address</label>
+              <input type="text" id="forgot-identifier" required placeholder="e.g. 9876543210 or user@domain.com" class="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:border-cc-blue focus:ring-1 focus:ring-cc-blue transition">
+            </div>
+
+            <div class="flex items-start gap-2.5 pt-1">
+              <input type="checkbox" id="forgot-via-sms" class="mt-1 rounded border-slate-300 text-cc-blue focus:ring-cc-blue">
+              <label for="forgot-via-sms" class="text-xs text-slate-500 leading-normal">Send verification token code via SMS instead of Email link.</label>
+            </div>
+
+            <button type="submit" class="w-full bg-cc-orange hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold text-sm active:scale-95 transition-all">Send Password Reset Request</button>
+            
+            <button type="button" onclick="switchTab('login')" class="w-full text-center text-xs font-bold text-cc-blue hover:underline flex items-center justify-center gap-1 mt-2">
+              <span class="material-icons text-xs">arrow_back</span> Back to Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Social / Alternative Auth Section -->
+      <div id="social-auth-section" class="mt-8 pt-6 border-t border-slate-100 text-center space-y-4">
+        <p class="text-xs text-slate-400 relative before:content-[''] before:absolute before:left-0 before:top-1/2 before:w-1/4 before:h-[1px] before:bg-slate-100 after:content-[''] after:absolute after:right-0 after:top-1/2 after:w-1/4 after:h-[1px] after:bg-slate-100">Or connect with</p>
+        <div class="flex gap-3 justify-center">
+          <button onclick="socialAuthSim('Google')" class="flex-1 max-w-sm flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-600 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114A5.54 5.54 0 0 1 8.4 13a5.54 5.54 0 0 1 5.59-5.514c1.47 0 2.8.543 3.82 1.543l3.05-3.05c-1.89-1.78-4.36-2.87-6.87-2.87A9.45 9.45 0 0 0 4.5 12.5a9.45 9.45 0 0 0 9.5 9.5c5.36 0 9.24-3.77 9.24-9.25 0-.54-.05-1.07-.15-1.47H12.24z"/></svg>
+            Google
+          </button>
+          <button onclick="socialAuthSim('Facebook')" class="flex-1 max-w-sm flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-600 transition">
+            <svg class="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            Facebook
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="w-full bg-white border-t border-slate-100 py-4 px-6 shrink-0 text-center text-xs text-slate-400">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+    <p>© 2026 ClickCodex Retail Pvt. Ltd. All rights reserved.</p>
+    <div class="flex gap-4">
+      <a href="#" class="hover:text-cc-blue transition">Terms of Use</a>
+      <a href="#" class="hover:text-cc-blue transition">Privacy Policy</a>
+      <a href="#" class="hover:text-cc-blue transition">Customer Help</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= JAVASCRIPT LOGIC ================= -->
+<script>
+  let currentTab = "login";
+  let activeLoginMethod = "password";
+  let countdownTimer = null;
+  const mockSmsOtp = "482019";
+
+  // Switch tabs between Login, Register, and Forgot Views
+  function switchTab(tab) {
+    currentTab = tab;
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const tabHeadersContainer = document.getElementById('tab-headers-container');
+    
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const formForgot = document.getElementById('form-forgot');
+    const socialAuthSection = document.getElementById('social-auth-section');
+
+    if (tab === "login") {
+      tabHeadersContainer.classList.remove('hidden');
+      tabLogin.className = "flex-1 pb-3 text-sm font-bold text-slate-800 border-b-2 border-cc-blue transition-all";
+      tabRegister.className = "flex-1 pb-3 text-sm font-medium text-slate-400 border-b-2 border-transparent transition-all";
+      
+      formLogin.classList.remove('hidden');
+      formRegister.classList.add('hidden');
+      formForgot.classList.add('hidden');
+      socialAuthSection.classList.remove('hidden');
+    } else if (tab === "register") {
+      tabHeadersContainer.classList.remove('hidden');
+      tabRegister.className = "flex-1 pb-3 text-sm font-bold text-slate-800 border-b-2 border-cc-blue transition-all";
+      tabLogin.className = "flex-1 pb-3 text-sm font-medium text-slate-400 border-b-2 border-transparent transition-all";
+      
+      formRegister.classList.remove('hidden');
+      formLogin.classList.add('hidden');
+      formForgot.classList.add('hidden');
+      socialAuthSection.classList.remove('hidden');
+    } else if (tab === "forgot") {
+      tabHeadersContainer.classList.add('hidden');
+      
+      formForgot.classList.remove('hidden');
+      formLogin.classList.add('hidden');
+      formRegister.classList.add('hidden');
+      socialAuthSection.classList.add('hidden');
+    }
+  }
+
+  // Switch Login methods within the Login Tab (Password vs OTP)
+  function switchLoginMethod(method) {
+    activeLoginMethod = method;
+    const btnPass = document.getElementById('btn-login-pass');
+    const btnOtp = document.getElementById('btn-login-otp');
+    const passFields = document.getElementById('login-password-fields');
+    const otpFields = document.getElementById('login-otp-fields');
+    const otpEntrySection = document.getElementById('otp-entry-section');
+
+    if (method === "password") {
+      btnPass.className = "flex-1 text-xs font-bold py-2 px-3 rounded-lg bg-white text-slate-800 shadow-sm transition";
+      btnOtp.className = "flex-1 text-xs font-medium py-2 px-3 rounded-lg text-slate-500 transition";
+      passFields.classList.remove('hidden');
+      otpFields.classList.add('hidden');
+      otpEntrySection.classList.add('hidden');
+    } else {
+      btnOtp.className = "flex-1 text-xs font-bold py-2 px-3 rounded-lg bg-white text-slate-800 shadow-sm transition";
+      btnPass.className = "flex-1 text-xs font-medium py-2 px-3 rounded-lg text-slate-500 transition";
+      otpFields.classList.remove('hidden');
+      passFields.classList.add('hidden');
+    }
+  }
+
+  // Toggle Password Masking Input Eye Trigger
+  function togglePasswordVisibility(inputId) {
+    const el = document.getElementById(inputId);
+    el.type = el.type === "password" ? "text" : "password";
+  }
+
+  // Notification Toast System
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-3.5 rounded-xl shadow-xl font-semibold text-sm text-white flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto max-w-xs`;
+    
+    if (type === "success") {
+      toast.classList.add('bg-slate-900', 'border-l-4', 'border-cc-blue');
+    } else {
+      toast.classList.add('bg-cc-orange');
+    }
+    
+    toast.innerHTML = `<span class="material-icons text-sm">${type === 'success' ? 'check_circle' : 'error'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+      toast.classList.add('translate-y-2', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+
+  // Simulated Standard Login Process
+  function handlePasswordLogin(e) {
+    e.preventDefault();
+    const id = document.getElementById('login-identifier').value;
+    const pass = document.getElementById('login-password').value;
+
+    if (pass.length < 6) {
+      showToast("Password must contain at least 6 characters.", "error");
+      return;
+    }
+    showToast(`Access Granted! Welcome back, ${id}`, "success");
+    resetForms();
+  }
+
+  // Trigger Simulated SMS Verification 
+  function handleOtpRequest(e) {
+    e.preventDefault();
+    const mobile = document.getElementById('login-mobile-otp').value;
+    if (mobile.length !== 10) {
+      showToast("Please input a valid 10-digit Indian phone number.", "error");
+      return;
+    }
+
+    document.getElementById('target-mobile-lbl').innerText = `+91 ${mobile}`;
+    document.getElementById('otp-entry-section').classList.remove('hidden');
+    document.getElementById('login-otp-fields').classList.add('hidden');
+
+    triggerSmsSimulator(mobile);
+    startCountdown();
+  }
+
+  function triggerSmsSimulator(mobile) {
+    const gateway = document.getElementById('sms-gateway');
+    document.getElementById('sms-text').innerText = `ClickCodex authentication code is ${mockSmsOtp}. Valid for 10 minutes.`;
+    gateway.classList.remove('opacity-0', '-translate-y-32', 'pointer-events-none');
+    
+    setTimeout(() => {
+      dismissSmsSimulator();
+    }, 8000);
+  }
+
+  function dismissSmsSimulator() {
+    const gateway = document.getElementById('sms-gateway');
+    gateway.classList.add('opacity-0', '-translate-y-32', 'pointer-events-none');
+  }
+
+  // OTP Timer Loop
+  function startCountdown() {
+    let seconds = 59;
+    const secVal = document.getElementById('countdown-sec');
+    const lbl = document.getElementById('countdown-lbl');
+    const resendBtn = document.getElementById('btn-resend-otp');
+
+    lbl.classList.remove('hidden');
+    resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    resendBtn.disabled = true;
+
+    if (countdownTimer) clearInterval(countdownTimer);
+
+    countdownTimer = setInterval(() => {
+      seconds--;
+      secVal.innerText = seconds;
+      if (seconds <= 0) {
+        clearInterval(countdownTimer);
+        lbl.classList.add('hidden');
+        resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        resendBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  // Trigger simulated resend SMS
+  function triggerResendOtp() {
+    showToast("Re-sending One-Time Password...", "success");
+    startCountdown();
+    triggerSmsSimulator("");
+  }
+
+  // Verify input OTP rules
+  function verifyOtpLogin() {
+    const inputs = document.querySelectorAll('.otp-input');
+    let enteredCode = "";
+    inputs.forEach(i => enteredCode += i.value);
+
+    if (enteredCode === mockSmsOtp) {
+      showToast("OTP Verification Successful! Logging in...", "success");
+      resetForms();
+    } else {
+      showToast("Incorrect Code. Access Denied. Try 482019", "error");
+    }
+  }
+
+  // Password strength logic using only Blue and Orange colors
+  function checkPasswordStrength() {
+    const pass = document.getElementById('reg-password').value;
+    const seg1 = document.getElementById('strength-seg-1');
+    const seg2 = document.getElementById('strength-seg-2');
+    const seg3 = document.getElementById('strength-seg-3');
+    const label = document.getElementById('strength-label');
+
+    // Reset segments
+    seg1.className = "w-1/3 h-full border-r border-white bg-slate-200 transition-all";
+    seg2.className = "w-1/3 h-full border-r border-white bg-slate-200 transition-all";
+    seg3.className = "w-1/3 h-full bg-slate-200 transition-all";
+
+    if (pass.length === 0) {
+      label.innerText = "Empty";
+      label.className = "text-[10px] text-slate-400 font-bold uppercase tracking-wider";
+    } else if (pass.length < 6) {
+      seg1.classList.remove('bg-slate-200');
+      seg1.classList.add('bg-cc-orange'); // Orange = Weak
+      label.innerText = "Weak";
+      label.className = "text-[10px] text-cc-orange font-bold uppercase tracking-wider";
+    } else if (pass.length >= 6 && pass.length < 10) {
+      seg1.classList.remove('bg-slate-200');
+      seg2.classList.remove('bg-slate-200');
+      seg1.classList.add('bg-cc-orange'); // Double Orange = Medium
+      seg2.classList.add('bg-cc-orange');
+      label.innerText = "Medium";
+      label.className = "text-[10px] text-cc-orange font-bold uppercase tracking-wider";
+    } else {
+      seg1.classList.remove('bg-slate-200');
+      seg2.classList.remove('bg-slate-200');
+      seg3.classList.remove('bg-slate-200');
+      seg1.classList.add('bg-cc-blue'); // Triple Blue = Strong
+      seg2.classList.add('bg-cc-blue');
+      seg3.classList.add('bg-cc-blue');
+      label.innerText = "Strong";
+      label.className = "text-[10px] text-cc-blue font-bold uppercase tracking-wider";
+    }
+  }
+
+  // Handle account registration mockup submit
+  function handleRegistration(e) {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value;
+    const mobile = document.getElementById('reg-mobile').value;
+
+    if (mobile.length !== 10) {
+      showToast("Please enter a valid 10-digit mobile number.", "error");
+      return;
+    }
+
+    showToast(`Welcome to ClickCodex, ${name}! Your account is registered.`, "success");
+    resetForms();
+    switchTab('login');
+  }
+
+  // Forgot password mockup submit
+  function handleForgotSubmit(e) {
+    e.preventDefault();
+    const identifier = document.getElementById('forgot-identifier').value;
+    const sendViaSms = document.getElementById('forgot-via-sms').checked;
+
+    if (sendViaSms) {
+      showToast(`SMS Verification Token sent to registered mobile linked to ${identifier}!`, "success");
+      triggerSmsSimulator();
+    } else {
+      showToast(`We've sent a secure recovery link to ${identifier}! Check your inbox.`, "success");
+    }
+
+    resetForms();
+    switchTab('login');
+  }
+
+  function socialAuthSim(platform) {
+    showToast(`Signing in via secure ${platform} APIs...`, "success");
+  }
+
+  function resetForms() {
+    document.getElementById('login-identifier').value = "";
+    document.getElementById('login-password').value = "";
+    document.getElementById('login-mobile-otp').value = "";
+    document.getElementById('reg-name').value = "";
+    document.getElementById('reg-mobile').value = "";
+    document.getElementById('reg-email').value = "";
+    document.getElementById('reg-password').value = "";
+    document.getElementById('forgot-identifier').value = "";
+    document.getElementById('forgot-via-sms').checked = false;
+    
+    const inputs = document.querySelectorAll('.otp-input');
+    inputs.forEach(input => input.value = "");
+    checkPasswordStrength();
+    switchLoginMethod('password');
+  }
+
+  // Dynamic focus configuration for OTP inputs
+  const otpInputs = document.querySelectorAll('.otp-input');
+  otpInputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      if (input.value && index < otpInputs.length - 1) {
+        otpInputs[index + 1].focus();
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && index > 0) {
+        otpInputs[index - 1].focus();
+      }
+    });
+  });
+</script>
+</body>
+</html>

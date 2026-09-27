@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order ORD-20260115-0008 — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  .scrollbar-none::-webkit-scrollbar{display:none}
+  .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+  input:focus,select:focus,textarea:focus{outline:none}
+  ::selection{background:#FF5100;color:#fff}
+
+  .sidebar-link{transition:all .15s ease;border-radius:10px;padding:10px 14px;margin:2px 0;display:flex;align-items:center;gap:12px;font-size:14px;color:#475569}
+  .sidebar-link:hover{background:#E8F0FE;color:#2D82FF;padding-left:20px}
+  .sidebar-link.active{background:#E8F0FE;color:#2D82FF;font-weight:600}
+  .sidebar-link.active .material-icons{color:#2D82FF}
+
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .4s ease-out forwards}
+  @keyframes scaleIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+  .scale-in{animation:scaleIn .25s ease-out forwards}
+  @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+  .cart-badge{animation:pulseBadge 2s ease-in-out infinite}
+
+  .sb{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .sb-confirmed{background:#DBEAFE;color:#1E40AF}
+  .sb-processing{background:#E0E7FF;color:#3730A3}
+  .sb-shipped{background:#EDE9FE;color:#5B21B6}
+  .sb-delivered{background:#D1FAE5;color:#065F46}
+  .sb-cancelled{background:#FEE2E2;color:#991B1B}
+  .sb-return_requested{background:#FFEDD5;color:#9A3412}
+  .sb-paid{background:#D1FAE5;color:#065F46}
+  .sb-refunded{background:#CCFBF1;color:#115E59}
+  .sb-unpaid{background:#FEF3C7;color:#92400E}
+
+  .tldot{width:14px;height:14px;border-radius:50%;border:3px solid #E2E8F0;background:#fff;flex-shrink:0;transition:all .3s ease}
+  .tldot.done{border-color:#10B981;background:#10B981}
+  .tldot.now{border-color:#2D82FF;background:#2D82FF;box-shadow:0 0 0 5px rgba(45,130,255,.12)}
+  .tldot.fail{border-color:#EF4444;background:#EF4444}
+  .tlline{width:2.5px;min-height:22px;background:#E2E8F0;margin-left:5px;flex:1;border-radius:2px}
+  .tlline.done{background:#10B981}
+
+  .act-btn{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;transition:all .15s ease;display:inline-flex;align-items:center;gap:5px;cursor:pointer;border:1.5px solid #E2E8F0;color:#475569;background:#fff}
+  .act-btn:hover{border-color:#2D82FF;color:#2D82FF;background:#F0F6FF}
+  .act-btn.primary{border-color:#2D82FF;color:#fff;background:#2D82FF}
+  .act-btn.primary:hover{background:#1D6FE0;border-color:#1D6FE0}
+  .act-btn.danger{border-color:#FCA5A5;color:#DC2626}
+  .act-btn.danger:hover{background:#FEF2F2;border-color:#EF4444}
+  .act-btn.orange{border-color:#FDBA74;color:#C2410C}
+  .act-btn.orange:hover{background:#FFF7ED;border-color:#F97316}
+  .act-btn.green{border-color:#86EFAC;color:#065F46}
+  .act-btn.green:hover{background:#D1FAE5;border-color:#10B981}
+  .act-btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+
+  .info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #F1F5F9}
+  .info-row:last-child{border-bottom:none}
+  .info-label{font-size:13px;color:#64748B;flex-shrink:0}
+  .info-value{font-size:13px;color:#1E293B;font-weight:500;text-align:right;max-width:60%}
+
+  .item-card{border:1.5px solid #E2E8F0;border-radius:14px;overflow:hidden;transition:all .2s ease}
+  .item-card:hover{border-color:#94A3B8;box-shadow:0 4px 12px rgba(15,23,42,.04)}
+
+  .star-input{cursor:pointer;transition:transform .1s ease;display:inline-block}
+  .star-input:hover{transform:scale(1.25)}
+
+  .modal-scroll::-webkit-scrollbar{width:4px}
+  .modal-scroll::-webkit-scrollbar-track{background:transparent}
+  .modal-scroll::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+
+  .print-section{background:#fff}
+
+  @media print{
+    body{background:#fff!important}
+    header,.sidebar-link,.act-btn,#toast-container,.no-print{display:none!important}
+    .print-section{box-shadow:none!important;border:none!important}
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<!-- TOP BAR -->
+<div class="bg-cc-dark text-white text-xs no-print">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Order Details — ClickCodex</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md no-print">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow"><span class="material-icons text-3xl">menu</span></button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search products..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl">
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">account_circle</span><span class="mt-0.5">Rahul</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">favorite_border</span><span class="mt-0.5 hidden md:inline">Wishlist</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">shopping_cart</span><span class="mt-0.5 hidden md:inline">Cart</span><span class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">2</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5 no-print">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Account</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Orders</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold" id="breadcrumb-order">ORD-20260115-0008</span>
+  </nav>
+
+  <div class="flex gap-6">
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:block w-64 shrink-0 no-print">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[80px]">
+        <div class="bg-gradient-to-br from-cc-blue to-cc-purple p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">R</div>
+            <div class="min-w-0"><p class="font-heading font-bold text-sm truncate">Rahul Sharma</p><p class="text-white/70 text-xs truncate">rahul.sharma@email.com</p></div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-2 pb-1">Shopping</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</a>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Account</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">notifications</span> Notifications</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">payment</span> Payment Methods</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">rate_review</span> My Reviews</a>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Support</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</a>
+          <a href="#" class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 min-w-0 space-y-5 print-section">
+
+      <!-- ORDER HEADER -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0">
+              <span class="material-icons text-cc-blue text-2xl">receipt_long</span>
+            </div>
+            <div>
+              <h1 class="font-heading text-xl sm:text-2xl font-bold text-slate-900" id="page-order-number">ORD-20260115-0008</h1>
+              <p class="text-sm text-slate-500 mt-0.5">Placed on <span class="font-medium text-slate-700" id="page-placed-date"></span></p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5" id="page-badges"></div>
+        </div>
+        <!-- Action bar -->
+        <div class="flex flex-wrap gap-2.5 mt-5 pt-5 border-t border-slate-100" id="page-actions"></div>
+      </div>
+
+      <!-- TWO COLUMN LAYOUT -->
+      <div class="flex flex-col lg:flex-row gap-5">
+
+        <!-- LEFT COLUMN -->
+        <div class="flex-1 min-w-0 space-y-5">
+
+          <!-- DELIVERY ESTIMATE -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up" style="animation-delay:.05s;opacity:0">
+            <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2 mb-3">
+              <span class="material-icons text-cc-blue text-lg">local_shipping</span> Delivery Information
+            </h3>
+            <div class="flex items-center gap-4 bg-cc-blue/5 rounded-xl p-4">
+              <div class="w-14 h-14 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0">
+                <span class="material-icons text-cc-blue text-3xl" id="delivery-icon">inventory_2</span>
+              </div>
+              <div>
+                <p class="font-heading font-bold text-base text-cc-blue" id="delivery-text"></p>
+                <p class="text-xs text-slate-500 mt-0.5" id="delivery-sub"></p>
+              </div>
+            </div>
+            <div id="tracking-box" class="mt-4 hidden">
+              <div class="bg-slate-50 rounded-xl p-4">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tracking Number</p>
+                <div class="flex items-center justify-between">
+                  <p class="font-mono font-bold text-sm text-cc-blue" id="tracking-number"></p>
+                  <div class="flex gap-2">
+                    <button onclick="copyTracking()" class="act-btn text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">content_copy</span> Copy</button>
+                    <button onclick="showToast('Opening tracking page...','info')" class="act-btn primary text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">open_in_new</span> Track</button>
+                  </div>
+                </div>
+                <div class="mt-3 flex gap-3" id="tracking-steps"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ORDER STATUS TIMELINE -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up" style="animation-delay:.1s;opacity:0">
+            <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2 mb-4">
+              <span class="material-icons text-cc-purple text-lg">timeline</span> Order Timeline
+            </h3>
+            <div id="timeline-container"></div>
+          </div>
+
+          <!-- ORDER ITEMS -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:.15s;opacity:0">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-icons text-cc-orange text-lg">shopping_bag</span> Order Items
+                <span class="text-xs bg-cc-ice text-slate-500 font-bold px-2.5 py-0.5 rounded-full" id="item-count-badge"></span>
+              </h3>
+            </div>
+            <div id="items-container" class="p-4 sm:p-5 space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lg:w-[360px] shrink-0 space-y-5">
+
+          <!-- PRICE BREAKDOWN -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:.1s;opacity:0">
+            <div class="bg-gradient-to-r from-cc-dark to-slate-800 text-white px-5 py-4">
+              <h3 class="font-heading font-bold text-sm flex items-center gap-2"><span class="material-icons text-cc-yellow text-lg">receipt_long</span> Price Breakdown</h3>
+            </div>
+            <div class="p-5 space-y-0" id="price-breakdown"></div>
+            <div class="px-5 pb-4" id="payment-status-box"></div>
+          </div>
+
+          <!-- SHIPPING ADDRESS SNAPSHOT -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up" style="animation-delay:.15s;opacity:0">
+            <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2 mb-4">
+              <span class="material-icons text-green-600 text-lg">location_on</span> Shipping Address
+            </h3>
+            <div class="bg-slate-50 rounded-xl p-4" id="address-snapshot"></div>
+            <p class="text-[10px] text-slate-400 mt-3 flex items-start gap-1">
+              <span class="material-icons text-[12px] mt-0.5 shrink-0">info</span>
+              This is the address snapshot saved at the time of order placement. Updating your address book will not affect this order.
+            </p>
+          </div>
+
+          <!-- PAYMENT INFO -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up" style="animation-delay:.2s;opacity:0">
+            <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2 mb-4">
+              <span class="material-icons text-cc-purple text-lg">payment</span> Payment Information
+            </h3>
+            <div id="payment-info"></div>
+          </div>
+
+          <!-- NEED HELP -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 fade-up" style="animation-delay:.25s;opacity:0">
+            <h3 class="font-heading font-semibold text-sm text-slate-900 flex items-center gap-2 mb-3">
+              <span class="material-icons text-cc-orange text-lg">support_agent</span> Need Help With This Order?
+            </h3>
+            <div class="space-y-2">
+              <a href="#" onclick="showToast('Opening chat...','info');return false" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+                <div class="w-9 h-9 rounded-lg bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[18px]">chat</span></div>
+                <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue">Live Chat</p><p class="text-[10px] text-slate-400">Get instant help</p></div>
+                <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+              </a>
+              <a href="#" onclick="showToast('Calling 1800-233-4555...','info');return false" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+                <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[18px]">phone</span></div>
+                <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue">Call: 1800-233-4555</p><p class="text-[10px] text-slate-400">Toll-free, 9AM–9PM</p></div>
+                <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+              </a>
+              <a href="#" onclick="showToast('Opening email...','info');return false" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cc-ice transition group">
+                <div class="w-9 h-9 rounded-lg bg-cc-purple/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-purple text-[18px]">email</span></div>
+                <div class="flex-1"><p class="text-sm font-medium text-slate-700 group-hover:text-cc-blue">Email Support</p><p class="text-[10px] text-slate-400">support@clickcodex.in</p></div>
+                <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- PRINT / DOWNLOAD -->
+          <div class="bg-cc-ice rounded-2xl p-5 fade-up no-print" style="animation-delay:.3s;opacity:0">
+            <div class="flex items-start gap-3">
+              <span class="material-icons text-cc-blue text-xl mt-0.5">description</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-700">Order Record</p>
+                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">This page serves as your official order record. You can print it or download a PDF invoice for your records, warranty claims, or return requests.</p>
+                <div class="flex gap-2 mt-3">
+                  <button onclick="window.print()" class="act-btn text-[11px] py-2 px-3"><span class="material-icons" style="font-size:14px">print</span> Print</button>
+                  <button onclick="downloadInvoice()" class="act-btn text-[11px] py-2 px-3"><span class="material-icons" style="font-size:14px">download</span> Download Invoice</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl no-print">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">grid_view</span><span class="text-[10px] font-semibold">Categories</span></button>
+  <button class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span><span class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">2</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span></button>
+  <button class="flex flex-col items-center justify-center text-cc-blue py-1"><span class="material-icons text-2xl">shopping_bag</span><span class="text-[10px] font-semibold">Orders</span></button>
+</div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="mobile-sidebar" class="fixed inset-0 z-[60] overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none no-print">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">R</div><span class="font-heading font-bold">Rahul Sharma</span></div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1">
+      <a href="#" class="sidebar-link w-full text-left active"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</a>
+      <a href="#" class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</a>
+    </div>
+  </div>
+</div>
+
+<!-- RATE MODAL -->
+<div id="rate-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden no-print">
+  <div onclick="closeRateModal()" class="absolute inset-0 bg-black/50 cursor-pointer" style="backdrop-filter:blur(4px)"></div>
+  <div class="bg-white rounded-2xl max-w-md w-[90%] shadow-2xl relative z-10 p-6 scale-in">
+    <button onclick="closeRateModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center mb-5">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-cc-yellow/10 flex items-center justify-center mb-4"><span class="material-icons text-cc-yellow text-4xl">star_rate</span></div>
+      <h3 class="font-heading font-bold text-xl text-slate-800">Rate Your Experience</h3>
+      <p class="text-sm text-slate-500 mt-1">How was your experience with this order?</p>
+    </div>
+    <div class="flex justify-center gap-2 mb-4" id="star-container"></div>
+    <p id="star-label" class="text-center text-sm text-slate-500 mb-5">Tap a star to rate</p>
+    <div class="mb-4">
+      <label class="block text-xs font-semibold text-slate-600 mb-1.5">Write a review (optional)</label>
+      <textarea id="review-text" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/10 transition resize-none" placeholder="Share your thoughts about the products..."></textarea>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeRateModal()" class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-3 rounded-xl transition text-sm">Skip</button>
+      <button onclick="submitRating()" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div id="invoice-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden no-print">
+  <div onclick="closeInvoiceModal()" class="absolute inset-0 bg-black/50 cursor-pointer" style="backdrop-filter:blur(4px)"></div>
+  <div class="bg-white rounded-2xl max-w-lg w-[92%] shadow-2xl relative z-10 max-h-[90vh] flex flex-col scale-in">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 class="font-heading font-bold text-base text-slate-900">Tax Invoice</h3>
+      <button onclick="closeInvoiceModal()" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="invoice-body" class="flex-1 overflow-y-auto p-5 modal-scroll space-y-4 text-sm"></div>
+    <div class="p-4 border-t border-slate-100 shrink-0">
+      <button onclick="closeInvoiceModal()" class="w-full bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// FULL ORDER DATA — orders + order_items + order_status_history
+// Simulates: SELECT * FROM orders WHERE order_number = ?
+// JOIN order_items ON order_items.order_id = orders.id
+// LEFT JOIN order_status_history ON order_status_history.order_id = orders.id
+// ============================================================
+
+const ORDER = {
+  id: 7,
+  uuid: 'ord-e5f6a1b2-c3d4-5678-9abc-def012345678',
+  order_number: 'ORD-20260115-0008',
+  user_id: 1,
+  // Denormalized shipping snapshot (saved at order time per schema design)
+  shipping_name: 'Rahul Sharma',
+  shipping_phone: '9876543210',
+  shipping_line1: '42, Shri Nagar Colony, Near Railway Station',
+  shipping_line2: 'Behind State Bank of India, Main Road',
+  shipping_city: 'Ratlam',
+  shipping_state: 'Madhya Pradesh',
+  shipping_country: 'India',
+  shipping_postal: '457001',
+  // Financials
+  subtotal: 4998.00,
+  discount_amount: 1200.00,
+  shipping_charge: 0.00,
+  tax_amount: 569.76,
+  total_amount: 4367.76,
+  currency: 'INR',
+  // Offer context
+  offer_id: null,
+  coupon_code: null,
+  // Status
+  status: 'shipped',
+  payment_status: 'paid',
+  // Payment transaction reference
+  payment_method: 'UPI (PhonePe)',
+  payment_txn_id: 'TXN3K8M2N5P7QR',
+  // Status timestamps
+  placed_at: '2026-01-15T10:20:00',
+  confirmed_at: '2026-01-15T10:25:00',
+  processing_at: '2026-01-15T18:00:00',
+  shipped_at: '2026-01-16T14:00:00',
+  delivered_at: null,
+  cancelled_at: null,
+  // Delivery partner
+  carrier_name: 'BlueDart',
+  tracking_number: 'BLDA1234567890',
+  tracking_url: 'https://www.bluedart.com/tracking?awb=BLDA1234567890',
+  estimated_delivery: '2026-01-19T23:59:00',
+  // Notes
+  notes: null,
+  created_at: '2026-01-15T10:20:00',
+  updated_at: '2026-01-16T14:00:00'
+};
+
+// Simulates: SELECT * FROM order_items WHERE order_id = 7 ORDER BY id
+const ORDER_ITEMS = [
+  {
+    id: 18, order_id: 7, product_id: 4, variant_id: 45,
+    product_name: 'BoomBox Mini Portable Bluetooth Speaker',
+    product_sku: 'BB-MINI-GRN-001',
+    variant_label: 'Color: Forest Green',
+    image_url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1599.00,
+    sale_price: 799.00,
+    quantity: 2,
+    tax_rate: 18.00,
+    tax_amount: 287.64,
+    line_total: 1598.00
+  },
+  {
+    id: 19, order_id: 7, product_id: 9, variant_id: 78,
+    product_name: 'AromaZen Essential Oil Diffuser 300ml',
+    product_sku: 'AZ-DIFF-300-WHT',
+    variant_label: 'Color: White',
+    image_url: 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=200&auto=format&fit=crop&q=80',
+    unit_price: 999.00,
+    sale_price: 449.00,
+    quantity: 1,
+    tax_rate: 12.00,
+    tax_amount: 53.88,
+    line_total: 449.00
+  },
+  {
+    id: 20, order_id: 7, product_id: 10, variant_id: null,
+    product_name: 'SwiftCharge 65W GaN Fast Charger',
+    product_sku: 'SC-65W-GAN-BLK',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1999.00,
+    sale_price: 999.00,
+    quantity: 1,
+    tax_rate: 18.00,
+    tax_amount: 179.82,
+    line_total: 999.00
+  },
+  {
+    id: 21, order_id: 7, product_id: 3, variant_id: 22,
+    product_name: 'Urban Trail Waterproof Laptop Backpack 15.6"',
+    product_sku: 'UT-BP-156-NVY',
+    variant_label: 'Color: Navy Blue',
+    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1199.00,
+    sale_price: 899.00,
+    quantity: 1,
+    tax_rate: 12.00,
+    tax_amount: 107.88,
+    line_total: 899.00
+  },
+  {
+    id: 22, order_id: 7, product_id: 11, variant_id: null,
+    product_name: 'NovaGlow LED Ring Light 10" with Tripod',
+    product_sku: 'NG-RL-10-TPD',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1299.00,
+    sale_price: 649.00,
+    quantity: 1,
+    tax_rate: 18.00,
+    tax_amount: 116.82,
+    line_total: 649.00
+  }
+];
+
+// Simulates: SELECT * FROM order_status_history WHERE order_id = 7 ORDER BY created_at DESC
+const STATUS_HISTORY = [
+  { id: 14, order_id: 7, status: 'shipped', note: 'Your order has been shipped via BlueDart. Tracking number: BLDA1234567890. Expected delivery by Jan 19, 2026.', is_public: true, changed_by: 5, created_at: '2026-01-16T14:00:00' },
+  { id: 13, order_id: 7, status: 'processing', note: 'Order is being packed at our Ratlam warehouse. Quality check in progress.', is_public: true, changed_by: 3, created_at: '2026-01-15T18:00:00' },
+  { id: 12, order_id: 7, status: 'confirmed', note: 'Order confirmed. We are preparing your items for shipment.', is_public: true, changed_by: 1, created_at: '2026-01-15T10:25:00' },
+  { id: 11, order_id: 7, status: 'pending', note: 'Order placed successfully. Thank you for shopping with ClickCodex!', is_public: true, changed_by: null, created_at: '2026-01-15T10:20:00' }
+];
+
+// Simulates: SELECT * FROM payment_transactions WHERE order_id = 7
+const PAYMENT_TXN = {
+  id: 12, order_id: 7, gateway: 'razorpay', gateway_txn_id: 'TXN3K8M2N5P7QR',
+  amount: 4367.76, currency: 'INR', status: 'success', processed_at: '2026-01-15T10:20:15'
+};
+
+let selectedStars = 0;
+
+// ==================== HELPERS ====================
+function fp(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fd(iso){ return new Date(iso).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}); }
+function ft(iso){ return new Date(iso).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',hour12:true}); }
+function fdt(iso){ return fd(iso) + ', ' + ft(iso); }
+function fde(iso){ return new Date(iso).toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+
+function sLabel(s){ return {pending:'Pending',confirmed:'Confirmed',processing:'Processing',shipped:'Shipped',delivered:'Delivered',cancelled:'Cancelled',return_requested:'Return Req.',returned:'Returned',refunded:'Refunded'}[s]||s; }
+function sClass(s){ return 'sb-'+s; }
+
+// ==================== TOAST ====================
+function showToast(msg, type='success'){
+  const c = document.getElementById('toast-container');
+  const cl = {success:'bg-green-600',error:'bg-red-500',info:'bg-cc-blue',warning:'bg-amber-500'};
+  const ic = {success:'check_circle',error:'error',info:'info',warning:'warning'};
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${cl[type]||cl.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${ic[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.replace('toast-in','toast-out'); setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// ==================== RENDER PAGE ====================
+function renderPage(){
+  const o = ORDER;
+  const items = ORDER_ITEMS;
+  const history = STATUS_HISTORY;
+  const totalQty = items.reduce((s,i) => s+i.quantity, 0);
+
+  // Breadcrumb
+  document.getElementById('breadcrumb-order').textContent = o.order_number;
+  document.title = 'Order ' + o.order_number + ' — ClickCodex';
+
+  // Header
+  document.getElementById('page-order-number').textContent = o.order_number;
+  document.getElementById('page-placed-date').textContent = fdt(o.placed_at);
+
+  // Badges
+  document.getElementById('page-badges').innerHTML = `
+    <span class="sb ${sClass(o.status)}"><span class="material-icons" style="font-size:12px">${o.status==='processing'?'sync':{pending:'schedule',confirmed:'check_circle',shipped:'local_shipping',delivered:'done_all',cancelled:'cancel',return_requested:'replay'}[o.status]||'help'}</span>${sLabel(o.status)}</span>
+    <span class="sb ${sClass(o.payment_status)}"><span class="material-icons" style="font-size:12px">${o.payment_status==='paid'?'check_circle':o.payment_status==='refunded'?'currency_rupee':'schedule'}</span>${o.payment_status.charAt(0).toUpperCase()+o.payment_status.slice(1)}</span>
+  `;
+
+  // Actions
+  let actions = '';
+  if(['confirmed','processing','shipped'].includes(o.status)){
+    actions += `<button onclick="showToast('Opening tracking...','info')" class="act-btn primary"><span class="material-icons" style="font-size:16px">local_shipping</span> Track Shipment</button>`;
+  }
+  if(o.status === 'delivered'){
+    actions += `<button onclick="openRateModal()" class="act-btn orange"><span class="material-icons" style="font-size:16px">star_rate</span> Rate & Review</button>`;
+    actions += `<button onclick="doReorder()" class="act-btn green"><span class="material-icons" style="font-size:16px">refresh</span> Reorder</button>`;
+  }
+  if(o.status === 'delivered'){
+    actions += `<button onclick="requestReturn()" class="act-btn orange"><span class="material-icons" style="font-size:16px">replay</span> Return Items</button>`;
+  }
+  if(['pending','confirmed'].includes(o.status)){
+    actions += `<button onclick="confirmCancelOrder()" class="act-btn danger"><span class="material-icons" style="font-size:16px">cancel</span> Cancel Order</button>`;
+  }
+  actions += `<button onclick="downloadInvoice()" class="act-btn"><span class="material-icons" style="font-size:16px">download</span> Invoice</button>`;
+  document.getElementById('page-actions').innerHTML = actions;
+
+  // Delivery section
+  const deliveryIcon = document.getElementById('delivery-icon');
+  const deliveryText = document.getElementById('delivery-text');
+  const deliverySub = document.getElementById('delivery-sub');
+  const trackingBox = document.getElementById('tracking-box');
+
+  if(o.status === 'delivered'){
+    deliveryIcon.textContent = 'check_circle';
+    deliveryText.textContent = 'Delivered on ' + fd(o.delivered_at);
+    deliverySub.textContent = 'Your order has been successfully delivered and confirmed.';
+    trackingBox.classList.add('hidden');
+  } else if(o.status === 'shipped'){
+    deliveryIcon.textContent = 'local_shipping';
+    deliveryText.textContent = 'Expected by ' + fde(o.estimated_delivery);
+    deliverySub.textContent = 'Shipped via ' + o.carrier_name + ' on ' + fd(o.shipped_at);
+    trackingBox.classList.remove('hidden');
+    document.getElementById('tracking-number').textContent = o.tracking_number;
+    // Tracking steps
+    const steps = [
+      {label:'Order Placed', date:fd(o.placed_at), done:true},
+      {label:'Packed', date:fd(o.processing_at), done:true},
+      {label:'In Transit', date:fd(o.shipped_at), done:true, now:true},
+      {label:'Out for Delivery', date:'', done:false},
+      {label:'Delivered', date:'', done:false}
+    ];
+    document.getElementById('tracking-steps').innerHTML = steps.map(s => `
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${s.done?'bg-green-500 text-white':s.now?'bg-cc-blue text-white border-2 border-cc-blue/30':'bg-slate-100 text-slate-400'}">
+          ${s.done?'<span class="material-icons" style="font-size:14px">check</span>':s.now?'<span class="material-icons spin" style="font-size:14px">sync</span>':'<span class="material-icons" style="font-size:14px">lens_blur</span>'}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] font-semibold ${s.done?'text-green-700':s.now?'text-cc-blue':'text-slate-400'}">${s.label}</p>
+          ${s.date?`<p class="text-[10px] ${s.done?'text-green-600':'text-slate-400'}">${s.date}</p>`:''}
+        </div>
+      </div>
+    `).join('<div class="w-5 h-0.5 bg-slate-200 rounded mx-1 shrink-0"></div>');
+  } else if(o.status === 'cancelled'){
+    deliveryIcon.textContent = 'cancel';
+    deliveryIcon.style.color = '#EF4444';
+    deliveryText.textContent = 'Order Cancelled';
+    deliveryText.style.color = '#EF4444';
+    deliverySub.textContent = 'Cancelled on ' + fd(o.cancelled_at) + '. Refund of ' + fp(o.total_amount) + ' initiated.';
+    trackingBox.classList.add('hidden');
+  } else {
+    deliveryIcon.textContent = 'inventory_2';
+    deliveryText.textContent = 'Preparing for Shipment';
+    deliverySub.textContent = 'Your order is being processed at our warehouse.';
+    trackingBox.classList.add('hidden');
+  }
+
+  // Timeline
+  const statusOrder = ['pending','confirmed','processing','shipped','delivered'];
+  const currentIdx = o.status==='cancelled' ? -1 : statusOrder.indexOf(o.status);
+  const hMap = {};
+  history.forEach(h => { hMap[h.status] = h; });
+
+  let timelineHtml = '';
+  const statusesToShow = o.status === 'cancelled'
+    ? [...statusOrder, 'cancelled']
+    : statusOrder;
+
+  statusesToShow.forEach((s, idx) => {
+    const isDone = o.status === 'cancelled' ? (idx < statusOrder.length) : (idx <= currentIdx && currentIdx >= 0);
+    const isNow = !o.status.includes('cancel') && idx === currentIdx && currentIdx >= 0;
+    const isFail = o.status === 'cancelled' && s === 'cancelled';
+    const h = hMap[s];
+
+    timelineHtml += `
+    <div class="flex gap-4">
+      <div class="flex flex-col items-center">
+        <div class="tldot ${isDone?'done':''} ${isNow?'now':''} ${isFail?'fail':''}"></div>
+        ${idx < statusesToShow.length - 1 ? `<div class="tlline ${isDone?'done':''}"></div>` : ''}
+      </div>
+      <div class="pb-5 flex-1 min-w-0">
+        <p class="text-sm font-semibold ${isFail?'text-red-600':isDone?'text-slate-800':'text-slate-400'}">${sLabel(s)}</p>
+        ${h ? `<p class="text-xs text-slate-500 mt-1 leading-relaxed">${h.note}</p>
+        <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+          <span class="material-icons" style="font-size:12px">schedule</span> ${fdt(h.at)}
+        </p>` : `<p class="text-xs text-slate-400 mt-1">Pending</p>`}
+      </div>
+    </div>`;
+  });
+  document.getElementById('timeline-container').innerHTML = timelineHtml;
+
+  // Items
+  document.getElementById('item-count-badge').textContent = totalQty + ' items';
+  document.getElementById('items-container').innerHTML = items.map(item => {
+    const disc = item.unit_price > item.sale_price ? Math.round(((item.unit_price - item.sale_price) / item.unit_price) * 100) : 0;
+    return `
+    <div class="item-card p-4">
+      <div class="flex gap-4">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden">
+          <img src="${item.image_url}" alt="${item.product_name}" class="max-h-full max-w-full object-contain p-2" loading="lazy">
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="font-semibold text-sm text-slate-800 leading-snug">${item.product_name}</h4>
+          ${item.variant_label ? `<p class="text-xs text-slate-500 mt-1 flex items-center gap-1"><span class="material-icons" style="font-size:12px">sell</span>${item.variant_label}</p>` : ''}
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+            <span class="text-xs text-slate-500">SKU: <span class="font-mono font-medium text-slate-600">${item.product_sku}</span></span>
+            <span class="text-xs text-slate-500">Qty: <span class="font-semibold text-slate-700">${item.quantity}</span></span>
+            <span class="text-xs text-slate-500">Tax (${item.tax_rate}%): <span class="font-medium text-slate-600">${fp(item.tax_amount)}</span></span>
+          </div>
+        </div>
+        <div class="text-right shrink-0 hidden sm:block">
+          <p class="font-bold text-base text-cc-orange">${fp(item.line_total)}</p>
+          ${disc > 0 ? `<p class="text-xs text-slate-400 mt-1"><span class="line-through">${fp(item.unit_price)}</span> each <span class="text-green-600 font-medium ml-1">${disc}% off</span></p>` : `<p class="text-xs text-slate-400 mt-1">${fp(item.unit_price)} each</p>`}
+        </div>
+      </div>
+      <div class="sm:hidden flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+        <div class="text-xs text-slate-500">Qty: ${item.quantity} · Tax: ${fp(item.tax_amount)}</div>
+        <div class="text-right">
+          <p class="font-bold text-sm text-cc-orange">${fp(item.line_total)}</p>
+          ${disc > 0 ? `<p class="text-[10px] text-green-600 font-medium">Save ${disc}%</p>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Price Breakdown
+  const pb = document.getElementById('price-breakdown');
+  let pbHtml = `
+    <div class="info-row"><span class="info-label">Price (${totalQty} items)</span><span class="info-value">${fp(o.subtotal)}</span></div>
+  `;
+  if(o.discount_amount > 0) pbHtml += `<div class="info-row"><span class="info-label text-green-600 font-medium">Discount</span><span class="info-value text-green-600 font-semibold">−${fp(o.discount_amount)}</span></div>`;
+  if(o.coupon_code) pbHtml += `<div class="info-row"><span class="info-label flex items-center gap-1"><span class="material-icons" style="font-size:12px;color:#8C30F5">local_offer</span>Coupon (${o.coupon_code})</span><span class="info-value text-green-600 font-medium">Applied</span></div>`;
+  pbHtml += `<div class="info-row"><span class="info-label">Delivery</span><span class="info-value ${o.shipping_charge===0?'text-green-600 font-semibold':'text-slate-800'}">${o.shipping_charge===0?'FREE':fp(o.shipping_charge)}</span></div>`;
+  pbHtml += `<div class="info-row"><span class="info-label">Tax (GST)</span><span class="info-value">${fp(o.tax_amount)}</span></div>`;
+  pbHtml += `
+    <div class="flex justify-between items-baseline pt-3 mt-1 border-t-2 border-dashed border-slate-200">
+      <span class="font-heading font-bold text-slate-900 text-base">Total Paid</span>
+      <span class="font-heading font-extrabold text-2xl text-cc-orange">${fp(o.total_amount)}</span>
+    </div>
+  `;
+  if(o.discount_amount > 0){
+    pbHtml += `<div class="bg-green-50 border border-green-200 rounded-xl p-3 mt-3 flex items-center gap-2.5">
+      <span class="material-icons text-green-600 text-lg">savings</span>
+      <p class="text-xs text-green-700 font-medium">You saved <strong>${fp(o.discount_amount)}</strong> on this order</p>
+    </div>`;
+  }
+  pb.innerHTML = pbHtml;
+
+  // Payment status box
+  const psBox = document.getElementById('payment-status-box');
+  if(o.payment_status === 'paid'){
+    psBox.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-3.5 flex items-center gap-2.5">
+      <span class="material-icons text-green-600 text-xl">check_circle</span>
+      <div><p class="text-xs font-bold text-green-800">Payment Successful</p><p class="text-[10px] text-green-600 mt-0.5">TXN: ${PAYMENT_TXN.gateway_txn_id} · ${PAYMENT_TXN.gateway.charAt(0).toUpperCase()+PAYMENT_TXN.gateway.slice(1)} · ${fdt(PAYMENT_TXN.processed_at)}</p></div>
+    </div>`;
+  } else if(o.payment_status === 'refunded'){
+    psBox.innerHTML = `<div class="bg-teal-50 border border-teal-200 rounded-xl p-3.5 flex items-center gap-2.5">
+      <span class="material-icons text-teal-600 text-xl">currency_rupee</span>
+      <div><p class="text-xs font-bold text-teal-800">Refund Initiated</p><p class="text-[10px] text-teal-600 mt-0.5">${fp(o.total_amount)} refund to original payment method. Expected within 5-7 business days.</p></div>
+    </div>`;
+  } else {
+    psBox.innerHTML = `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-center gap-2.5">
+      <span class="material-icons text-amber-600 text-xl">schedule</span>
+      <div><p class="text-xs font-bold text-amber-800">Payment Pending</p><p class="text-[10px] text-amber-600 mt-0.5">Awaiting payment confirmation.</p></div>
+    </div>`;
+  }
+
+  // Shipping Address (denormalized snapshot)
+  const addr = document.getElementById('address-snapshot');
+  const addrLines = [o.shipping_line1, o.shipping_line2, o.shipping_city + ', ' + o.shipping_state, o.shipping_country + ' — ' + o.shipping_postal].filter(Boolean);
+  addr.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-semibold text-sm text-slate-800">${o.shipping_name}</p>
+        <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">${addrLines.join(', ')}</p>
+        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1"><span class="material-icons" style="font-size:13px">phone</span> +91 ${o.shipping_phone.replace(/(\d{5})(\d{5})/, '$1 $2')}</p>
+      </div>
+      <span class="text-[10px] bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-full shrink-0 mt-1">Deliver Here</span>
+    </div>
+  `;
+
+  // Payment info
+  document.getElementById('payment-info').innerHTML = `
+    <div class="space-y-0">
+      <div class="info-row"><span class="info-label">Method</span><span class="info-value">${o.payment_method}</span></div>
+      <div class="info-row"><span class="info-label">Transaction ID</span><span class="info-value font-mono text-xs">${PAYMENT_TXN.gateway_txn_id}</span></div>
+      <div class="info-row"><span class="info-label">Gateway</span><span class="info-value">${PAYMENT_TXN.gateway.charAt(0).toUpperCase()+PAYMENT_TXN.gateway.slice(1)}</span></div>
+      <div class="info-row"><span class="info-label">Status</span><span class="info-value"><span class="sb ${sClass(o.payment_status)}" style="font-size:10px;padding:2px 8px">${o.payment_status.charAt(0).toUpperCase()+o.payment_status.slice(1)}</span></span></div>
+      <div class="info-row"><span class="info-label">Processed</span><span class="info-value">${fdt(PAYMENT_TXN.processed_at)}</span></div>
+    </div>
+  `;
+}
+
+// ==================== ACTIONS ====================
+function copyTracking(){
+  navigator.clipboard.writeText(ORDER.tracking_number).then(() => showToast('Tracking number copied','info')).catch(() => showToast(ORDER.tracking_number,'info'));
+}
+
+function doReorder(){
+  const n = ORDER_ITEMS.length;
+  showToast(n + ' item' + (n>1?'s':'') + ' added to cart', 'success');
+}
+
+let pendingCancel = false;
+function confirmCancelOrder(){
+  pendingCancel = true;
+  // Use the rate modal as a generic confirm dialog
+  const modal = document.getElementById('rate-modal');
+  modal.querySelector('h3').textContent = 'Cancel This Order?';
+  modal.querySelector('.w-16').className = 'w-16 h-16 mx-auto rounded-2xl bg-red-50 flex items-center justify-center mb-4';
+  modal.querySelector('.w-16 span').textContent = 'cancel';
+  modal.querySelector('.w-16 span').className = 'material-icons text-red-500 text-4xl';
+  modal.querySelector('p.text-sm').textContent = 'Are you sure you want to cancel this order?';
+  modal.querySelector('.flex.justify-center.gap-2.mb-4').outerHTML = `
+    <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-4">
+      <p class="text-sm text-red-700 font-medium">A refund of <strong>${fp(ORDER.total_amount)}</strong> will be initiated to your original payment method within 5-7 business days.</p>
+      <p class="text-xs text-red-500 mt-1">This action cannot be undone.</p>
+    </div>
+  `;
+  modal.querySelector('#star-container').parentElement.innerHTML = '';
+  modal.querySelector('#star-container').outerHTML = '<div id="star-container"></div>';
+  modal.querySelector('textarea').parentElement.innerHTML = '';
+  modal.querySelector('textarea').outerHTML = '<div id="review-text"></div>';
+  const cancelBtn = modal.querySelector('button.flex-1.border');
+  cancelBtn.textContent = 'Keep Order';
+  const submitBtn = modal.querySelector('button.flex-1.bg-cc-blue');
+  submitBtn.textContent = 'Yes, Cancel';
+  submitBtn.className = 'flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition text-sm';
+  submitBtn.onclick = function(){ executeCancel(); closeRateModal(); };
+  modal.classList.remove('hidden');
+}
+
+function executeCancel(){
+  showToast('Order ' + ORDER.order_number + ' cancellation requested. Refund of ' + fp(ORDER.total_amount) + ' initiated.', 'warning');
+}
+
+function requestReturn(){
+  showToast('Return request submitted. Our team will contact you within 24 hours.', 'info');
+}
+
+// ==================== RATE MODAL ====================
+function openRateModal(){
+  selectedStars = 0;
+  const modal = document.getElementById('rate-modal');
+  modal.querySelector('h3').textContent = 'Rate Your Experience';
+  modal.querySelector('.w-16').className = 'w-16 h-16 mx-auto rounded-2xl bg-cc-yellow/10 flex items-center justify-center mb-4';
+  modal.querySelector('.w-16 span').textContent = 'star_rate';
+  modal.querySelector('.w-16 span').className = 'material-icons text-cc-yellow text-4xl';
+  modal.querySelector('p.text-sm').textContent = 'How was your experience with this order?';
+  modal.querySelector('.flex.justify-center.gap-2.mb-4').outerHTML = '<div class="flex justify-center gap-2 mb-4" id="star-container"></div>';
+  modal.querySelector('textarea').parentElement.innerHTML = '<div class="mb-4"><label class="block text-xs font-semibold text-slate-600 mb-1.5">Write a review (optional)</label><textarea id="review-text" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/10 transition resize-none" placeholder="Share your thoughts..."></textarea></div>';
+  const cancelBtn = modal.querySelector('button.flex-1.border');
+  cancelBtn.textContent = 'Skip';
+  const submitBtn = modal.querySelector('button.flex-1.bg-cc-blue');
+  submitBtn.textContent = 'Submit Rating';
+  submitBtn.className = 'flex-1 bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition text-sm';
+  submitBtn.onclick = submitRating;
+  // Stars
+  const sc = document.getElementById('star-container');
+  let starsHtml = '';
+  for(let i=1;i<=5;i++){
+    starsHtml += `<span class="star-input material-icons text-3xl text-slate-300" onclick="selectStar(${i})" data-s="${i}">star</span>`;
+  }
+  sc.innerHTML = starsHtml;
+  document.getElementById('star-label').textContent = 'Tap a star to rate';
+  document.getElementById('star-label').style.color = '#64748B';
+  modal.classList.remove('hidden');
+}
+
+function selectStar(n){
+  selectedStars = n;
+  document.querySelectorAll('.star-input').forEach(s => {
+    const v = parseInt(s.dataset.s);
+    s.textContent = v <= n ? 'star' : 'star_border';
+    s.style.color = v <= n ? '#FFB800' : '#CBD5E1';
+  });
+  const labels = ['','Terrible','Bad','Average','Good','Excellent'];
+  document.getElementById('star-label').textContent = labels[n] || '';
+  document.getElementById('star-label').style.color = '#FFB800';
+}
+
+function submitRating(){
+  if(selectedStars === 0){ showToast('Please select a star rating','warning'); return; }
+  closeRateModal();
+  showToast('Thank you for your ' + selectedStars + '-star rating!', 'success');
+}
+
+function closeRateModal(){ document.getElementById('rate-modal').classList.add('hidden'); }
+
+// ==================== INVOICE ====================
+function downloadInvoice(){
+  const o = ORDER;
+  const items = ORDER_ITEMS;
+  const totalQty = items.reduce((s,i)=>s+i.quantity,0);
+
+  const itemsRows = items.map((item,idx) => `
+    <tr class="border-b border-slate-100">
+      <td class="py-2 text-slate-400 text-xs">${idx+1}</td>
+      <td class="py-2 text-slate-700 font-medium text-xs max-w-[130px] truncate">${item.product_name}${item.variant_label?'<br><span class="text-slate-400">'+item.variant_label+'</span>':''}</td>
+      <td class="py-2 text-center text-slate-600 text-xs">${item.quantity}</td>
+      <td class="py-2 text-right text-slate-600 text-xs">${fp(item.sale_price)}</td>
+      <td class="py-2 text-right text-slate-400 text-xs">${fp(item.tax_amount)}</td>
+      <td class="py-2 text-right font-semibold text-slate-800 text-xs">${fp(item.line_total)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('invoice-body').innerHTML = `
+    <div class="text-center mb-4">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-cc-blue flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg></div>
+        <span class="font-heading font-bold text-base text-slate-800">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Tax Invoice</p>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-xs mb-4">
+      <div>
+        <p class="text-slate-400 font-medium">Invoice To</p>
+        <p class="font-semibold text-slate-800 mt-1">${o.shipping_name}</p>
+        <p class="text-slate-500 mt-0.5">${o.shipping_line1}</p>
+        ${o.shipping_line2?'<p class="text-slate-500">'+o.shipping_line2+'</p>':''}
+        <p class="text-slate-500">${o.shipping_city}, ${o.shipping_state} ${o.shipping_postal}</p>
+        <p class="text-slate-500">Phone: +91 ${o.shipping_phone}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-slate-400 font-medium">Invoice Details</p>
+        <p class="font-semibold text-slate-800 mt-1">#${o.order_number}</p>
+        <p class="text-slate-500 mt-0.5">Date: ${fd(o.placed_at)}</p>
+        <p class="text-slate-500">Payment: ${o.payment_status.toUpperCase()}</p>
+        <p class="text-slate-500">TXN: ${PAYMENT_TXN.gateway_txn_id}</p>
+      </div>
+    </div>
+    <table class="w-full text-xs">
+      <thead><tr class="border-b-2 border-slate-200">
+        <th class="text-left py-2 text-slate-500 font-semibold">#</th>
+        <th class="text-left py-2 text-slate-500 font-semibold">Item</th>
+        <th class="text-center py-2 text-slate-500 font-semibold">Qty</th>
+        <th class="text-right py-2 text-slate-500 font-semibold">Rate</th>
+        <th class="text-right py-2 text-slate-500 font-semibold">Tax</th>
+        <th class="text-right py-2 text-slate-500 font-semibold">Total</th>
+      </tr></thead>
+      <tbody>${itemsRows}</tbody>
+    </table>
+    <div class="border-t-2 border-slate-200 mt-3 pt-3 space-y-1.5 text-xs">
+      <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span class="text-slate-800">${fp(o.subtotal)}</span></div>
+      ${o.discount_amount>0?`<div class="flex justify-between"><span class="text-slate-500">Discount</span><span class="text-green-600">−${fp(o.discount_amount)}</span></div>`:''}
+      <div class="flex justify-between"><span class="text-slate-500">Delivery</span><span class="${o.shipping_charge===0?'text-green-600':'text-slate-800'}">${o.shipping_charge===0?'FREE':fp(o.shipping_charge)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Tax (GST)</span><span class="text-slate-800">${fp(o.tax_amount)}</span></div>
+      <div class="flex justify-between font-bold text-sm pt-2 border-t border-dashed border-slate-200"><span class="text-slate-900">Grand Total</span><span class="text-cc-orange text-base">${fp(o.total_amount)}</span></div>
+    </div>
+    <div class="bg-slate-50 rounded-lg p-3 mt-3 text-[10px] text-slate-500 leading-relaxed">
+      <p class="font-semibold text-slate-600 mb-1">GST Breakdown (Intra-State):</p>
+      <p>CGST @ ${fp(o.tax_amount/2)} | SGST @ ${fp(o.tax_amount/2)}</p>
+      <p class="mt-1">ClickCodex Retail Pvt. Ltd. | GSTIN: 23AABCC1234F1Z5 | PAN: AABCC1234F</p>
+      <p>Registered: 42, Industrial Area, Ratlam, MP 457001</p>
+    </div>
+  `;
+  document.getElementById('invoice-modal').classList.remove('hidden');
+}
+
+function closeInvoiceModal(){ document.getElementById('invoice-modal').classList.add('hidden'); }
+
+// ==================== MOBILE SIDEBAR ====================
+function toggleMobileSidebar(open){
+  const el = document.getElementById('mobile-sidebar');
+  if(open) el.classList.remove('translate-x-[-100%]','pointer-events-none');
+  else el.classList.add('translate-x-[-100%]','pointer-events-none');
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', renderPage);
+</script>
+</body>
+</html>

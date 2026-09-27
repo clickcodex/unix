@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Orders — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  .scrollbar-none::-webkit-scrollbar{display:none}
+  .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+  input:focus,select:focus,textarea:focus{outline:none}
+  ::selection{background:#FF5100;color:#fff}
+
+  .sidebar-link{transition:all .15s ease;border-radius:10px;padding:10px 14px;margin:2px 0;display:flex;align-items:center;gap:12px;font-size:14px;color:#475569}
+  .sidebar-link:hover{background:#E8F0FE;color:#2D82FF;padding-left:20px}
+  .sidebar-link.active{background:#E8F0FE;color:#2D82FF;font-weight:600}
+  .sidebar-link.active .material-icons{color:#2D82FF}
+
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .4s ease-out forwards}
+  @keyframes scaleIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+  .scale-in{animation:scaleIn .25s ease-out forwards}
+  @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+  .cart-badge{animation:pulseBadge 2s ease-in-out infinite}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+  .stat-card{border:1.5px solid #E2E8F0;border-radius:14px;background:#fff;transition:all .2s ease}
+  .stat-card:hover{border-color:#CBD5E1;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+
+  .tab-btn{padding:10px 20px;font-size:13px;font-weight:600;border-bottom:2.5px solid transparent;color:#64748B;transition:all .2s ease;white-space:nowrap;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none}
+  .tab-btn:hover{color:#2D82FF}
+  .tab-btn.active{color:#2D82FF;border-bottom-color:#2D82FF}
+  .tab-count{font-size:10px;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;font-weight:700;margin-left:5px}
+
+  .order-row{border:1.5px solid #E2E8F0;border-radius:14px;background:#fff;transition:all .2s ease;cursor:pointer}
+  .order-row:hover{border-color:#94A3B8;box-shadow:0 4px 12px rgba(15,23,42,.05)}
+  .order-row.cancelled-row{border-left:4px solid #EF4444}
+  .order-row.return-row{border-left:4px solid #F97316}
+
+  .sbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .sb-pending{background:#FEF3C7;color:#92400E}
+  .sb-confirmed{background:#DBEAFE;color:#1E40AF}
+  .sb-processing{background:#E0E7FF;color:#3730A3}
+  .sb-shipped{background:#EDE9FE;color:#5B21B6}
+  .sb-delivered{background:#D1FAE5;color:#065F46}
+  .sb-cancelled{background:#FEE2E2;color:#991B1B}
+  .sb-return_requested{background:#FFEDD5;color:#9A3412}
+  .sb-returned{background:#F1F5F9;color:#475569}
+  .sb-refunded{background:#CCFBF1;color:#115E59}
+
+  .thumb{width:52px;height:52px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{max-height:100%;max-width:100%;object-contain;padding:4px}
+
+  .act-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;transition:all .15s ease;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:1.5px solid #E2E8F0;color:#475569;background:#fff}
+  .act-btn:hover{border-color:#2D82FF;color:#2D82FF;background:#F0F6FF}
+  .act-btn.primary{border-color:#2D82FF;color:#fff;background:#2D82FF}
+  .act-btn.primary:hover{background:#1D6FE0}
+  .act-btn.danger{border-color:#FCA5A5;color:#DC2626}
+  .act-btn.danger:hover{background:#FEF2F2;border-color:#EF4444}
+  .act-btn.orange{border-color:#FDBA74;color:#C2410C}
+  .act-btn.orange:hover{background:#FFF7ED;border-color:#F97316}
+
+  .tldot{width:11px;height:11px;border-radius:50%;border:2.5px solid #E2E8F0;background:#fff;flex-shrink:0;transition:all .3s ease}
+  .tldot.done{border-color:#10B981;background:#10B981}
+  .tldot.now{border-color:#2D82FF;background:#2D82FF;box-shadow:0 0 0 4px rgba(45,130,255,.12)}
+  .tlline{width:2px;min-height:18px;background:#E2E8F0;margin-left:4px;flex:1}
+  .tlline.done{background:#10B981}
+
+  .modal-scroll::-webkit-scrollbar{width:4px}
+  .modal-scroll::-webkit-scrollbar-track{background:transparent}
+  .modal-scroll::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+
+  .star-input{cursor:pointer;transition:transform .1s ease;display:inline-block}
+  .star-input:hover{transform:scale(1.2)}
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<!-- TOP BAR -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Welcome back, Rahul — Manage your orders seamlessly</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow"><span class="material-icons text-3xl">menu</span></button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search for products, brands and more..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl">
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">account_circle</span><span class="mt-0.5">Rahul</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">favorite_border</span><span class="mt-0.5 hidden md:inline">Wishlist</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">shopping_cart</span><span class="mt-0.5 hidden md:inline">Cart</span><span class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">2</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Account</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">My Orders</span>
+  </nav>
+
+  <div class="flex gap-6">
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:block w-64 shrink-0">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[80px]">
+        <div class="bg-gradient-to-br from-cc-blue to-cc-purple p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">R</div>
+            <div class="min-w-0"><p class="font-heading font-bold text-sm truncate">Rahul Sharma</p><p class="text-white/70 text-xs truncate">rahul.sharma@email.com</p></div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-2 pb-1">Shopping</p>
+          <button class="sidebar-link w-full text-left active"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</button>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Account</p>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">notifications</span> Notifications</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">payment</span> Payment Methods</button>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">rate_review</span> My Reviews</button>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Support</p>
+          <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</button>
+          <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="flex-1 min-w-0">
+      <!-- Header -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 mb-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-cc-blue/10 flex items-center justify-center"><span class="material-icons text-cc-blue text-xl">shopping_bag</span></div>
+          <div><h1 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">My Orders</h1></div>
+        </div>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="stats-row"></div>
+      </div>
+
+      <!-- Search + Sort -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-4 flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+          <input type="text" id="order-search" oninput="renderOrders()" placeholder="Search by order number or product name..." class="pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm w-full focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/10 transition">
+        </div>
+        <select id="sort-select" onchange="renderOrders()" class="border border-slate-200 rounded-xl text-sm px-4 py-2.5 cursor-pointer focus:border-cc-blue appearance-none pr-9 shrink-0" style="background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%2364748B%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="highest">Highest Value</option>
+          <option value="lowest">Lowest Value</option>
+        </select>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-t-2xl shadow-sm border border-b-0 border-slate-100 overflow-x-auto scrollbar-none">
+        <div class="flex min-w-max px-2 pt-1" id="tabs-bar"></div>
+      </div>
+
+      <!-- Orders List -->
+      <div class="bg-white rounded-b-2xl shadow-sm border border-t-0 border-slate-100 p-4 sm:p-5 min-h-[200px]" id="orders-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden bg-white rounded-b-2xl shadow-sm border border-t-0 border-slate-100 p-10 sm:p-14 text-center">
+        <div class="w-20 h-20 mx-auto rounded-full bg-cc-ice flex items-center justify-center mb-5"><span class="material-icons text-4xl text-slate-300" id="empty-icon">inventory_2</span></div>
+        <h3 class="font-heading text-lg font-bold text-slate-800 mb-1" id="empty-title">No orders found</h3>
+        <p class="text-sm text-slate-500 max-w-md mx-auto mb-5" id="empty-desc"></p>
+        <a href="#" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-7 py-3 rounded-xl transition shadow-md inline-flex items-center gap-2 text-sm"><span class="material-icons text-[18px]">explore</span> Start Shopping</a>
+      </div>
+
+      <!-- Load More -->
+      <div id="load-more-wrap" class="text-center mt-5 hidden">
+        <button onclick="loadMore()" class="border-2 border-slate-200 hover:border-cc-blue text-slate-600 hover:text-cc-blue font-semibold px-8 py-3 rounded-xl transition text-sm inline-flex items-center gap-2"><span class="material-icons text-[18px]">expand_more</span> Load More Orders</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">grid_view</span><span class="text-[10px] font-semibold">Categories</span></button>
+  <button class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span><span class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">2</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span></button>
+  <button class="flex flex-col items-center justify-center text-cc-blue py-1"><span class="material-icons text-2xl">shopping_bag</span><span class="text-[10px] font-semibold">Orders</span></button>
+</div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="mobile-sidebar" class="fixed inset-0 z-[60] overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">R</div><span class="font-heading font-bold">Rahul Sharma</span></div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1">
+      <button class="sidebar-link w-full text-left active"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</button>
+      <button class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</button>
+      <button class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div id="order-modal" class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center overflow-hidden hidden">
+  <div onclick="closeOrderModal()" class="absolute inset-0 bg-black/50 cursor-pointer" style="backdrop-filter:blur(4px)"></div>
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-2xl w-full shadow-2xl relative z-10 max-h-[90vh] flex flex-col scale-in">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 id="modal-title" class="font-heading font-bold text-base text-slate-900"></h3>
+      <button onclick="closeOrderModal()" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="modal-body" class="flex-1 overflow-y-auto modal-scroll p-5 space-y-5"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" class="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeConfirmModal()" class="absolute inset-0 bg-black/50 cursor-pointer" style="backdrop-filter:blur(4px)"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6 scale-in">
+    <button onclick="closeConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    <div class="text-center">
+      <div id="cfm-icon-wrap" class="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4"><span id="cfm-icon" class="material-icons text-red-500 text-2xl">cancel</span></div>
+      <h3 id="cfm-title" class="font-heading font-bold text-lg text-slate-800 mb-2"></h3>
+      <p id="cfm-desc" class="text-sm text-slate-500 mb-5"></p>
+      <!-- Return reason (conditional) -->
+      <div id="cfm-reason-wrap" class="hidden mb-4 text-left">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Reason for Return</label>
+        <select id="cfm-reason" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-cc-blue">
+          <option value="">Select a reason</option>
+          <option>Product damaged / defective</option>
+          <option>Wrong product delivered</option>
+          <option>Size / fit issue</option>
+          <option>Color / appearance different</option>
+          <option>Not as described</option>
+          <option>Changed my mind</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition text-sm" id="cfm-cancel-btn">Go Back</button>
+        <button id="cfm-action-btn" onclick="" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// MOCK DATA — orders + order_items + order_status_history
+// ============================================================
+const ORDERS_DB = [
+  {
+    id:8, order_number:'ORD-20260119-0001', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:18492, discount_amount:7195, shipping_charge:0, tax_amount:2032, total_amount:13329,
+    coupon_code:'SAVE20', status:'confirmed', payment_status:'paid',
+    placed_at:'2026-01-19T15:42:00', confirmed_at:'2026-01-19T15:43:00', shipped_at:null, delivered_at:null, cancelled_at:null,
+    items:[
+      {product_name:'TrueSound Pro Wireless Earbuds with ANC',sku:'TS-PRO-ANC',variant:'Color: Black',img:'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=100&auto=format&fit=crop&q=80',sale_price:1499,mrp:2999,qty:1,tax_rate:18,total:1499},
+      {product_name:'FitTrack AMOLED Smart Watch',sku:'FT-AMOLED',variant:'Strap: Large',img:'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=100&auto=format&fit=crop&q=80',sale_price:2799,mrp:3999,qty:1,tax_rate:18,total:2799},
+      {product_name:'SwiftCharge 65W GaN Fast Charger',sku:'SC-65W-GAN',variant:null,img:'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=100&auto=format&fit=crop&q=80',sale_price:999,mrp:1999,qty:1,tax_rate:18,total:999}
+    ],
+    history:[
+      {status:'confirmed',note:'Order confirmed and being prepared for shipment.',at:'2026-01-19T15:43:00'},
+      {status:'pending',note:'Order placed successfully.',at:'2026-01-19T15:42:00'}
+    ]
+  },
+  {
+    id:7, order_number:'ORD-20260115-0008', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:4998, discount_amount:1200, shipping_charge:0, tax_amount:569, total_amount:4367,
+    coupon_code:null, status:'shipped', payment_status:'paid',
+    placed_at:'2026-01-15T10:20:00', confirmed_at:'2026-01-15T10:25:00', shipped_at:'2026-01-16T14:00:00', delivered_at:null, cancelled_at:null,
+    items:[
+      {product_name:'BoomBox Mini Portable Bluetooth Speaker',sku:'BB-MINI-GRN',variant:'Color: Forest Green',img:'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=100&auto=format&fit=crop&q=80',sale_price:799,mrp:1599,qty:2,tax_rate:18,total:1598},
+      {product_name:'AromaZen Essential Oil Diffuser 300ml',sku:'AZ-DIFF-300',variant:'Color: White',img:'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=100&auto=format&fit=crop&q=80',sale_price:449,mrp:999,qty:1,tax_rate:12,total:449}
+    ],
+    history:[
+      {status:'shipped',note:'Shipped via BlueDart. Tracking: BLDA1234567890',at:'2026-01-16T14:00:00'},
+      {status:'processing',note:'Being packed at warehouse.',at:'2026-01-15T18:00:00'},
+      {status:'confirmed',note:'Order confirmed.',at:'2026-01-15T10:25:00'},
+      {status:'pending',note:'Order placed.',at:'2026-01-15T10:20:00'}
+    ]
+  },
+  {
+    id:6, order_number:'ORD-20260110-0012', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:8990, discount_amount:3200, shipping_charge:49, tax_amount:1028, total_amount:6867,
+    coupon_code:'FLAT500', status:'delivered', payment_status:'paid',
+    placed_at:'2026-01-10T09:15:00', confirmed_at:'2026-01-10T09:20:00', shipped_at:'2026-01-11T11:00:00', delivered_at:'2026-01-14T16:30:00', cancelled_at:null,
+    items:[
+      {product_name:'Urban Trail Waterproof Laptop Backpack 15.6"',sku:'UT-BP-156',variant:null,img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100&auto=format&fit=crop&q=80',sale_price:899,mrp:1199,qty:1,tax_rate:12,total:899},
+      {product_name:'ErgoFlex Mesh Office Chair with Lumbar',sku:'EF-CHAIR-BLK',variant:'Color: Black',img:'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=100&auto=format&fit=crop&q=80',sale_price:7499,mrp:12999,qty:1,tax_rate:18,total:7499}
+    ],
+    history:[
+      {status:'delivered',note:'Delivered successfully. OTP verified by receiver.',at:'2026-01-14T16:30:00'},
+      {status:'shipped',note:'Shipped via Delhivery. Tracking: DELH9876543210',at:'2026-01-11T11:00:00'},
+      {status:'processing',note:'Packing in progress.',at:'2026-01-10T14:00:00'},
+      {status:'confirmed',note:'Confirmed.',at:'2026-01-10T09:20:00'},
+      {status:'pending',note:'Placed.',at:'2026-01-10T09:15:00'}
+    ]
+  },
+  {
+    id:5, order_number:'ORD-20260105-0015', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:1499, discount_amount:0, shipping_charge:49, tax_amount:75, total_amount:1623,
+    coupon_code:null, status:'cancelled', payment_status:'refunded',
+    placed_at:'2026-01-05T20:10:00', confirmed_at:null, shipped_at:null, delivered_at:null, cancelled_at:'2026-01-05T21:00:00',
+    items:[
+      {product_name:"Cotton Luxe Men's Slim Fit Casual Shirt",sku:'CL-SH-NVY-M',variant:'Size: M, Color: Navy',img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=100&auto=format&fit=crop&q=80',sale_price:1499,mrp:1499,qty:1,tax_rate:5,total:1499}
+    ],
+    history:[
+      {status:'cancelled',note:'Cancelled by customer. Refund of ₹1,623 initiated to original payment method.',at:'2026-01-05T21:00:00'},
+      {status:'pending',note:'Order placed.',at:'2026-01-05T20:10:00'}
+    ]
+  },
+  {
+    id:4, order_number:'ORD-20251228-0022', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:5998, discount_amount:2000, shipping_charge:0, tax_amount:540, total_amount:4538,
+    coupon_code:'SAVE20', status:'delivered', payment_status:'paid',
+    placed_at:'2025-12-28T12:00:00', confirmed_at:'2025-12-28T12:05:00', shipped_at:'2025-12-29T10:00:00', delivered_at:'2026-01-02T11:00:00', cancelled_at:null,
+    items:[
+      {product_name:'ProCam 4K Action Camera Waterproof',sku:'PC-4K-ACT',variant:null,img:'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=100&auto=format&fit=crop&q=80',sale_price:4999,mrp:8999,qty:1,tax_rate:18,total:4999}
+    ],
+    history:[
+      {status:'delivered',note:'Delivered.',at:'2026-01-02T11:00:00'},
+      {status:'shipped',note:'Shipped.',at:'2025-12-29T10:00:00'},
+      {status:'confirmed',note:'Confirmed.',at:'2025-12-28T12:05:00'},
+      {status:'pending',note:'Placed.',at:'2025-12-28T12:00:00'}
+    ]
+  },
+  {
+    id:3, order_number:'ORD-20251220-0028', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:3797, discount_amount:800, shipping_charge:0, tax_amount:359, total_amount:3356,
+    coupon_code:null, status:'return_requested', payment_status:'paid',
+    placed_at:'2025-12-20T17:30:00', confirmed_at:'2025-12-20T17:35:00', shipped_at:'2025-12-21T09:00:00', delivered_at:'2025-12-24T14:00:00', cancelled_at:null,
+    items:[
+      {product_name:"SilkDream Women's Printed Kurta Set",sku:'SD-KRT-GRN-M',variant:'Size: M, Color: Green',img:'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=100&auto=format&fit=crop&q=80',sale_price:1199,mrp:2499,qty:2,tax_rate:5,total:2398},
+      {product_name:'NovaGlow LED Ring Light 10"',sku:'NG-RL-10',variant:null,img:'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=100&auto=format&fit=crop&q=80',sale_price:649,mrp:1299,qty:1,tax_rate:18,total:649}
+    ],
+    history:[
+      {status:'return_requested',note:'Return requested for SilkDream Kurta Set. Reason: Size issue. Pickup scheduled.',at:'2025-12-26T10:00:00'},
+      {status:'delivered',note:'Delivered.',at:'2025-12-24T14:00:00'},
+      {status:'shipped',note:'Shipped.',at:'2025-12-21T09:00:00'},
+      {status:'confirmed',note:'Confirmed.',at:'2025-12-20T17:35:00'},
+      {status:'pending',note:'Placed.',at:'2025-12-20T17:30:00'}
+    ]
+  },
+  {
+    id:2, order_number:'ORD-20251210-0035', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:3199, discount_amount:0, shipping_charge:0, tax_amount:384, total_amount:3583,
+    coupon_code:null, status:'delivered', payment_status:'paid',
+    placed_at:'2025-12-10T08:00:00', confirmed_at:'2025-12-10T08:05:00', shipped_at:'2025-12-11T07:00:00', delivered_at:'2025-12-13T12:00:00', cancelled_at:null,
+    items:[
+      {product_name:'HomeChef Digital Air Fryer 4.5L',sku:'HC-AF-45L',variant:null,img:'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=100&auto=format&fit=crop&q=80',sale_price:3199,mrp:3999,qty:1,tax_rate:12,total:3199}
+    ],
+    history:[
+      {status:'delivered',note:'Delivered.',at:'2025-12-13T12:00:00'},
+      {status:'shipped',note:'Shipped.',at:'2025-12-11T07:00:00'},
+      {status:'confirmed',note:'Confirmed.',at:'2025-12-10T08:05:00'},
+      {status:'pending',note:'Placed.',at:'2025-12-10T08:00:00'}
+    ]
+  },
+  {
+    id:1, order_number:'ORD-20251201-0041', user_id:1,
+    shipping_name:'Rahul Sharma', shipping_city:'Ratlam', shipping_state:'Madhya Pradesh', shipping_postal:'457001',
+    subtotal:5398, discount_amount:1600, shipping_charge:0, tax_amount:609, total_amount:4407,
+    coupon_code:'WELCOME100', status:'delivered', payment_status:'paid',
+    placed_at:'2025-12-01T11:30:00', confirmed_at:'2025-12-01T11:35:00', shipped_at:'2025-12-02T08:00:00', delivered_at:'2025-12-05T15:00:00', cancelled_at:null,
+    items:[
+      {product_name:'Cotton Luxe Men\'s Slim Fit Casual Shirt',sku:'CL-SH-WHT-L',variant:'Size: L, Color: White',img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=100&auto=format&fit=crop&q=80',sale_price:599,mrp:1499,qty:3,tax_rate:5,total:1797},
+      {product_name:'NovaGlow LED Ring Light 10"',sku:'NG-RL-10',variant:null,img:'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=100&auto=format&fit=crop&q=80',sale_price:649,mrp:1299,qty:1,tax_rate:18,total:649},
+      {product_name:'BoomBox Mini Portable Bluetooth Speaker',sku:'BB-MINI-BLK',variant:'Color: Black',img:'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=100&auto=format&fit=crop&q=80',sale_price:799,mrp:1599,qty:1,tax_rate:18,total:799},
+      {product_name:'SwiftCharge 65W GaN Fast Charger',sku:'SC-65W-GAN',variant:null,img:'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=100&auto=format&fit=crop&q=80',sale_price:999,mrp:1999,qty:1,tax_rate:18,total:999}
+    ],
+    history:[
+      {status:'delivered',note:'Delivered.',at:'2025-12-05T15:00:00'},
+      {status:'shipped',note:'Shipped.',at:'2025-12-02T08:00:00'},
+      {status:'confirmed',note:'Confirmed.',at:'2025-12-01T11:35:00'},
+      {status:'pending',note:'Placed.',at:'2025-12-01T11:30:00'}
+    ]
+  }
+];
+
+// ==================== STATE ====================
+let activeTab = 'all';
+let visibleCount = 20;
+
+// ==================== TABS CONFIG ====================
+const TABS = [
+  {key:'all',label:'All Orders',icon:'inbox'},
+  {key:'pending',label:'Pending',icon:'schedule'},
+  {key:'confirmed',label:'Confirmed',icon:'check_circle'},
+  {key:'shipped',label:'Shipped',icon:'local_shipping'},
+  {key:'delivered',label:'Delivered',icon:'done_all'},
+  {key:'cancelled',label:'Cancelled',icon:'cancel'}
+];
+
+// ==================== HELPERS ====================
+function fp(n){return '₹'+Math.round(n).toLocaleString('en-IN')}
+function fd(iso){return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
+function ft(iso){return new Date(iso).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}
+function fdt(iso){return fd(iso)+', '+ft(iso)}
+function sLabel(s){return{pending:'Pending',confirmed:'Confirmed',processing:'Processing',shipped:'Shipped',delivered:'Delivered',cancelled:'Cancelled',return_requested:'Return Req.',returned:'Returned',refunded:'Refunded'}[s]||s}
+function sIcon(s){return{pending:'schedule',confirmed:'check_circle',processing:'sync',shipped:'local_shipping',delivered:'done_all',cancelled:'cancel',return_requested:'replay',returned:'assignment_return',refunded:'currency_rupee'}[s]||'help'}
+function sClass(s){return'sb-'+s}
+
+function getEst(o){
+  if(o.delivered_at)return 'Delivered on '+fd(o.delivered_at);
+  if(o.shipped_at){const d=new Date(o.shipped_at);d.setDate(d.getDate()+3);return 'Expected by '+d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}
+  if(o.confirmed_at){const d=new Date(o.confirmed_at);d.setDate(d.getDate()+5);return 'Expected by '+d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}
+  return 'Estimating...';
+}
+
+// ==================== TOAST ====================
+function showToast(msg,type='success'){
+  const c=document.getElementById('toast-container');
+  const cl={success:'bg-green-600',error:'bg-red-500',info:'bg-cc-blue',warning:'bg-amber-500'};
+  const ic={success:'check_circle',error:'error',info:'info',warning:'warning'};
+  const t=document.createElement('div');
+  t.className=`toast-in pointer-events-auto flex items-center gap-3 ${cl[type]||cl.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML=`<span class="material-icons text-lg">${ic[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.classList.replace('toast-in','toast-out');setTimeout(()=>t.remove(),300)},3000);
+}
+
+// ==================== RENDER STATS ====================
+function renderStats(){
+  const total=ORDERS_DB.length;
+  const spent=ORDERS_DB.filter(o=>o.payment_status==='paid').reduce((s,o)=>s+o.total_amount,0);
+  const pending=ORDERS_DB.filter(o=>o.status==='pending'||o.status==='confirmed'||o.status==='processing').length;
+  const delivered=ORDERS_DB.filter(o=>o.status==='delivered').length;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card p-3.5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-lg">receipt_long</span></div>
+      <div><p class="text-lg font-heading font-bold text-slate-900">${total}</p><p class="text-[11px] text-slate-500">Total Orders</p></div>
+    </div>
+    <div class="stat-card p-3.5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-cc-orange/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-orange text-lg">account_balance_wallet</span></div>
+      <div><p class="text-lg font-heading font-bold text-slate-900">${fp(spent)}</p><p class="text-[11px] text-slate-500">Total Spent</p></div>
+    </div>
+    <div class="stat-card p-3.5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0"><span class="material-icons text-amber-600 text-lg">pending_actions</span></div>
+      <div><p class="text-lg font-heading font-bold text-slate-900">${pending}</p><p class="text-[11px] text-slate-500">In Progress</p></div>
+    </div>
+    <div class="stat-card p-3.5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-lg">done_all</span></div>
+      <div><p class="text-lg font-heading font-bold text-slate-900">${delivered}</p><p class="text-[11px] text-slate-500">Delivered</p></div>
+    </div>
+  `;
+}
+
+// ==================== RENDER TABS ====================
+function renderTabs(){
+  const bar=document.getElementById('tabs-bar');
+  bar.innerHTML=TABS.map(t=>{
+    const count=t.key==='all'?ORDERS_DB.length:ORDERS_DB.filter(o=>o.status===t.key).length;
+    const isActive=activeTab===t.key;
+    return `<button class="tab-btn ${isActive?'active':''}" onclick="setTab('${t.key}')">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[16px]">${t.icon}</span>${t.label}</span>
+      <span class="tab-count ${isActive?'bg-cc-blue text-white':'bg-slate-100 text-slate-500'}">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function setTab(key){
+  activeTab=key;
+  visibleCount=20;
+  renderTabs();
+  renderOrders();
+}
+
+// ==================== FILTERED LIST ====================
+function getFiltered(){
+  let list=[...ORDERS_DB];
+  const q=document.getElementById('order-search').value.trim().toUpperCase();
+  if(q) list=list.filter(o=>o.order_number.includes(q)||o.items.some(i=>i.product_name.toUpperCase().includes(q)));
+  if(activeTab!=='all') list=list.filter(o=>o.status===activeTab);
+  const sort=document.getElementById('sort-select').value;
+  switch(sort){
+    case'oldest':list.sort((a,b)=>new Date(a.placed_at)-new Date(b.placed_at));break;
+    case'highest':list.sort((a,b)=>b.total_amount-a.total_amount);break;
+    case'lowest':list.sort((a,b)=>a.total_amount-b.total_amount);break;
+    default:list.sort((a,b)=>new Date(b.placed_at)-new Date(a.placed_at));
+  }
+  return list;
+}
+
+// ==================== RENDER ORDERS ====================
+function renderOrders(){
+  const list=getFiltered();
+  const container=document.getElementById('orders-container');
+  const emptyState=document.getElementById('empty-state');
+  const loadWrap=document.getElementById('load-more-wrap');
+  const visible=list.slice(0,visibleCount);
+
+  if(visible.length===0){
+    container.innerHTML='';
+    container.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    loadWrap.classList.add('hidden');
+    const icons={all:'inventory_2',pending:'schedule',confirmed:'check_circle',shipped:'local_shipping',delivered:'done_all',cancelled:'cancel',return_requested:'replay'};
+    const titles={all:'No orders yet',pending:'No pending orders',confirmed:'No confirmed orders',shipped:'No shipped orders',delivered:'No delivered orders',cancelled:'No cancelled orders',return_requested:'No return requests'};
+    const descs={all:'You haven\'t placed any orders yet. Start exploring our wide range of products!',pending:'All your orders have been processed. Check back later!',confirmed:'No orders awaiting confirmation right now.',shipped:'No orders are currently in transit.',delivered:'You haven\'t received any orders yet.',cancelled:'You haven\'t cancelled any orders. That\'s great!',return_requested:'No return requests at the moment.'};
+    document.getElementById('empty-icon').textContent=icons[activeTab]||'inventory_2';
+    document.getElementById('empty-title').textContent=titles[activeTab]||titles.all;
+    document.getElementById('empty-desc').textContent=descs[activeTab]||descs.all;
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  container.classList.remove('hidden');
+  loadWrap.classList.toggle('hidden',list.length<=visibleCount);
+
+  container.innerHTML=visible.map((o,idx)=>{
+    const totalQty=o.items.reduce((s,i)=>s+i.qty,0);
+    const isCancelled=o.status==='cancelled';
+    const isReturn=o.status==='return_requested';
+    const rowClass=isCancelled?'order-row cancelled-row':isReturn?'order-row return-row':'order-row';
+
+    const thumbs=o.items.slice(0,4).map(i=>`<div class="thumb"><img src="${i.img}" alt="" loading="lazy"></div>`).join('');
+    const more=o.items.length-4;
+
+    return `
+    <div class="${rowClass} p-4 sm:p-5 mb-3 fade-up" style="animation-delay:${Math.min(idx*.04,.25)}s;opacity:0" onclick="openOrderModal(${o.id})">
+      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-heading font-bold text-sm text-cc-blue">${o.order_number}</span>
+          <span class="sbadge ${sClass(o.status)}">
+            <span class="material-icons" style="font-size:11px">${o.status==='processing'?'sync':sIcon(o.status)}</span>
+            ${sLabel(o.status)}
+          </span>
+          ${o.payment_status==='refunded'?'<span class="sbadge sb-refunded"><span class="material-icons" style="font-size:11px">currency_rupee</span>Refunded</span>':''}
+        </div>
+        <div class="text-right sm:text-right">
+          <p class="font-heading font-bold text-base text-slate-900">${fp(o.total_amount)}</p>
+          ${o.discount_amount>0?`<p class="text-[11px] text-green-600 font-medium">You saved ${fp(o.discount_amount)}</p>`:''}
+        </div>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <div class="flex gap-2">${thumbs}</div>
+        ${more>0?`<div class="w-[52px] h-[52px] rounded-[10px] bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">+${more}</div>`:''}
+        <div class="flex-1"></div>
+        <span class="text-xs text-slate-500 shrink-0 hidden sm:block">${getEst(o)}</span>
+        <span class="material-icons text-slate-300 text-xl shrink-0">chevron_right</span>
+      </div>
+      <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-slate-100">
+        <p class="text-[11px] text-slate-400">Placed on ${fdt(o.placed_at)} · ${totalQty} item${totalQty>1?'s':''} · ${o.shipping_city}</p>
+        <div class="flex gap-1.5" onclick="event.stopPropagation()">
+          ${['confirmed','processing','shipped'].includes(o.status)?`<button onclick="event.stopPropagation();showToast('Tracking: BLDA1234567890','info')" class="act-btn primary text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">local_shipping</span> Track</button>`:''}
+          ${o.status==='delivered'?`<button onclick="event.stopPropagation();openRateModal(${o.id})" class="act-btn orange text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">star_rate</span> Rate</button>`:''}
+          ${['pending','confirmed'].includes(o.status)?`<button onclick="event.stopPropagation();confirmCancel(${o.id})" class="act-btn danger text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">cancel</span> Cancel</button>`:''}
+          ${o.status==='delivered'?`<button onclick="event.stopPropagation();doReorder(${o.id})" class="act-btn text-[11px] py-1.5 px-3"><span class="material-icons" style="font-size:13px">refresh</span> Reorder</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== ORDER DETAIL MODAL ====================
+function openOrderModal(id){
+  const o=ORDERS_DB.find(x=>x.id===id);
+  if(!o)return;
+  document.getElementById('modal-title').textContent=o.order_number;
+
+  const statusOrder=['pending','confirmed','processing','shipped','delivered'];
+  const cIdx=o.status==='cancelled'?-1:o.status==='return_requested'?statusOrder.indexOf('delivered'):statusOrder.indexOf(o.status);
+  const hMap={};o.history.forEach(h=>{hMap[h.status]=h});
+
+  const timeline=statusOrder.map((s,idx)=>{
+    const done=idx<=cIdx&&cIdx>=0;
+    const now=idx===cIdx&&cIdx>=0;
+    const h=hMap[s];
+    return `<div class="flex gap-3">
+      <div class="flex flex-col items-center"><div class="tldot ${done?'done':''} ${now?'now':''}"></div>${idx<4?`<div class="tlline ${done?'done':''}"></div>`:''}</div>
+      <div class="pb-4 flex-1"><p class="text-xs font-semibold ${done?'text-slate-800':'text-slate-400'}">${sLabel(s)}</p>${h?`<p class="text-[11px] text-slate-500 mt-0.5">${h.note}</p><p class="text-[10px] text-slate-400 mt-0.5">${fdt(h.at)}</p>`:'<p class="text-[11px] text-slate-400 mt-0.5">Pending</p>'}</div>
+    </div>`;
+  }).join('');
+
+  if(o.status==='cancelled'){
+    var timelineExtra=`<div class="flex gap-3"><div class="flex flex-col items-center"><div class="tldot" style="border-color:#EF4444;background:#EF4444"></div></div><div class="pb-2"><p class="text-xs font-semibold text-red-600">Cancelled</p><p class="text-[11px] text-slate-500 mt-0.5">${hMap['cancelled']?.note||''}</p><p class="text-[10px] text-slate-400 mt-0.5">${hMap['cancelled']?fdt(hMap['cancelled'].at):''}</p></div></div>`;
+  } else if(o.status==='return_requested'){
+    timelineExtra=`<div class="flex gap-3"><div class="flex flex-col items-center"><div class="tldot" style="border-color:#F97316;background:#F97316;box-shadow:0 0 0 4px rgba(249,115,22,.12)"></div></div><div class="pb-2"><p class="text-xs font-semibold text-orange-700">Return Requested</p><p class="text-[11px] text-slate-500 mt-0.5">${hMap['return_requested']?.note||''}</p><p class="text-[10px] text-slate-400 mt-0.5">${hMap['return_requested']?fdt(hMap['return_requested'].at):''}</p></div></div>`;
+  } else { var timelineExtra=''; }
+
+  const itemsHtml=o.items.map(i=>{
+    const disc=i.mrp>i.sale_price?Math.round(((i.mrp-i.sale_price)/i.mrp)*100):0;
+    return `<div class="flex gap-3 py-3 border-b border-slate-100 last:border-0">
+      <div class="w-16 h-16 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden"><img src="${i.img}" class="max-h-full max-w-full object-contain p-1.5" alt="" loading="lazy"></div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-slate-800 line-clamp-2">${i.product_name}</p>
+        ${i.variant?`<p class="text-[11px] text-slate-500 mt-0.5"><span class="material-icons text-[11px] align-middle">sell</span> ${i.variant}</p>`:''}
+        <p class="text-[10px] text-slate-400">SKU: ${i.sku} · Qty: ${i.qty}</p>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="font-bold text-sm text-cc-orange">${fp(i.total)}</p>
+        ${disc>0?`<p class="text-[10px] text-slate-400"><span class="line-through">${fp(i.mrp)}</span> <span class="text-green-600 font-medium">${disc}% off</span></p>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  let actionsHtml='';
+  if(['confirmed','processing','shipped'].includes(o.status)) actionsHtml+=`<button onclick="showToast('Opening tracking...','info')" class="act-btn primary"><span class="material-icons" style="font-size:14px">local_shipping</span> Track Order</button>`;
+  if(['pending','confirmed'].includes(o.status)) actionsHtml+=`<button onclick="confirmCancel(${o.id});closeOrderModal()" class="act-btn danger"><span class="material-icons" style="font-size:14px">cancel</span> Cancel Order</button>`;
+  if(o.status==='delivered') actionsHtml+=`<button onclick="doReorder(${o.id});closeOrderModal()" class="act-btn"><span class="material-icons" style="font-size:14px">refresh</span> Reorder</button><button onclick="openRateModal(${o.id});closeOrderModal()" class="act-btn orange"><span class="material-icons" style="font-size:14px">star_rate</span> Rate & Review</button>`;
+  if(o.status==='return_requested') actionsHtml+=`<button class="act-btn orange" disabled style="opacity:.6;cursor:not-allowed"><span class="material-icons" style="font-size:14px">replay</span> Return In Progress</button>`;
+  actionsHtml+=`<button onclick="showToast('Invoice downloaded','success')" class="act-btn"><span class="material-icons" style="font-size:14px">download</span> Invoice</button>`;
+
+  document.getElementById('modal-body').innerHTML=`
+    <div class="flex items-center gap-3 bg-cc-blue/5 rounded-xl p-3">
+      <span class="material-icons text-cc-blue text-xl">schedule</span>
+      <div><p class="text-sm font-semibold text-slate-800">${getEst(o)}</p><p class="text-[10px] text-slate-400">Shipping to ${o.shipping_city}, ${o.shipping_state} ${o.shipping_postal}</p></div>
+    </div>
+    <div>
+      <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Items (${o.items.reduce((s,i)=>s+i.qty,0)})</h4>
+      ${itemsHtml}
+    </div>
+    <div class="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span>${fp(o.subtotal)}</span></div>
+      ${o.discount_amount>0?`<div class="flex justify-between"><span class="text-slate-500">Discount</span><span class="text-green-600">−${fp(o.discount_amount)}</span></div>`:''}
+      ${o.coupon_code?`<div class="flex justify-between"><span class="text-slate-500 flex items-center gap-1"><span class="material-icons" style="font-size:12px;color:#8C30F5">local_offer</span>${o.coupon_code}</span><span class="text-green-600">applied</span></div>`:''}
+      <div class="flex justify-between"><span class="text-slate-500">Delivery</span><span class="${o.shipping_charge===0?'text-green-600':'text-slate-800'}">${o.shipping_charge===0?'FREE':fp(o.shipping_charge)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Tax (GST)</span><span>${fp(o.tax_amount)}</span></div>
+      <div class="flex justify-between font-bold pt-2 border-t border-dashed border-slate-200"><span>Total</span><span class="text-cc-orange text-base">${fp(o.total_amount)}</span></div>
+      <div class="flex justify-between text-xs pt-1"><span class="text-slate-400">Payment</span><span class="font-medium ${o.payment_status==='paid'?'text-green-600':o.payment_status==='refunded'?'text-teal-600':'text-amber-600'}">${o.payment_status.charAt(0).toUpperCase()+o.payment_status.slice(1)}</span></div>
+    </div>
+    <div>
+      <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Order Timeline</h4>
+      ${timeline}${timelineExtra}
+    </div>
+    <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100">${actionsHtml}</div>
+  `;
+
+  document.getElementById('order-modal').classList.remove('hidden');
+}
+
+function closeOrderModal(){document.getElementById('order-modal').classList.add('hidden')}
+
+// ==================== CANCEL ORDER ====================
+let pendingCancelId=null;
+function confirmCancel(id){
+  pendingCancelId=id;
+  const o=ORDERS_DB.find(x=>x.id===id);
+  document.getElementById('cfm-title').textContent='Cancel Order?';
+  document.getElementById('cfm-desc').textContent=`Order ${o.order_number} for ${fp(o.total_amount)} will be cancelled. A full refund will be initiated to your original payment method within 5-7 business days.`;
+  document.getElementById('cfm-action-btn').textContent='Yes, Cancel Order';
+  document.getElementById('cfm-action-btn').className='flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('cfm-action-btn').onclick=executeCancel;
+  document.getElementById('cfm-icon').textContent='cancel';
+  document.getElementById('cfm-icon-wrap').className='w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4';
+  document.getElementById('cfm-reason-wrap').classList.add('hidden');
+  document.getElementById('cfm-cancel-btn').textContent='Go Back';
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function executeCancel(){
+  const o=ORDERS_DB.find(x=>x.id===pendingCancelId);
+  if(!o)return;
+  o.status='cancelled';o.cancelled_at=new Date().toISOString();o.payment_status='refunded';
+  o.history.unshift({status:'cancelled',note:'Cancelled by customer. Refund of '+fp(o.total_amount)+' initiated.',at:new Date().toISOString()});
+  closeConfirmModal();
+  renderStats();renderTabs();renderOrders();
+  showToast('Order '+o.order_number+' cancelled. Refund initiated.','warning');
+}
+
+// ==================== RETURN REQUEST ====================
+let pendingReturnId=null;
+function openRateModal(id){
+  // Reuse confirm modal for rating
+  const o=ORDERS_DB.find(x=>x.id===id);
+  if(!o)return;
+  document.getElementById('cfm-title').textContent='Rate Your Order';
+  document.getElementById('cfm-desc').innerHTML=`How was your experience with order <strong>${o.order_number}</strong>?`;
+  document.getElementById('cfm-icon').textContent='star_rate';
+  document.getElementById('cfm-icon-wrap').className='w-14 h-14 mx-auto rounded-full bg-cc-yellow/10 flex items-center justify-center mb-4';
+  document.getElementById('cfm-reason-wrap').classList.add('hidden');
+  document.getElementById('cfm-cancel-btn').textContent='Skip';
+  document.getElementById('cfm-action-btn').textContent='Submit Rating';
+  document.getElementById('cfm-action-btn').className='flex-1 bg-cc-blue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('cfm-action-btn').onclick=function(){closeConfirmModal();showToast('Thank you for your feedback!','success')};
+  // Insert stars into desc
+  const descEl=document.getElementById('cfm-desc');
+  let starsHtml='<div class="flex justify-center gap-1 my-3">';
+  for(let i=1;i<=5;i++){
+    starsHtml+=`<span class="star-input material-icons text-3xl text-slate-300 hover:text-cc-yellow" onclick="selectStar(this,${i})" data-star="${i}">star</span>`;
+  }
+  starsHtml+='</div><p id="star-label" class="text-xs text-slate-400 text-center">Tap to rate</p>';
+  descEl.innerHTML=descEl.innerHTML.split('</strong>?')[0]+'</strong>?'+starsHtml;
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function selectStar(el,n){
+  document.querySelectorAll('.star-input').forEach(s=>{
+    const v=parseInt(s.dataset.star);
+    s.textContent=v<=n?'star':'star_border';
+    s.style.color=v<=n?'#FFB800':'#CBD5E1';
+  });
+  const labels=['','Terrible','Bad','Average','Good','Excellent'];
+  document.getElementById('star-label').textContent=labels[n]||'';
+  document.getElementById('star-label').style.color='#FFB800';
+}
+
+function requestReturn(id){
+  pendingReturnId=id;
+  const o=ORDERS_DB.find(x=>x.id===id);
+  document.getElementById('cfm-title').textContent='Request Return';
+  document.getElementById('cfm-desc').textContent=`Select a reason for returning items from order ${o.order_number}. A pickup will be scheduled within 48 hours.`;
+  document.getElementById('cfm-icon').textContent='replay';
+  document.getElementById('cfm-icon-wrap').className='w-14 h-14 mx-auto rounded-full bg-orange-50 flex items-center justify-center mb-4';
+  document.getElementById('cfm-reason-wrap').classList.remove('hidden');
+  document.getElementById('cfm-reason').value='';
+  document.getElementById('cfm-cancel-btn').textContent='Go Back';
+  document.getElementById('cfm-action-btn').textContent='Submit Return';
+  document.getElementById('cfm-action-btn').className='flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl transition text-sm';
+  document.getElementById('cfm-action-btn').onclick=executeReturn;
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function executeReturn(){
+  const reason=document.getElementById('cfm-reason').value;
+  if(!reason){showToast('Please select a return reason','warning');return}
+  const o=ORDERS_DB.find(x=>x.id===pendingReturnId);
+  if(!o)return;
+  o.status='return_requested';
+  o.history.unshift({status:'return_requested',note:'Return requested. Reason: '+reason+'. Pickup will be scheduled.',at:new Date().toISOString()});
+  closeConfirmModal();
+  renderStats();renderTabs();renderOrders();
+  showToast('Return request submitted for '+o.order_number+'. Pickup will be scheduled within 48 hours.','info');
+}
+
+function closeConfirmModal(){document.getElementById('confirm-modal').classList.add('hidden')}
+
+// ==================== REORDER ====================
+function doReorder(id){
+  const o=ORDERS_DB.find(x=>x.id===id);
+  if(!o)return;
+  const n=o.items.length;
+  showToast(n+' item'+(n>1?'s':'')+' from '+o.order_number+' added to cart','success');
+}
+
+// ==================== LOAD MORE ====================
+function loadMore(){visibleCount+=10;renderOrders()}
+
+// ==================== MOBILE SIDEBAR ====================
+function toggleMobileSidebar(open){
+  const el=document.getElementById('mobile-sidebar');
+  if(open)el.classList.remove('translate-x-[-100%]','pointer-events-none');
+  else el.classList.add('translate-x-[-100%]','pointer-events-none');
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded',()=>{renderStats();renderTabs();renderOrders()});
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Composer dependencies
+/vendor/
+
+# Environment configurations (Keep secrets private)
+.env
+.env.backup
+.env.local
+
+# Cache and logs
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# System and OS files
+.DS_Store
+Thumbs.db
+*.tmp

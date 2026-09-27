@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tags Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+  .tag-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:10px;font-size:.8rem;font-weight:600;transition:all .15s;cursor:default;border:1.5px solid transparent}
+  .tag-chip:hover{filter:brightness(0.95)}
+  .tag-chip .remove-tag{cursor:pointer;opacity:.6;transition:opacity .15s;font-size:16px;line-height:1}
+  .tag-chip .remove-tag:hover{opacity:1}
+  .color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.4);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .color-option{width:32px;height:32px;border-radius:10px;cursor:pointer;transition:all .15s;border:3px solid transparent}
+  .color-option:hover{transform:scale(1.1)}
+  .color-option.selected{border-color:#0F172A;box-shadow:0 0 0 2px #fff,0 0 0 4px #0F172A}
+  .assignment-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;transition:background .15s}
+  .assignment-row:hover{background:#F8FAFC}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .fade-slide-in{animation:fadeSlideIn .2s ease}
+  .spark-bar{display:flex;align-items:flex-end;gap:2px;height:32px}
+  .spark-bar span{width:4px;border-radius:2px}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">tune</span><span class="nav-label">Attributes & Units</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">sell</span><span class="nav-label">Tags Manager</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_offer</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Tags Manager</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search tags, products..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="handleSearch()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Tags Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Manage product badges &mdash; <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">tags</span> and <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">product_tags</span> assignments</p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button class="btn-secondary text-sm" onclick="openBulkAssignModal()">
+          <span class="material-icons text-[18px]">label</span> Bulk Assign
+        </button>
+        <button class="btn-primary text-sm" onclick="openTagModal()">
+          <span class="material-icons text-[18px]">add_circle</span> Create Tag
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tags</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiTotal">8</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(tags)</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center">
+            <span class="material-icons text-cc-blue text-[22px]">sell</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-0.5 text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded-full"><span class="material-icons text-[14px]">trending_up</span> 2 new</span>
+          <div class="spark-bar">
+            <span style="height:40%;background:#2D82FF;opacity:.4"></span>
+            <span style="height:50%;background:#2D82FF;opacity:.5"></span>
+            <span style="height:55%;background:#2D82FF;opacity:.5"></span>
+            <span style="height:60%;background:#2D82FF;opacity:.6"></span>
+            <span style="height:70%;background:#2D82FF;opacity:.6"></span>
+            <span style="height:65%;background:#2D82FF;opacity:.6"></span>
+            <span style="height:75%;background:#2D82FF;opacity:.7"></span>
+            <span style="height:80%;background:#2D82FF;opacity:.7"></span>
+            <span style="height:85%;background:#2D82FF;opacity:.8"></span>
+            <span style="height:100%;background:#2D82FF"></span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Tags</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiActive">6</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">tags.is_active = 1</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
+            <span class="material-icons text-green-600 text-[22px]">check_circle</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#22C55E;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tagged Products</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiTagged">1,847</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(DISTINCT product_id) FROM product_tags</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-purple/10 flex items-center justify-center">
+            <span class="material-icons text-cc-purple text-[22px]">label_connected</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#8C30F5;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Assignments</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiAssignments">3,421</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(product_tags)</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-orange/10 flex items-center justify-center">
+            <span class="material-icons text-cc-orange text-[22px]">link</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF5100;border-radius:0 0 16px 16px"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAG TYPE PREVIEW STRIP ===== -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-icons text-cc-yellow text-[22px]">palette</span>
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900">Tag Preview by Type</h2>
+          <p class="text-xs text-slate-400 mono">tags.tag_type ENUM values rendered as badges</p>
+        </div>
+      </div>
+      <div id="tagPreviewStrip" class="flex flex-wrap gap-3">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1.5 w-fit">
+      <button class="tab-btn active" id="tabTags" onclick="switchTab('tags')">
+        <span class="material-icons text-[16px] align-middle mr-1">sell</span>All Tags
+      </button>
+      <button class="tab-btn" id="tabAssign" onclick="switchTab('assign')">
+        <span class="material-icons text-[16px] align-middle mr-1">label</span>Assign to Product
+      </button>
+      <button class="tab-btn" id="tabProducts" onclick="switchTab('products')">
+        <span class="material-icons text-[16px] align-middle mr-1">inventory_2</span>Tagged Products
+      </button>
+    </div>
+
+    <!-- ===== ALL TAGS TABLE ===== -->
+    <div id="tagsSection">
+      <div class="section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-blue text-[22px]">sell</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">All Tags</h2>
+              <p class="text-xs text-slate-400 mono">tags — SELECT * FROM tags ORDER BY created_at DESC</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg tag-filter-btn" data-filter="all" onclick="filterTags('all',this)">All</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition tag-filter-btn" data-filter="badge" onclick="filterTags('badge',this)">Badge</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition tag-filter-btn" data-filter="label" onclick="filterTags('label',this)">Label</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition tag-filter-btn" data-filter="flag" onclick="filterTags('flag',this)">Flag</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition tag-filter-btn" data-filter="inactive" onclick="filterTags('inactive',this)">Inactive</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Slug <span class="text-slate-300 font-normal normal-case">(tags.slug)</span></th>
+                <th>Type <span class="text-slate-300 font-normal normal-case">(tag_type)</span></th>
+                <th>Products <span class="text-slate-300 font-normal normal-case">(product_tags)</span></th>
+                <th>Priority</th>
+                <th>Active</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tagsTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ASSIGN TO PRODUCT ===== -->
+    <div id="assignSection" class="hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Product Selector -->
+        <div class="section-card">
+          <div class="flex items-center gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+            <span class="material-icons text-cc-purple text-[22px]">inventory_2</span>
+            <div>
+              <h2 class="font-heading text-base font-bold text-slate-900">Select Product</h2>
+              <p class="text-xs text-slate-400 mono">products WHERE is_active = 1</p>
+            </div>
+          </div>
+          <div class="p-4 space-y-3">
+            <div class="flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+              <span class="material-icons text-slate-400 text-[18px]">search</span>
+              <input type="text" placeholder="Search products by name or SKU..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="productSearchInput" oninput="filterProductList()">
+            </div>
+            <div class="space-y-1 max-h-[420px] overflow-y-auto scrollbar-thin" id="productList">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+        <!-- Tag Assignment Panel -->
+        <div class="section-card">
+          <div class="flex items-center gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+            <span class="material-icons text-cc-orange text-[22px]">label</span>
+            <div>
+              <h2 class="font-heading text-base font-bold text-slate-900">Assign Tags</h2>
+              <p class="text-xs text-slate-400" id="assignProductLabel">Select a product from the left panel</p>
+            </div>
+          </div>
+          <div class="p-5" id="assignPanel">
+            <div class="text-center py-12">
+              <span class="material-icons text-slate-300 text-[48px]">touch_app</span>
+              <p class="text-slate-400 mt-3 font-medium text-sm">Click a product to manage its tags</p>
+              <p class="text-xs text-slate-400 mt-1 mono">INSERT/DELETE FROM product_tags WHERE product_id = ?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAGGED PRODUCTS ===== -->
+    <div id="productsSection" class="hidden">
+      <div class="section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-pink text-[22px]">inventory_2</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Tagged Products</h2>
+              <p class="text-xs text-slate-400 mono">products &larr; JOIN product_tags ON product_tags.product_id = products.id JOIN tags ON product_tags.tag_id = tags.id</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <select class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1.5 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-cc-blue/20 cursor-pointer" id="tagFilterSelect" onchange="renderTaggedProducts()">
+              <option value="all">All Tags</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="w-12 text-center">
+                  <input type="checkbox" id="selectAllProducts" class="w-4 h-4 rounded border-slate-300 text-cc-blue focus:ring-cc-blue/20 cursor-pointer" onchange="toggleSelectAllProducts(this)">
+                </th>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Assigned Tags <span class="text-slate-300 font-normal normal-case">(product_tags JOIN tags)</span></th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taggedProductsBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: TAG CRUD ===== -->
+<div class="modal-backdrop" id="tagModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="tagModalTitle">Create Tag</h3>
+      <button class="btn-icon" onclick="closeModal('tagModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editTagId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tag Name <span class="text-slate-400 font-normal mono text-xs">(tags.name)</span></label>
+        <input type="text" class="input-field" id="tagName" placeholder="e.g. Featured, Best Seller" oninput="autoSlug()">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Slug <span class="text-slate-400 font-normal mono text-xs">(tags.slug)</span></label>
+        <input type="text" class="input-field mono text-sm" id="tagSlug" placeholder="auto-generated-from-name" oninput="manualSlugEdit()">
+        <p class="text-[11px] text-slate-400 mt-1">URL-friendly identifier, auto-generated from name</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tag Type <span class="text-slate-400 font-normal mono text-xs">(tags.tag_type)</span></label>
+          <select class="input-field" id="tagType">
+            <option value="badge">Badge</option>
+            <option value="label">Label</option>
+            <option value="flag">Flag</option>
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1">badge = prominent, label = subtle, flag = indicator</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Priority <span class="text-slate-400 font-normal mono text-xs">(tags.priority)</span></label>
+          <input type="number" class="input-field" id="tagPriority" placeholder="0" min="0" value="0">
+          <p class="text-[11px] text-slate-400 mt-1">Higher = shown first</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Color <span class="text-slate-400 font-normal mono text-xs">(tags.color)</span></label>
+        <div class="flex items-center gap-2 flex-wrap" id="colorPicker">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+          <label class="text-xs text-slate-500 font-medium">Custom:</label>
+          <input type="color" id="tagColorCustom" value="#2D82FF" class="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" onchange="selectCustomColor(this.value)">
+          <input type="text" class="input-field mono text-xs" style="width:100px" id="tagColorHex" placeholder="#2D82FF" oninput="selectCustomColor(this.value)">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Text Color</label>
+        <div class="flex items-center gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-semibold text-slate-900 bg-white transition text-color-opt" data-color="#0F172A" onclick="selectTextColor(this)"><span class="w-4 h-4 rounded-full bg-slate-900 border border-slate-300"></span>Dark</button>
+          <button class="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-semibold text-white bg-slate-200 transition text-color-opt" data-color="#FFFFFF" onclick="selectTextColor(this)"><span class="w-4 h-4 rounded-full bg-white border border-slate-300"></span>Light</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+        <textarea class="input-field" rows="2" id="tagDescription" placeholder="Optional internal description..."></textarea>
+      </div>
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">tags.is_active</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="tagActive" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <!-- Live Preview -->
+      <div class="border border-dashed border-slate-300 rounded-xl p-4 text-center">
+        <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-3">Live Preview</p>
+        <div id="tagLivePreview" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold" style="background:#2D82FF;color:#fff">
+          <span class="material-icons text-[16px]">sell</span> Tag Name
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('tagModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveTag()" id="saveTagBtn">Create Tag</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: BULK ASSIGN ===== -->
+<div class="modal-backdrop" id="bulkAssignModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Bulk Assign Tags</h3>
+      <button class="btn-icon" onclick="closeModal('bulkAssignModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Select Tags</label>
+        <div class="border border-slate-200 rounded-xl p-3 max-h-36 overflow-y-auto scrollbar-thin space-y-1.5" id="bulkTagCheckboxes">
+          <!-- Rendered by JS -->
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1 mono">INSERT INTO product_tags (product_id, tag_id)</p>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Action</label>
+        <select class="input-field" id="bulkAction">
+          <option value="add">Add tags to selected products</option>
+          <option value="replace">Replace all tags on selected products</option>
+          <option value="remove">Remove these tags from selected products</option>
+        </select>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
+        <span class="material-icons text-amber-500 text-[20px] mt-0.5">info</span>
+        <div>
+          <p class="text-sm font-semibold text-amber-800">Assigning targets</p>
+          <p class="text-xs text-amber-600 mt-0.5">Choose targets by checking items in the "Tagged Products" tab before applying batch changes.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm text-slate-500">
+        <span class="material-icons text-[18px]">inventory_2</span>
+        <span><strong id="bulkSelectedCount">0</strong> products selected</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('bulkAssignModal')">Cancel</button>
+      <button class="btn-primary" onclick="applyBulkAssign()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DELETE CONFIRM ===== -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-red-500 text-[28px]">delete_forever</span>
+      </div>
+      <h3 class="font-heading text-lg font-bold text-slate-900">Confirm Delete</h3>
+      <p class="text-sm text-slate-500 mt-2" id="deleteMessage">This action cannot be undone.</p>
+      <p class="text-xs text-slate-400 mt-1 mono" id="deleteSql">DELETE FROM ...</p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger text-sm" onclick="confirmDelete()" id="confirmDeleteBtn" style="background:#DC2626;color:#fff;border-color:#DC2626">
+        <span class="material-icons text-[16px]">delete</span> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA LAYER ============
+
+let nextTagId = 9;
+let selectedTagColor = '#2D82FF';
+let selectedTextColor = '#FFFFFF';
+let tagFilterMode = 'all';
+let selectedAssignProductId = null;
+let selectedProductIds = new Set();
+let deleteCallback = null;
+let isSlugManuallyEdited = false;
+
+const presetColors = [
+  '#2D82FF', '#8C30F5', '#FF5100', '#FFB800', '#22C55E',
+  '#06B6D4', '#EC4899', '#EF4444', '#F97316', '#14B8A6',
+  '#6366F1', '#84CC16', '#F43F5E', '#0EA5E9', '#A855F7',
+  '#78716C'
+];
+
+// Seed initial data or load from localStorage
+const defaultTags = [
+  { id: 1, name: 'Featured', slug: 'featured', tag_type: 'badge', color: '#FFB800', text_color: '#0F172A', priority: 10, is_active: true, description: 'Showcase on homepage carousel', created_at: '2025-08-12 10:00:00' },
+  { id: 2, name: 'Best Seller', slug: 'best-seller', tag_type: 'badge', color: '#FF5100', text_color: '#FFFFFF', priority: 9, is_active: true, description: 'Top selling products by volume', created_at: '2025-08-12 10:05:00' },
+  { id: 3, name: 'New Arrival', slug: 'new-arrival', tag_type: 'badge', color: '#22C55E', text_color: '#FFFFFF', priority: 8, is_active: true, description: 'Products added in last 30 days', created_at: '2025-08-15 14:30:00' },
+  { id: 4, name: 'Limited Edition', slug: 'limited-edition', tag_type: 'flag', color: '#8C30F5', text_color: '#FFFFFF', priority: 7, is_active: true, description: 'Limited stock exclusive items', created_at: '2025-09-01 09:15:00' },
+  { id: 5, name: 'Sale', slug: 'sale', tag_type: 'label', color: '#EF4444', text_color: '#FFFFFF', priority: 6, is_active: true, description: 'Products with active discount', created_at: '2025-09-10 11:00:00' },
+  { id: 6, name: 'Eco-Friendly', slug: 'eco-friendly', tag_type: 'label', color: '#14B8A6', text_color: '#FFFFFF', priority: 5, is_active: true, description: 'Sustainable / eco-certified products', created_at: '2025-10-05 16:20:00' },
+  { id: 7, name: 'Trending', slug: 'trending', tag_type: 'badge', color: '#EC4899', text_color: '#FFFFFF', priority: 8, is_active: true, description: 'Rapidly growing in popularity', created_at: '2025-11-01 08:45:00' },
+  { id: 8, name: 'Clearance', slug: 'clearance', tag_type: 'label', color: '#78716C', text_color: '#FFFFFF', priority: 3, is_active: false, description: 'Final stock clearance items', created_at: '2025-07-20 12:00:00' },
+];
+
+const defaultProductTags = [
+  { product_id: 1, tag_id: 1 }, { product_id: 1, tag_id: 2 },
+  { product_id: 2, tag_id: 2 }, { product_id: 2, tag_id: 3 }, { product_id: 2, tag_id: 7 },
+  { product_id: 3, tag_id: 3 }, { product_id: 3, tag_id: 6 },
+  { product_id: 4, tag_id: 1 }, { product_id: 4, tag_id: 4 },
+  { product_id: 5, tag_id: 5 }, { product_id: 5, tag_id: 8 },
+  { product_id: 6, tag_id: 2 }, { product_id: 6, tag_id: 7 },
+  { product_id: 7, tag_id: 3 }, { product_id: 7, tag_id: 1 },
+  { product_id: 8, tag_id: 4 }, { product_id: 8, tag_id: 6 },
+  { product_id: 9, tag_id: 5 }, { product_id: 9, tag_id: 2 },
+  { product_id: 10, tag_id: 1 }, { product_id: 10, tag_id: 3 }, { product_id: 10, tag_id: 7 },
+  { product_id: 11, tag_id: 6 }, { product_id: 11, tag_id: 4 },
+  { product_id: 12, tag_id: 5 },
+  { product_id: 13, tag_id: 2 }, { product_id: 13, tag_id: 1 },
+  { product_id: 14, tag_id: 7 }, { product_id: 14, tag_id: 3 },
+  { product_id: 15, tag_id: 4 },
+];
+
+let tags = JSON.parse(localStorage.getItem('cc_tags')) || defaultTags;
+let productTags = JSON.parse(localStorage.getItem('cc_product_tags')) || defaultProductTags;
+
+if (tags.length > 0) {
+  const maxId = Math.max(...tags.map(t => t.id));
+  nextTagId = maxId >= 9 ? maxId + 1 : 9;
+}
+
+const products = [
+  { id: 1, name: 'TrueSound Pro Earbuds', sku: 'CC-EAR-001', price: 1499, stock: 219, image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=80&auto=format&fit=crop&q=80' },
+  { id: 2, name: 'FitTrack Smart Watch', sku: 'CC-WAT-012', price: 2799, stock: 145, image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=80&auto=format&fit=crop&q=80' },
+  { id: 3, name: 'Urban Trail Backpack', sku: 'CC-BPK-034', price: 899, stock: 67, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=80&auto=format&fit=crop&q=80' },
+  { id: 4, name: 'BoomBox Mini Speaker', sku: 'CC-SPK-007', price: 799, stock: 0, image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=80&auto=format&fit=crop&q=80' },
+  { id: 5, name: 'HomeChef Air Fryer 4.5L', sku: 'CC-AFR-021', price: 3199, stock: 88, image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=80&auto=format&fit=crop&q=80' },
+  { id: 6, name: 'Cotton Kurti Set', sku: 'CC-KRT-101', price: 1299, stock: 234, image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=80&auto=format&fit=crop&q=80' },
+  { id: 7, name: 'Laptop Backpack Pro', sku: 'CC-LBP-055', price: 1899, stock: 56, image: 'https://images.unsplash.com/photo-1622560480654-d96214fdc887?w=80&auto=format&fit=crop&q=80' },
+  { id: 8, name: 'Bamboo Water Bottle 1L', sku: 'CC-BWB-080', price: 499, stock: 312, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=80&auto=format&fit=crop&q=80' },
+  { id: 9, name: 'Wireless Charging Pad', sku: 'CC-WCP-019', price: 699, stock: 0, image: 'https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=80&auto=format&fit=crop&q=80' },
+  { id: 10, name: 'Running Shoes Ultra', sku: 'CC-SHO-201', price: 2499, stock: 178, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=80&auto=format&fit=crop&q=80' },
+  { id: 11, name: 'Organic Face Serum', sku: 'CC-FSR-142', price: 799, stock: 92, image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=80&auto=format&fit=crop&q=80' },
+  { id: 12, name: 'Stainless Steel Cookware Set', sku: 'CC-CKW-310', price: 4999, stock: 34, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=80&auto=format&fit=crop&q=80' },
+  { id: 13, name: 'Noise Cancelling Headphones', sku: 'CC-NCH-067', price: 3499, stock: 67, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&auto=format&fit=crop&q=80' },
+  { id: 14, name: 'Smart LED Desk Lamp', sku: 'CC-DLK-088', price: 1299, stock: 145, image: 'https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=80&auto=format&fit=crop&q=80' },
+  { id: 15, name: 'Handmade Ceramic Mug Set', sku: 'CC-MUG-220', price: 599, stock: 203, image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=80&auto=format&fit=crop&q=80' },
+];
+
+function saveToLocalStorage() {
+  localStorage.setItem('cc_tags', JSON.stringify(tags));
+  localStorage.setItem('cc_product_tags', JSON.stringify(productTags));
+}
+
+// ============ SIDEBAR ============
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function collapseSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('mainArea').classList.toggle('expanded');
+  const icon = document.getElementById('collapseIcon');
+  icon.textContent = document.getElementById('sidebar').classList.contains('collapsed') ? 'menu' : 'menu_open';
+}
+
+// ============ MODAL HELPERS ============
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', () => closeModal(m.id));
+});
+
+// ============ TOAST ============
+function showToast(message, type = 'success') {
+  const colors = { success: '#16A34A', error: '#DC2626', info: '#2D82FF', warning: '#D97706' };
+  const icons = { success: 'check_circle', error: 'error', info: 'info', warning: 'warning' };
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = colors[type];
+  toast.innerHTML = `<span class="material-icons text-[20px]">${icons[type]}</span> ${message}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ============ TABS ============
+function switchTab(tab) {
+  document.getElementById('tabTags').classList.toggle('active', tab === 'tags');
+  document.getElementById('tabAssign').classList.toggle('active', tab === 'assign');
+  document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
+  document.getElementById('tagsSection').classList.toggle('hidden', tab !== 'tags');
+  document.getElementById('assignSection').classList.toggle('hidden', tab !== 'assign');
+  document.getElementById('productsSection').classList.toggle('hidden', tab !== 'products');
+  
+  if (tab === 'assign') { renderProductList(); }
+  if (tab === 'products') { renderTaggedProducts(); populateTagFilterSelect(); }
+  handleSearch();
+}
+
+// ============ HELPERS ============
+function slugify(text) {
+  return text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function autoSlug() {
+  if (isSlugManuallyEdited) return;
+  const name = document.getElementById('tagName').value.trim();
+  document.getElementById('tagSlug').value = slugify(name);
+  updateLivePreview();
+}
+
+function manualSlugEdit() {
+  const slugInput = document.getElementById('tagSlug');
+  isSlugManuallyEdited = slugInput.value.trim().length > 0;
+  updateLivePreview();
+}
+
+function getTagProductCount(tagId) {
+  return productTags.filter(pt => pt.tag_id === tagId).length;
+}
+
+function getProductTags(productId) {
+  return productTags.filter(pt => pt.product_id === productId).map(pt => tags.find(t => t.id === pt.tag_id)).filter(Boolean);
+}
+
+function renderTagChip(tag, removable, onRemove) {
+  const typeIcon = tag.tag_type === 'badge' ? 'verified' : tag.tag_type === 'flag' ? 'flag' : 'label';
+  return `<span class="tag-chip shadow-sm" style="background:${tag.color};color:${tag.text_color}">
+    <span class="material-icons" style="font-size:14px">${typeIcon}</span>${tag.name}
+    ${removable ? `<span class="remove-tag" onclick="${onRemove}">&times;</span>` : ''}
+  </span>`;
+}
+
+// ============ KPI UPDATE ============
+function updateKPIs() {
+  document.getElementById('kpiTotal').textContent = tags.length;
+  document.getElementById('kpiActive').textContent = tags.filter(t => t.is_active).length;
+  const taggedProductIds = new Set(productTags.map(pt => pt.product_id));
+  document.getElementById('kpiTagged').textContent = taggedProductIds.size.toLocaleString();
+  document.getElementById('kpiAssignments').textContent = productTags.length.toLocaleString();
+}
+
+// ============ TAG PREVIEW STRIP ============
+function renderTagPreviewStrip() {
+  const container = document.getElementById('tagPreviewStrip');
+  const sorted = [...tags].sort((a, b) => b.priority - a.priority);
+  container.innerHTML = sorted.map(t => renderTagChip(t, false)).join('');
+}
+
+// ============ COLOR PICKER ============
+function initColorPicker() {
+  const container = document.getElementById('colorPicker');
+  container.innerHTML = presetColors.map(c =>
+    `<div class="color-option ${c === selectedTagColor ? 'selected' : ''}" style="background:${c}" onclick="selectPresetColor('${c}', this)"></div>`
+  ).join('');
+}
+
+function selectPresetColor(color, el) {
+  selectedTagColor = color;
+  document.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  document.getElementById('tagColorCustom').value = color;
+  document.getElementById('tagColorHex').value = color;
+  updateLivePreview();
+}
+
+function selectCustomColor(color) {
+  let hex = color.trim();
+  if (hex && !hex.startsWith('#')) hex = '#' + hex;
+  
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    selectedTagColor = hex;
+    document.querySelectorAll('.color-option').forEach(e => {
+      if (e.style.backgroundColor.toLowerCase() === hex.toLowerCase()) {
+        e.classList.add('selected');
+      } else {
+        e.classList.remove('selected');
+      }
+    });
+    document.getElementById('tagColorCustom').value = hex;
+    document.getElementById('tagColorHex').value = hex;
+    updateLivePreview();
+  }
+}
+
+function selectTextColor(btn) {
+  selectedTextColor = btn.dataset.color;
+  document.querySelectorAll('.text-color-opt').forEach(b => {
+    b.classList.remove('border-cc-blue');
+    b.classList.add('border-slate-200');
+  });
+  btn.classList.remove('border-slate-200');
+  btn.classList.add('border-cc-blue');
+  updateLivePreview();
+}
+
+function updateLivePreview() {
+  const name = document.getElementById('tagName').value.trim() || 'Tag Name';
+  const typeIcon = document.getElementById('tagType')?.value === 'badge' ? 'verified' : document.getElementById('tagType')?.value === 'flag' ? 'flag' : 'label';
+  document.getElementById('tagLivePreview').innerHTML = `<span class="material-icons" style="font-size:16px">${typeIcon}</span> ${name}`;
+  document.getElementById('tagLivePreview').style.background = selectedTagColor;
+  document.getElementById('tagLivePreview').style.color = selectedTextColor;
+}
+
+// ============ RENDER TAGS TABLE ============
+function renderTagsTable() {
+  const tbody = document.getElementById('tagsTableBody');
+  let filtered = [...tags].sort((a, b) => b.priority - a.priority);
+
+  if (tagFilterMode === 'inactive') filtered = filtered.filter(t => !t.is_active);
+  else if (tagFilterMode !== 'all') filtered = filtered.filter(t => t.tag_type === tagFilterMode && t.is_active);
+
+  const search = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.slug.toLowerCase().includes(search));
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10">
+      <span class="material-icons text-slate-300 text-[40px]">sell</span>
+      <p class="text-slate-500 mt-2 font-medium">No tags found</p>
+    </td></tr>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(t => {
+    const count = getTagProductCount(t.id);
+    const typeIcon = t.tag_type === 'badge' ? 'verified' : t.tag_type === 'flag' ? 'flag' : 'label';
+    const typeBadgeClass = t.tag_type === 'badge' ? 'badge-blue' : t.tag_type === 'flag' ? 'badge-purple' : 'badge-slate';
+
+    html += `
+      <tr class="fade-slide-in">
+        <td>
+          <div class="flex items-center gap-3">
+            ${renderTagChip(t, false)}
+            ${t.description ? `<span class="material-icons text-slate-300 text-[16px] cursor-help" title="${t.description}">info</span>` : ''}
+          </div>
+        </td>
+        <td class="mono text-xs text-slate-600">${t.slug}</td>
+        <td>
+          <span class="badge ${typeBadgeClass}"><span class="material-icons text-[11px]">${typeIcon}</span>${t.tag_type}</span>
+        </td>
+        <td>
+          <span class="font-semibold text-slate-800">${count}</span>
+          <p class="text-[10px] text-slate-400 mono">product_tags COUNT</p>
+        </td>
+        <td>
+          <span class="mono text-sm font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">${t.priority}</span>
+        </td>
+        <td>
+          <div class="flex items-center gap-2">
+            <label class="toggle-switch" style="transform:scale(.8)">
+              <input type="checkbox" ${t.is_active ? 'checked' : ''} onchange="toggleTag(${t.id})">
+              <span class="slider"></span>
+            </label>
+            <span class="text-xs font-medium ${t.is_active ? 'text-green-600' : 'text-slate-400'}">${t.is_active ? 'Yes' : 'No'}</span>
+          </div>
+        </td>
+        <td class="text-sm text-slate-400">${t.created_at.slice(0, 10)}</td>
+        <td>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" style="width:30px;height:30px" onclick="editTag(${t.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+            <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteTag(${t.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+  updateKPIs();
+}
+
+function filterTags(filter, btn) {
+  tagFilterMode = filter;
+  document.querySelectorAll('.tag-filter-btn').forEach(b => {
+    b.className = 'text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition tag-filter-btn';
+  });
+  btn.className = 'text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg tag-filter-btn';
+  renderTagsTable();
+}
+
+// ============ TAG CRUD ============
+function openTagModal(editId) {
+  isSlugManuallyEdited = false;
+  if (editId) {
+    const t = tags.find(t => t.id === editId);
+    if (!t) return;
+    document.getElementById('tagModalTitle').textContent = 'Edit Tag';
+    document.getElementById('saveTagBtn').textContent = 'Update Tag';
+    document.getElementById('editTagId').value = t.id;
+    document.getElementById('tagName').value = t.name;
+    document.getElementById('tagSlug').value = t.slug;
+    document.getElementById('tagType').value = t.tag_type;
+    document.getElementById('tagPriority').value = t.priority;
+    document.getElementById('tagDescription').value = t.description || '';
+    document.getElementById('tagActive').checked = t.is_active;
+    selectedTagColor = t.color;
+    selectedTextColor = t.text_color;
+    document.getElementById('tagColorCustom').value = t.color;
+    document.getElementById('tagColorHex').value = t.color;
+    isSlugManuallyEdited = true;
+  } else {
+    document.getElementById('tagModalTitle').textContent = 'Create Tag';
+    document.getElementById('saveTagBtn').textContent = 'Create Tag';
+    document.getElementById('editTagId').value = '';
+    document.getElementById('tagName').value = '';
+    document.getElementById('tagSlug').value = '';
+    document.getElementById('tagType').value = 'badge';
+    document.getElementById('tagPriority').value = '0';
+    document.getElementById('tagDescription').value = '';
+    document.getElementById('tagActive').checked = true;
+    selectedTagColor = '#2D82FF';
+    selectedTextColor = '#FFFFFF';
+    document.getElementById('tagColorCustom').value = '#2D82FF';
+    document.getElementById('tagColorHex').value = '#2D82FF';
+  }
+  initColorPicker();
+  
+  document.querySelectorAll('.text-color-opt').forEach(b => {
+    b.classList.remove('border-cc-blue');
+    b.classList.add('border-slate-200');
+  });
+  const matchBtn = document.querySelector(`.text-color-opt[data-color="${selectedTextColor}"]`);
+  if (matchBtn) { matchBtn.classList.remove('border-slate-200'); matchBtn.classList.add('border-cc-blue'); }
+
+  updateLivePreview();
+  document.getElementById('tagType').onchange = updateLivePreview;
+  openModal('tagModal');
+}
+
+function editTag(id) { openTagModal(id); }
+
+function saveTag() {
+  const editId = document.getElementById('editTagId').value;
+  const name = document.getElementById('tagName').value.trim();
+  const slug = document.getElementById('tagSlug').value.trim();
+  const tagType = document.getElementById('tagType').value;
+  const priority = parseInt(document.getElementById('tagPriority').value) || 0;
+  const description = document.getElementById('tagDescription').value.trim();
+  const isActive = document.getElementById('tagActive').checked;
+
+  if (!name) { showToast('Tag name is required', 'error'); return; }
+  if (!slug) { showToast('Slug is required', 'error'); return; }
+
+  const dup = tags.find(t => t.slug === slug && t.id !== parseInt(editId));
+  if (dup) { showToast('Slug already exists', 'error'); return; }
+
+  if (editId) {
+    const t = tags.find(t => t.id === parseInt(editId));
+    if (t) {
+      t.name = name; t.slug = slug; t.tag_type = tagType;
+      t.color = selectedTagColor; t.text_color = selectedTextColor;
+      t.priority = priority; t.description = description; t.is_active = isActive;
+      showToast(`Tag "${name}" updated`, 'success');
+    }
+  } else {
+    tags.push({
+      id: nextTagId++, name, slug, tag_type: tagType,
+      color: selectedTagColor, text_color: selectedTextColor,
+      priority, description, is_active: isActive,
+      created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    });
+    showToast(`Tag "${name}" created`, 'success');
+  }
+
+  saveToLocalStorage();
+  closeModal('tagModal');
+  renderTagsTable();
+  renderTagPreviewStrip();
+  populateTagFilterSelect();
+}
+
+function toggleTag(id) {
+  const t = tags.find(t => t.id === id);
+  if (t) {
+    t.is_active = !t.is_active;
+    showToast(`"${t.name}" ${t.is_active ? 'activated' : 'deactivated'}`, 'info');
+    saveToLocalStorage();
+    renderTagsTable();
+    renderTagPreviewStrip();
+  }
+}
+
+function deleteTag(id) {
+  const t = tags.find(t => t.id === id);
+  if (!t) return;
+  const count = getTagProductCount(id);
+  if (count > 0) {
+    showToast(`Cannot delete: "${t.name}" is assigned to ${count} products`, 'error');
+    return;
+  }
+  deleteCallback = () => {
+    tags = tags.filter(tg => tg.id !== id);
+    showToast(`Tag "${t.name}" deleted`, 'success');
+    saveToLocalStorage();
+    renderTagsTable();
+    renderTagPreviewStrip();
+    populateTagFilterSelect();
+  };
+  document.getElementById('deleteMessage').textContent = `Delete tag "${t.name}"? This removes the record from tags table.`;
+  document.getElementById('deleteSql').textContent = `DELETE FROM tags WHERE id = ${id}`;
+  openModal('deleteModal');
+}
+
+// ============ ASSIGN TO PRODUCT ============
+function renderProductList() {
+  const container = document.getElementById('productList');
+  const search = (document.getElementById('productSearchInput')?.value || '').toLowerCase();
+  let list = products;
+  if (search) list = list.filter(p => p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search));
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="text-center py-6"><p class="text-sm text-slate-400">No products found</p></div>`;
+    return;
+  }
+
+  let html = '';
+  list.forEach(p => {
+    const pTags = getProductTags(p.id);
+    const isSelected = selectedAssignProductId === p.id;
+    html += `
+      <div class="assignment-row cursor-pointer ${isSelected ? 'bg-cc-blue/[.05] ring-1 ring-cc-blue/20' : ''}" onclick="selectProductForAssign(${p.id})">
+        <img src="${p.image}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-100">
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-slate-800 truncate">${p.name}</p>
+          <p class="text-[11px] text-slate-400 mono">${p.sku} &middot; ₹${p.price.toLocaleString('en-IN')}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[140px]">
+          ${pTags.slice(0, 2).map(t => `<span class="w-3 h-3 rounded-full border border-white shadow-sm" style="background:${t.color}" title="${t.name}"></span>`).join('')}
+          ${pTags.length > 2 ? `<span class="text-[10px] text-slate-400">+${pTags.length - 2}</span>` : ''}
+          ${pTags.length === 0 ? `<span class="text-[10px] text-slate-300">no tags</span>` : ''}
+        </div>
+        <span class="material-icons text-slate-300 text-[18px]">chevron_right</span>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function filterProductList() { renderProductList(); }
+
+function selectProductForAssign(productId) {
+  selectedAssignProductId = productId;
+  renderProductList();
+  renderAssignPanel();
+}
+
+function renderAssignPanel() {
+  const panel = document.getElementById('assignPanel');
+  const label = document.getElementById('assignProductLabel');
+  if (!selectedAssignProductId) {
+    label.textContent = 'Select a product from the left panel';
+    panel.innerHTML = `<div class="text-center py-12">
+      <span class="material-icons text-slate-300 text-[48px]">touch_app</span>
+      <p class="text-slate-400 mt-3 font-medium text-sm">Click a product to manage its tags</p>
+      <p class="text-xs text-slate-400 mt-1 mono">INSERT/DELETE FROM product_tags WHERE product_id = ?</p>
+    </div>`;
+    return;
+  }
+
+  const product = products.find(p => p.id === selectedAssignProductId);
+  if (!product) return;
+
+  const assignedIds = productTags.filter(pt => pt.product_id === product.id).map(pt => pt.tag_id);
+  const activeTags = tags.filter(t => t.is_active).sort((a, b) => b.priority - a.priority);
+
+  label.innerHTML = `<span class="font-semibold text-slate-700">${product.name}</span> <span class="mono text-xs text-slate-400">(product_id: ${product.id})</span>`;
+
+  let html = `
+    <div class="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
+      <img src="${product.image}" alt="" class="w-12 h-12 rounded-lg object-cover border border-slate-100">
+      <div>
+        <p class="font-semibold text-slate-800 text-sm">${product.name}</p>
+        <p class="text-xs text-slate-400 mono">${product.sku} &middot; ₹${product.price.toLocaleString('en-IN')} &middot; Stock: ${product.stock}</p>
+      </div>
+    </div>
+    <p class="text-xs text-slate-400 mono mb-3">SELECT * FROM tags WHERE is_active = 1 ORDER BY priority DESC</p>
+    <div class="space-y-2">`;
+
+  activeTags.forEach(t => {
+    const isAssigned = assignedIds.includes(t.id);
+    html += `
+      <div class="flex items-center justify-between p-3 rounded-xl border ${isAssigned ? 'border-cc-blue/30 bg-cc-blue/[.03]' : 'border-slate-200 bg-white'} hover:shadow-sm transition cursor-pointer" onclick="toggleProductTag(${product.id}, ${t.id})">
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition ${isAssigned ? 'bg-cc-blue border-cc-blue' : 'border-slate-300'}">
+            ${isAssigned ? '<span class="material-icons text-white text-[14px]">check</span>' : ''}
+          </div>
+          ${renderTagChip(t, false)}
+        </div>
+        <span class="text-[10px] text-slate-400 mono">${isAssigned ? 'assigned' : 'not assigned'}</span>
+      </div>`;
+  });
+
+  html += '</div>';
+
+  if (assignedIds.length > 0) {
+    const assignedTags = tags.filter(t => assignedIds.includes(t.id));
+    html += `
+      <div class="mt-5 pt-4 border-t border-slate-200">
+        <p class="text-xs text-slate-400 mono mb-2">SELECT * FROM product_tags WHERE product_id = ${product.id}</p>
+        <div class="flex flex-wrap gap-2">
+          ${assignedTags.map(t => renderTagChip(t, false)).join('')}
+        </div>
+      </div>`;
+  }
+
+  panel.innerHTML = html;
+}
+
+function toggleProductTag(productId, tagId) {
+  const idx = productTags.findIndex(pt => pt.product_id === productId && pt.tag_id === tagId);
+  const tag = tags.find(t => t.id === tagId);
+  if (idx >= 0) {
+    productTags.splice(idx, 1);
+    showToast(`Removed "${tag.name}" from product`, 'info');
+  } else {
+    productTags.push({ product_id: productId, tag_id: tagId });
+    showToast(`Assigned "${tag.name}" to product`, 'success');
+  }
+  saveToLocalStorage();
+  renderAssignPanel();
+  renderProductList();
+  updateKPIs();
+}
+
+// ============ TAGGED PRODUCTS TABLE ============
+function populateTagFilterSelect() {
+  const select = document.getElementById('tagFilterSelect');
+  const current = select.value;
+  select.innerHTML = '<option value="all">All Tags</option>' +
+    tags.filter(t => t.is_active).sort((a, b) => b.priority - a.priority).map(t =>
+      `<option value="${t.id}">${t.name} (${getTagProductCount(t.id)})</option>`
+    ).join('');
+  select.value = current;
+}
+
+function getFilteredProductsData() {
+  const filterTag = document.getElementById('tagFilterSelect')?.value;
+  let productIds = new Set(productTags.map(pt => pt.product_id));
+  let filteredProducts = products.filter(p => productIds.has(p.id));
+
+  if (filterTag && filterTag !== 'all') {
+    const tagId = parseInt(filterTag);
+    filteredProducts = filteredProducts.filter(p =>
+      productTags.some(pt => pt.product_id === p.id && pt.tag_id === tagId)
+    );
+  }
+
+  const search = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  if (search) {
+    filteredProducts = filteredProducts.filter(p => 
+      p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search)
+    );
+  }
+
+  return filteredProducts;
+}
+
+function renderTaggedProducts() {
+  const tbody = document.getElementById('taggedProductsBody');
+  const filteredProducts = getFilteredProductsData();
+
+  if (filteredProducts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10">
+      <span class="material-icons text-slate-300 text-[40px]">inventory_2</span>
+      <p class="text-slate-500 mt-2 font-medium">No tagged products found</p>
+    </td></tr>`;
+    const headerCheckbox = document.getElementById('selectAllProducts');
+    if (headerCheckbox) headerCheckbox.checked = false;
+    return;
+  }
+
+  // Update master checkbox check state
+  const allSelected = filteredProducts.length > 0 && filteredProducts.every(p => selectedProductIds.has(p.id));
+  const selectAllProductsEl = document.getElementById('selectAllProducts');
+  if (selectAllProductsEl) selectAllProductsEl.checked = allSelected;
+
+  let html = '';
+  filteredProducts.forEach(p => {
+    const pTags = getProductTags(p.id);
+    const isSelected = selectedProductIds.has(p.id);
+    html += `
+      <tr class="${isSelected ? 'bg-cc-blue/[.03]' : ''}">
+        <td class="text-center">
+          <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-cc-blue focus:ring-cc-blue/20 cursor-pointer" ${isSelected ? 'checked' : ''} onchange="toggleProductSelect(${p.id})">
+        </td>
+        <td>
+          <div class="flex items-center gap-3">
+            <img src="${p.image}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-100">
+            <div class="min-w-0">
+              <p class="font-medium text-slate-700 text-sm truncate max-w-[180px]">${p.name}</p>
+              <p class="text-[10px] text-slate-400 mono">product_id: ${p.id}</p>
+            </div>
+          </div>
+        </td>
+        <td class="mono text-xs font-semibold text-slate-700">${p.sku}</td>
+        <td>
+          <div class="flex flex-wrap gap-1.5">
+            ${pTags.map(t => renderTagChip(t, false)).join('')}
+          </div>
+        </td>
+        <td class="font-semibold text-slate-800">₹${p.price.toLocaleString('en-IN')}</td>
+        <td>
+          <span class="badge ${p.stock === 0 ? 'badge-red' : p.stock < 20 ? 'badge-yellow' : 'badge-green'}">${p.stock === 0 ? 'Out of Stock' : p.stock + ' units'}</span>
+        </td>
+        <td>
+          <button class="btn-icon" style="width:30px;height:30px" onclick="goToAssignProduct(${p.id})" title="Manage Tags"><span class="material-icons text-[16px]">label</span></button>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function toggleProductSelect(id) {
+  if (selectedProductIds.has(id)) selectedProductIds.delete(id);
+  else selectedProductIds.add(id);
+  renderTaggedProducts();
+}
+
+function toggleSelectAllProducts(masterCb) {
+  const filteredProducts = getFilteredProductsData();
+  if (masterCb.checked) {
+    filteredProducts.forEach(p => selectedProductIds.add(p.id));
+  } else {
+    filteredProducts.forEach(p => selectedProductIds.delete(p.id));
+  }
+  renderTaggedProducts();
+}
+
+function goToAssignProduct(productId) {
+  switchTab('assign');
+  setTimeout(() => {
+    selectProductForAssign(productId);
+    const list = document.getElementById('productList');
+    const rows = list.querySelectorAll('.assignment-row');
+    rows.forEach(r => {
+      if (r.onclick && r.onclick.toString().includes(productId)) {
+        r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }, 50);
+}
+
+// ============ BULK ASSIGN ============
+function openBulkAssignModal() {
+  document.getElementById('bulkSelectedCount').textContent = selectedProductIds.size;
+  const container = document.getElementById('bulkTagCheckboxes');
+  const activeTags = tags.filter(t => t.is_active).sort((a, b) => b.priority - a.priority);
+  container.innerHTML = activeTags.map(t => `
+    <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition">
+      <input type="checkbox" value="${t.id}" class="bulk-tag-cb w-4 h-4 rounded border-slate-300 text-cc-blue focus:ring-cc-blue/20 cursor-pointer">
+      ${renderTagChip(t, false)}
+    </label>
+  `).join('');
+  openModal('bulkAssignModal');
+}
+
+function applyBulkAssign() {
+  const action = document.getElementById('bulkAction').value;
+  const selectedTagIds = [...document.querySelectorAll('.bulk-tag-cb:checked')].map(cb => parseInt(cb.value));
+
+  if (selectedProductIds.size === 0) { showToast('No products selected — use checkboxes in Tagged Products tab', 'warning'); return; }
+  if (selectedTagIds.length === 0) { showToast('Select at least one tag', 'error'); return; }
+
+  let added = 0, removed = 0;
+
+  selectedProductIds.forEach(pid => {
+    if (action === 'add') {
+      selectedTagIds.forEach(tid => {
+        if (!productTags.some(pt => pt.product_id === pid && pt.tag_id === tid)) {
+          productTags.push({ product_id: pid, tag_id: tid });
+          added++;
+        }
+      });
+    } else if (action === 'replace') {
+      const before = productTags.length;
+      productTags = productTags.filter(pt => pt.product_id !== pid);
+      removed += before - productTags.length;
+      selectedTagIds.forEach(tid => {
+        productTags.push({ product_id: pid, tag_id: tid });
+        added++;
+      });
+    } else if (action === 'remove') {
+      const before = productTags.length;
+      productTags = productTags.filter(pt => !(pt.product_id === pid && selectedTagIds.includes(pt.tag_id)));
+      removed += before - productTags.length;
+    }
+  });
+
+  let msg = '';
+  if (action === 'add') msg = `Added ${added} tag assignments across ${selectedProductIds.size} products`;
+  else if (action === 'replace') msg = `Replaced tags: removed ${removed}, added ${added} across ${selectedProductIds.size} products`;
+  else if (action === 'remove') msg = `Removed ${removed} tag assignments across ${selectedProductIds.size} products`;
+
+  saveToLocalStorage();
+  showToast(msg, 'success');
+  closeModal('bulkAssignModal');
+  updateKPIs();
+  renderTaggedProducts();
+}
+
+// ============ DELETE CONFIRM ============
+function confirmDelete() {
+  if (deleteCallback) { deleteCallback(); deleteCallback = null; }
+  closeModal('deleteModal');
+}
+
+// ============ GLOBAL SEARCH ============
+function handleSearch() {
+  const q = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  
+  const isTagsActive = !document.getElementById('tagsSection').classList.contains('hidden');
+  const isAssignActive = !document.getElementById('assignSection').classList.contains('hidden');
+  const isProductsActive = !document.getElementById('productsSection').classList.contains('hidden');
+
+  if (isTagsActive) {
+    renderTagsTable();
+  } else if (isAssignActive) {
+    document.getElementById('productSearchInput').value = document.getElementById('globalSearch').value;
+    filterProductList();
+  } else if (isProductsActive) {
+    renderTaggedProducts();
+  }
+}
+
+// ============ INIT ============
+function init() {
+  renderTagPreviewStrip();
+  renderTagsTable();
+  updateKPIs();
+  populateTagFilterSelect();
+}
+
+init();
+</script>
+</body>
+</html>

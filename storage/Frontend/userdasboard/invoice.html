@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice — ORD-20260115-0008 — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+
+  .sidebar-link{transition:all .15s ease;border-radius:10px;padding:10px 14px;margin:2px 0;display:flex;align-items:center;gap:12px;font-size:14px;color:#475569;text-decoration:none}
+  .sidebar-link:hover{background:#E8F0FE;color:#2D82FF;padding-left:20px}
+  .sidebar-link.active{background:#E8F0FE;color:#2D82FF;font-weight:600}
+  .sidebar-link.active .material-icons{color:#2D82FF}
+
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+  @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+  .cart-badge{animation:pulseBadge 2s ease-in-out infinite}
+
+  /* ===== INVOICE STYLES ===== */
+  .inv-table{width:100%;border-collapse:collapse;font-size:12px}
+  .inv-table thead th{background:#0F172A;color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .inv-table thead th.text-right{text-align:right}
+  .inv-table thead th.text-center{text-align:center}
+  .inv-table tbody td{padding:9px 12px;border-bottom:1px solid #E2E8F0;vertical-align:top}
+  .inv-table tbody tr:last-child td{border-bottom:2px solid #0F172A}
+  .inv-table tfoot td{padding:8px 12px;font-weight:600;border-top:2px solid #0F172A;background:#F8FAFC}
+  .inv-table tfoot td.border-0{background:transparent;border-top:none}
+  .inv-table .text-right{text-align:right}
+  .inv-table .text-center{text-align:center}
+
+  .inv-divider{border:none;border-top:1.5px dashed #94A3B8;margin:12px 0}
+  .inv-section-title{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.8px;padding-bottom:6px;border-bottom:2px solid #0F172A;margin-bottom:10px;display:block}
+
+  .watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:120px;font-weight:900;color:rgba(15,23,42,.02);pointer-events:none;z-index:0;font-family:'Poppins',sans-serif;white-space:nowrap}
+
+  /* Screen styles */
+  .screen-only{display:block}
+  .print-only{display:none}
+
+  /* Print styles */
+  @media print{
+    @page{margin:12mm;size:A4}
+    body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .no-print{display:none!important}
+    .print-only{display:block!important}
+    .screen-only{display:none!important}
+    .watermark{display:block}
+    .inv-page{box-shadow:none!important;border:none!important;border-radius:0!important;margin:0!important;max-width:100%!important;padding:0!important;background:#fff!important}
+    .inv-sidebar{display:none!important}
+    .inv-table{font-size:10px!important}
+    .inv-table thead th{padding:6px 8px!important;font-size:9px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .inv-table tbody td{padding:6px 8px!important;font-size:10px!important}
+    .inv-table tfoot td{padding:6px 8px!important;font-size:10px!important}
+    .inv-page-inner{padding:0!important}
+    .inv-brand-bar{padding:10px 0!important;border-bottom:2px solid #0F172A!important;margin-bottom:8px!important}
+    .inv-footer{border-top:2px solid #0F172A!important;margin-top:12px!important;padding-top:10px!important}
+    .inv-terms{font-size:9px!important;line-height:1.4!important}
+    .inv-gst-box{padding:8px 10px!important}
+    .inv-gst-box table{font-size:9px!important;margin:0!important}
+    .inv-gst-box table td{padding:3px 4px!important;border:none!important}
+    .inv-gst-box table th{padding:3px 4px!important;font-size:8px!important;border:none!important;background:transparent!important}
+    .inv-btn-row{display:none!important}
+    .print-header-bar{display:block!important;background:#0F172A!important;padding:6px 0!important;margin-bottom:0!important;border-radius:0!important}
+    .print-header-bar *{color:#fff!important}
+    .print-header-bar .print-show{display:inline!important}
+    .print-header-bar .print-hide{display:none!important}
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<div class="watermark no-print">CLICKCODEX</div>
+
+<!-- SCREEN HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md no-print">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow"><span class="material-icons text-3xl">menu</span></button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search products..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl">
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">account_circle</span><span class="mt-0.5">Rahul</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">favorite_border</span><span class="mt-0.5 hidden md:inline">Wishlist</span></button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10"><span class="material-icons text-[22px]">shopping_cart</span><span class="mt-0.5 hidden md:inline">Cart</span><span class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">2</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- PRINT-ONLY HEADER BAR -->
+<div class="print-header-bar no-print" style="display:none">
+  <div class="max-w-[210mm] mx-auto px-6 py-3 flex items-center justify-between">
+    <span class="print-show font-heading font-bold text-lg text-white">Click<span class="text-cc-yellow">Codex</span></span>
+    <div class="print-hide"></div>
+    <span class="print-show text-white/70 text-xs">Tax Invoice</span>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5 no-print">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Account</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">My Orders</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">Invoice</span>
+  </nav>
+
+  <div class="flex gap-6">
+
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:block w-64 shrink-0 no-print">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[80px]">
+        <div class="bg-gradient-to-br from-cc-blue to-cc-purple p-5 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">R</div>
+            <div class="min-w-0"><p class="font-heading font-bold text-sm truncate">Rahul Sharma</p><p class="text-white/70 text-xs truncate">rahul.sharma@email.com</p></div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-2 pb-1">Shopping</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</a>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Account</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">location_on</span> Addresses</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">notifications</span> Notifications</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">payment</span> Payment Methods</a>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">rate_review</span> My Reviews</a>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-4 pb-1">Support</p>
+          <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</a>
+          <a href="#" class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- INVOICE CONTENT -->
+    <div class="flex-1 min-w-0">
+      <div class="inv-page bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="inv-page-inner">
+
+          <!-- BRAND BAR -->
+          <div class="inv-brand-bar flex items-center justify-between px-6 sm:px-8 py-5">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-cc-blue flex items-center justify-center shrink-0 shadow-md">
+                <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+              </div>
+              <div>
+                <p class="font-heading font-extrabold text-xl text-cc-blue leading-none">Click<span class="text-cc-yellow">Codex</span></p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Retail Pvt. Ltd.</p>
+              </div>
+            </div>
+            <div class="text-right hidden sm:block">
+              <p class="font-heading font-bold text-base text-slate-900">TAX INVOICE</p>
+            </div>
+          </div>
+
+          <div class="px-6 sm:px-8 py-4 space-y-5">
+
+            <!-- INVOICE META -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 text-xs">
+              <div>
+                <p class="text-slate-400 font-medium">Invoice No.</p>
+                <p class="font-bold text-slate-800 mt-0.5">INV-2026-001508-0001</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Invoice Date</p>
+                <p class="font-bold text-slate-800 mt-0.5">15 Jan 2026</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Order No.</p>
+                <p class="font-bold text-slate-800 mt-0.5 text-cc-blue">ORD-20260115-0008</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Due Date</p>
+                <p class="font-bold text-slate-800 mt-0.5">15 Jan 2026</p>
+              </div>
+            </div>
+
+            <!-- BUYER / SELLER -->
+            <div class="grid grid-cols-2 gap-6 text-xs">
+              <div>
+                <span class="inv-section-title">Bill To</span>
+                <p class="font-semibold text-slate-800 mt-1">Rahul Sharma</p>
+                <p class="text-slate-500 mt-0.5">42, Shri Nagar Colony, Near Railway Station</p>
+                <p class="text-slate-500">Behind State Bank of India, Main Road</p>
+                <p class="text-slate-500">Ratlam, Madhya Pradesh 457001</p>
+                <p class="text-slate-500 mt-1">Phone: +91 98765 43210</p>
+                <p class="text-slate-400 mt-1">State Code: 23 — MP</p>
+              </div>
+              <div>
+                <span class="inv-section-title">Bill From</span>
+                <p class="font-semibold text-slate-800 mt-1">ClickCodex Retail Pvt. Ltd.</p>
+                <p class="text-slate-500 mt-0.5">42, Industrial Area, Phase-2</p>
+                <p class="text-slate-500">Ratlam, Madhya Pradesh 457001</p>
+                <p class="text-slate-500 mt-1">GSTIN: 23AABCC1234F1Z5</p>
+                <p class="text-slate-500">PAN: AABCC1234F</p>
+                <p class="text-slate-500">State Code: 23 — MP</p>
+                <p class="text-slate-400 mt-1">CIN: U45900MP2020PTC123456</p>
+              </div>
+            </div>
+
+            <div class="inv-divider"></div>
+
+            <!-- SHIPPING INFO -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 text-xs">
+              <div>
+                <p class="text-slate-400 font-medium">Ship To</p>
+                <p class="font-semibold text-slate-800 mt-0.5">Rahul Sharma</p>
+                <p class="text-slate-500 mt-0.5">42, Shri Nagar Colony</p>
+                <p class="text-slate-500">Ratlam, MP — 457001</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Place of Supply</p>
+                <p class="font-semibold text-slate-800 mt-0.5">Ratlam, Madhya Pradesh</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Carrier</p>
+                <p class="font-semibold text-slate-800 mt-0.5">BlueDart Express</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium">Tracking No.</p>
+                <p class="font-semibold text-cc-blue mt-0.5 font-mono">BLDA1234567890</p>
+              </div>
+            </div>
+
+            <div class="inv-divider"></div>
+
+            <!-- ITEMS TABLE -->
+            <span class="inv-section-title">Order Items</span>
+            <div class="overflow-x-auto">
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px">#</th>
+                    <th>Item Description</th>
+                    <th class="text-center">HSN / SAC</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-center">GST Rate</th>
+                    <th class="text-right">CGST</th>
+                    <th class="text-right">SGST</th>
+                    <th class="text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="invoice-items-body">
+                  <!-- Filled by JS -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="5" class="text-right font-semibold" style="padding:10px 12px">Subtotal</td>
+                    <td class="text-right font-semibold" style="padding:10px 12px" id="inv-subtotal"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right" style="padding:4px 12px"><span class="text-slate-400">Discount</span></td>
+                    <td class="text-right font-semibold text-green-600" style="padding:4px 12px" id="inv-discount"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right" style="padding:4px 12px"><span class="text-slate-400">Shipping</span></td>
+                    <td class="text-right font-semibold text-green-600" style="padding:4px 12px" id="inv-shipping"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right font-bold text-base border-0" style="padding:10px 12px">
+                      <span>Grand Total</span>
+                    </td>
+                    <td class="text-right font-bold text-lg text-cc-orange border-0" style="padding:10px 12px" id="inv-grand-total"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right border-0" style="padding:2px 12px 4px 12px">
+                      <span class="text-xs text-slate-400">Amount in Words: </span>
+                      <span class="text-xs font-medium text-slate-600" id="amount-words"></span>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="inv-divider"></div>
+
+            <!-- GST SUMMARY BOX -->
+            <div class="inv-gst-box bg-slate-50 rounded-xl p-4 border border-slate-200">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span class="material-icons text-[16px]">receipt_long</span> GST Summary (Intra-State)
+              </h4>
+              <table class="w-full text-xs">
+                <thead>
+                  <tr>
+                    <th class="text-left pb-2" style="border-bottom:1px solid #E2E8F0">GST Rate</th>
+                    <th class="text-right pb-2" style="border-bottom:1px solid #E2E8F0">Taxable Amount</th>
+                    <th class="text-right pb-2" style="border-bottom:1px solid #E2E8F8">CGST</th>
+                    <th class="text-right pb-2" style="border-bottom:1px solid #E2E8F8">SGST</th>
+                    <th class="text-right pb-2" style="border-bottom:1px solid #E2E8F8">Total Tax</th>
+                  </tr>
+                </thead>
+                <tbody id="gst-summary-body">
+                  <!-- Filled by JS -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td class="font-semibold pt-2" style="border-top:2px solid #E2E8F8">Total</td>
+                    <td class="text-right font-semibold pt-2" style="border-top:2px solid #E2E8F8" id="gst-taxable-total"></td>
+                    <td class="text-right font-semibold pt-2" style="border-top:2px solid #E2E8F8" id="gst-cgst-total"></td>
+                    <td class="text-right font-semibold pt-2" style="border-top:2px solid #E2E8F8" id="gst-sgst-total"></td>
+                    <td class="text-right font-bold pt-2 text-base" style="border-top:2px solid #E2E8F8;color:#0F172A" id="gst-total"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="inv-divider"></div>
+
+            <!-- PAYMENT & BANK INFO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+              <div>
+                <span class="inv-section-title">Payment Details</span>
+                <div class="space-y-2 mt-1">
+                  <div class="flex justify-between"><span class="text-slate-500">Payment Method</span><span class="font-semibold text-slate-800">UPI (PhonePe)</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Transaction ID</span><span class="font-mono font-semibold text-slate-700 text-[11px]">TXN3K8M2N5P7QR</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Gateway</span><span class="font-semibold text-slate-800">Razorpay</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Payment Status</span><span class="font-semibold text-green-600">Paid</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Paid On</span><span class="font-medium text-slate-700">15 Jan 2026, 10:20 AM</span></div>
+                </div>
+              </div>
+              <div>
+                <span class="inv-section-title">Bank Details (For NEFT/RTGS)</span>
+                <div class="space-y-2 mt-1">
+                  <div class="flex justify-between"><span class="text-slate-500">Bank Name</span><span class="font-semibold text-slate-800">HDFC Bank Ltd.</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Account Name</span><span class="font-semibold text-slate-800">ClickCodex Retail Pvt. Ltd.</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Account No.</span><span class="font-mono font-semibold text-slate-700 text-[11px]">50200012345678</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">IFSC Code</span><span class="font-mono font-semibold text-slate-700 text-[11px]">HDFC000123456</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Account Type</span><span class="font-semibold text-slate-800">Current Account</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Branch</span><span class="font-medium text-slate-700">Ratlam, MP</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">UPI ID</span><span class="font-mono font-semibold text-slate-700 text-[11px]">rahulsharma@ybl</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inv-divider"></div>
+
+            <!-- DECLARATION -->
+            <div class="text-[10px] text-slate-500 leading-relaxed space-y-1">
+              <p class="font-semibold text-slate-600">Declaration:</p>
+              <p>We declare that this invoice shows the actual price of goods described and that all particulars are true and correct. As per Section 31(3)(a) of CGST Act 2017, the tax is payable on a reverse charge basis and the same has not been collected from the buyer. This is a system-generated invoice and does not require a physical signature.</p>
+              <p class="font-semibold text-slate-600 mt-2">Subject to jurisdiction of Ratlam, Madhya Pradesh, India.</p>
+            </div>
+
+            <!-- SIGNATURE AREA -->
+            <div class="flex items-end justify-between mt-6 pt-4 border-t border-slate-200">
+              <div class="text-[10px] text-slate-400">
+                <p class="font-semibold text-slate-600">For ClickCodex Retail Pvt. Ltd.</p>
+                <p class="mt-1">Authorized Signatory</p>
+                <div class="mt-3 border-t border-slate-300 w-40"></div>
+                <p class="mt-2">Name: <span class="font-medium text-slate-600">_________________</span></p>
+                <p>Designation: <span class="font-medium text-space-x-2">_________________</span></p>
+                <p>Date: <span class="font-medium text-slate-600">_________________</span></p>
+              </div>
+              <div class="text-right text-[10px] text-slate-400 text-right">
+                <p class="font-semibold text-slate-600">For Rahul Sharma</p>
+                <p class="mt-1">Customer Acknowledgement</p>
+                <div class="mt-3 border-t border-slate-300 w-40 ml-auto"></div>
+                <p class="mt-2 text-right">Name: <span class="font-medium text-slate-600">_________________</span></p>
+                <p class="text-right">Date: <span class="font-medium text-slate-600">_________________</span></p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER: Company Details -->
+      <div class="inv-footer px-6 sm:px-8 py-5 text-[10px] text-slate-500 leading-relaxed">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <p class="font-semibold text-slate-700">Registered Office</p>
+            <p>42, Industrial Area, Phase-2</p>
+            <p>Ratlam, Madhya Pradesh 457001, India</p>
+          </div>
+          <div>
+            <p class="font-semibold text-slate-700">Contact</p>
+            <p>Phone: 1800-233-4555</p>
+            <p>Email: billing@clickcodex.in</p>
+            <p>Web: www.clickcodex.in</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold text-slate-700">Legal</p>
+            <p>CIN: U45900MP2020PTC123456</p>
+            <p>GSTIN: 23AABCC1234F1Z5</p>
+            <p>PAN: AABCC1234F</p>
+          </div>
+        </div>
+        <div class="border-t border-slate-200 mt-4 pt-3 text-center text-slate-400">
+          This is a computer-generated invoice. No physical signature is required.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl no-print">
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">grid_view</span><span class="text-[10px] font-semibold">Categories</span></button>
+  <button class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span><span class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">2</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span></button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1"><span class="material-icons text-2xl">person_outline</span><span class="text-[10px] font-semibold">Profile</span></button>
+</div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="mobile-sidebar" class="fixed inset-0 z-[60] overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none no-print">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">R</div><span class="font-heading font-bold">Rahul Sharma</span></div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-1">
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px]">shopping_bag</span> My Orders</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">favorite</span> My Wishlist</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">local_mall</span> My Cart</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">person</span> Profile</a>
+      <a href="#" class="sidebar-link w-full text-left"><span class="material-icons text-[20px] text-slate-400">help</span> Help Center</a>
+      <a href="#" class="sidebar-link w-full text-left hover:!bg-red-50 hover:!text-red-500"><span class="material-icons text-[20px] text-slate-400">logout</span> Sign Out</a>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS BAR -->
+<div class="md:hidden fixed bottom-[56px] left-0 right-0 bg-white border-t border-slate-200 z-40 px-4 py-3 flex items-center justify-between shadow-[0_-4px_8px_8px] no-print">
+  <a href="#" class="flex items-center gap-2 text-sm text-cc-blue font-semibold"><span class="material-icons text-[18px]">arrow_back</span> Back to Orders</a>
+  <div class="flex gap-2">
+    <button onclick="doPrint()" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2 shadow-md"><span class="material-icons text-[18px]">print</span> Print</button>
+    <button onclick="downloadPDF()" class="border-2 border-cc-orange text-cc-orange hover:bg-cc-orange hover:text-white font-bold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2"><span class="material-icons text-[18px]">download</span> Download</button>
+  </div>
+</div>
+
+<!-- DESKTOP ACTION BAR -->
+<div class="hidden md:flex items-center justify-between bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-3 mb-5 no-print">
+  <a href="#" class="flex items-center gap-2 text-sm text-slate-600 hover:text-cc-blue font-semibold transition"><span class="material-icons text-[18px]">arrow_back</span> Back to Orders</a>
+  <div class="flex items-center gap-3">
+    <button onclick="doPrint()" class="bg-cc-blue hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2 shadow-md"><span class="material-icons text-[18px]">print</span> Print Invoice</button>
+    <button onclick="downloadPDF()" class="border-2 border-cc-orange text-_cc-orange hover:bg-cc-orange hover:text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2"><span class="material-icons text-[18px]">download</span> Download PDF</button>
+    <button onclick="shareInvoice()" class="border border-slate-200 text-slate-600 hover:border-cc-blue hover:text-cc-blue font-semibold px-5 py-3 rounded-xl transition text-sm flex items-center gap-2"><span class="material-icons text-[18px]">share</span> Share</button>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// ORDER DATA — orders + order_items (same order as order detail page)
+// ============================================================
+const ORDER = {
+  order_number: 'ORD-20260115-0008',
+  placed_at: '2026-01-15T10:20:00',
+  shipping_name: 'Rahul Sharma',
+  shipping_phone: '9876543210',
+  shipping_line1: '42, Shri Nagar Colony, Near Railway Station',
+  shipping_line2: 'Behind State Bank of India, Main Road',
+  shipping_city: 'Real-time',
+  shipping_state: 'Madhya Pradesh',
+  shipping_country: 'India',
+  shipping_postal: '457001',
+  subtotal: 4998.00,
+  discount_amount: 1200.00,
+  shipping_charge: 0.00,
+  tax_amount: 569.76,
+  total_amount: 4367.76,
+  currency: 'INR',
+  coupon_code: null,
+  payment_method: 'UPI (PhonePe)',
+  payment_txn_id: 'TXN3K8M2N5P7QR',
+  payment_status: 'paid',
+  carrier_name: 'BlueDart Express',
+  tracking_number: 'BLDA1234567890',
+  estimated_delivery: '2026-01-19T23:59:00',
+  shipped_at: '2026-01-16T14:00:00'
+};
+
+const ITEMS = [
+  {
+    product_name: 'BoomBox Mini Portable Bluetooth Speaker',
+    sku: 'BB-MINI-GRN-001',
+    hsn: '8516 80 90 — Speakers, headphones and other audio equipment',
+    sac: '998332',
+    variant_label: 'Color: Forest Green',
+    image_url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1599.00,
+    sale_price: 799.00,
+    quantity: 2,
+    tax_rate: 18.00,
+    tax_amount: 287.64,
+    line_total: 1598.00
+  },
+  {
+    product_name: 'AromaZen Essential Oil Diffuser 300ml',
+    sku: 'AZ-DIFF-300-WHT',
+    hsn: '3305 99 90 — Essential oils, perfumery & aromatics',
+    sac: '998331',
+    variant_label: 'Color: White',
+    image_url: 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=200&auto=format&fit=crop&q=80',
+    unit_price: 999.00,
+    sale_price: 449.00,
+    quantity: 1,
+    tax_rate: 12.00,
+    tax_amount: 53.88,
+    line_total: 449.00
+  },
+  {
+    product_name: 'SwiftCharge 65W GaN Fast Charger',
+    sku: 'SC-65W-GAN-BLK',
+    hsn: '8504 40 90 — Electrical machinery and apparatus',
+    sac: '998420',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1999.00,
+    sale_price: 999.00,
+    quantity: 1,
+    tax_rate: 18.00,
+    tax_amount: 179.82,
+    line_total: 999.00
+  },
+  {
+    product_name: 'Urban Trail Waterproof Laptop Backpack 15.6"',
+    sku: 'UT-BP-156-NVY',
+    hsn: '4202 21 00 — Luggage, bags & similar accessories',
+    sac: '42022100',
+    variant_label: 'Color: Navy Blue',
+    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1199.00,
+    sale_price: 899.00,
+    quantity: 1,
+    tax_rate: 12.00,
+    tax_amount: 107.88,
+    line_total: 899.00
+  },
+  {
+    product_name: 'NovaGlow LED Ring Light 10" with Tripod',
+    sku: 'NG-RL-10-TPD',
+    hsn: '9405 20 00 — Lighting equipment',
+    sac: '94052000',
+    variant_label: null,
+    image_url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200&auto=format&fit=crop&q=80',
+    unit_price: 1299.00,
+    sale_price: 649.00,
+    quantity: 1,
+    tax_rate: 18.00,
+    tax_amount: 116.82,
+    line_total: 649.00
+  }
+];
+
+// ============================================================
+// RENDER INVOICE
+// ============================================================
+function renderInvoice() {
+  const o = ORDER;
+  const items = ITEMS;
+  const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+
+  // Items table
+  const itemRows = items.map((item, idx) => {
+    const disc = item.unit_price > item.sale_price ? Math.round(((item.unit_price - item.sale_price) / item.unit_price) * 100) : 0;
+    const halfTax = item.tax_amount / 2;
+    return `<tr>
+      <td class="text-slate-400">${idx + 1}</td>
+      <td>
+        <p class="font-medium text-slate-800 leading-tight">${item.product_name}</p>
+        ${item.variant_label ? `<p class="text-slate-400 mt-0.5">${item.variant_label}</p>` : ''}
+        <p class="text-slate-400 text-[10px] mt-0.5">SKU: ${item.sku}</p>
+      </td>
+      <td class="text-center text-slate-500">
+        <p class="text-[10px] font-mono">${item.hsn.split(' — ')[0]}</p>
+        <p class="text-[10px] text-slate-400">SAC: ${item.sac}</p>
+      </td>
+      <td class="text-center font-semibold text-slate-700">${item.quantity}</td>
+      <td class="text-right">
+        <p class="font-medium text-slate-800">${fp(item.sale_price)}</p>
+        ${disc > 0 ? `<p class="text-[10px] text-green-600 font-medium line-through">${fp(item.unit_price)}</p>` : ''}
+      </td>
+      <td class="text-center font-medium text-slate-600">${item.tax_rate}%</td>
+      <td class="text-right font-medium text-slate-600">${fp(halfTax)}</td>
+      <td class="text-right font-medium text-slate-600">${fp(halfTax)}</td>
+      <td class="text-right font-bold text-slate-900">${fp(item.line_total)}</td>
+    </tr>`;
+  });
+  document.getElementById('invoice-items-body').innerHTML = itemRows;
+
+  // Price totals
+  document.getElementById('inv-subtotal').textContent = fp(o.subtotal);
+  document.getElementById('inv-discount').textContent = o.discount_amount > 0 ? '−' + fp(o.discount_amount) : '—';
+  document.getElementById('inv-shipping').textContent = o.shipping_charge === 0 ? 'FREE' : fp(o.shipping_charge);
+  document.getElementById('inv-grand-total').textContent = fp(o.total_amount);
+
+  // Amount in words
+  document.getElementById('amount-words').textContent = numberToWords(Math.round(o.total_amount));
+
+  // GST summary
+  const gstData = {};
+  items.forEach(item => {
+    const rate = item.tax_rate;
+    if (!gstData[rate]) gstData[rate] = { rate, taxable: 0, cgst: 0, sgst: 0, total: 0 };
+    const taxable = item.sale_price * item.quantity;
+    gstData[rate].taxable += taxable;
+    const tax = Math.round(taxable * rate / 100) / 2 * 2; // Split equally CGST+SGST
+    gstData[rate].cgst += Math.round(tax / 2 * 100) / 100;
+    gstData[rate].sgst += Math.round(tax / 2 * 100) / 100;
+    gstData[rate].total += tax;
+  });
+
+  const gstRows = Object.values(gstData).sort((a, b) => a.rate - b.rate).map(g => `
+    <tr>
+      <td class="font-semibold" style="border-top:1px solid #E2E8F8;padding:6px 4px">${g.rate}%</td>
+      <td class="text-right" style="border-top:1px solid #E2E8F8;padding:6px 4px">${fp(g.taxable)}</td>
+      <td class="text-right" style="border-top:1px solid #E2E8F8;padding:6px 4px">${fp(g.cgst)}</td>
+      <td class="text-right" style="border-top:1px solid #E2E8F8;padding:6px 4px">${fp(g.sgst)}</td>
+      <td class="text-right font-bold" style="border-top:1px solid #E2E8F8;padding:6px 4px;color:#0F172A">${fp(g.total)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('gst-summary-body').innerHTML = gstRows;
+  document.getElementById('gst-taxable-total').textContent = fp(Object.values(gstData).reduce((s, g) => s + g.taxable, 0));
+  document.getElementById('gst-cgst-total').textContent = fp(Object.values(gstData).reduce((s, g) => s + g.cgst, 0));
+  document.getElementById('sgst-total').textContent = fp(Object.values(gstData).reduce((s, g) => s + g.sgst, 0));
+  document.getElementById('gst-total').textContent = fp(Object.values(gstData).reduce((s, g) => s + g.total, 0));
+}
+
+// ==================== HELPERS ====================
+function fp(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+function numberToWords(n) {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+    'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  if (n === 0) return 'Zero';
+  if (n < 0) return 'Minus ' + numberToWords(Math.abs(n));
+  if (n >= 10000000000) return numberToWords(Math.floor(n / 1000000000)) + ' Crore';
+  if (n >= 100000) return numberToWords(Math.floor(n / 100000)) + ' Lakh';
+  if (n >= 1000) return numberToWords(Math.floor(n / 1000)) + ' Thousand';
+  const belowHundred = n % 1000;
+  if (belowHundred > 0) {
+    const word = ones[belowHundred];
+    return (word ? word + ' Hundred' : '') + (n >= 100 ? ' and ' + numberToWords(Math.floor(n / 100)) + '' : '');
+  }
+  return '';
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type = 'success'){
+  const c = document.getElementById('toast-container');
+  const cl = {success:'bg-green-600',error:'bg-red-500',info:'bg-cc-blue',warning:'bg-amber-500'};
+  const ic = {success:'check_circle',error:'error',info:'info',warning:'warning'};
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${cl[type]||cl.info} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${ic[type]||'info'}</span><span class="flex-1">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.replace('toast-in','toast-out'); setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// ==================== ACTIONS ====================
+function doPrint(){ window.print(); }
+
+function downloadPDF(){
+  showToast('Preparing PDF download... (in production, this triggers server-side PDF generation)', 'info');
+  // In real app: window.open('/api/orders/ORD-20260115-0008/invoice/pdf', '_blank');
+}
+
+function shareInvoice(){
+  const url = 'https://clickcodex.in/account/orders/ORD-20260115-0008/invoice';
+  if(navigator.share){
+    navigator.share({title:'Invoice - '+ORDER.order_number, url:url}).catch(()=>{
+      navigator.clipboard.writeText(url).then(()=>showToast('Link copied to clipboard','info')).catch(()=>showToast(url,'info'));
+    });
+  } else {
+    navigator.clipboard.writeText(url).then(()=>showToast('Invoice link copied to clipboard','info')).catch(()=>showToast(url,'info'));
+  }
+}
+
+// ==================== MOBILE SIDEBAR ====================
+function toggleMobileSidebar(open){
+  const el = document.getElementById('mobile-sidebar');
+  if(open) el.classList.remove('translate-x-[-100%]','pointer-events-none');
+  else el.classList.add('translate-x-[-100%]','pointer-events-none');
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', renderInvoice);
+</script>
+</body>
+</html>

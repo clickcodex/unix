@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout: Select Address — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B', purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A', light: '#F8FAFC', ice: '#F1F5F9' }
+        },
+        fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  .scrollbar-none::-webkit-scrollbar{display:none}
+  .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+  input:focus,select:focus,textarea:focus{outline:none}
+  ::selection{background:#FF5100;color:#fff}
+  .step-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;transition:all .3s ease;position:relative;z-index:2;flex-shrink:0}
+  .step-circle.completed{background:#2D82FF;color:#fff}
+  .step-circle.active{background:#2D82FF;color:#fff;box-shadow:0 0 0 6px rgba(45,130,255,.15)}
+  .step-circle.upcoming{background:#E2E8F0;color:#94A3B8}
+  .step-line{height:3px;flex:1;border-radius:2px;transition:background .3s ease}
+  .step-line.completed{background:#2D82FF}
+  .step-line.upcoming{background:#E2E8F0}
+  .address-card{border:2px solid #E2E8F0;border-radius:16px;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer;background:#fff}
+  .address-card:hover{border-color:#94A3B8;box-shadow:0 4px 16px rgba(15,23,42,.06)}
+  .address-card.selected{border-color:#2D82FF;box-shadow:0 0 0 4px rgba(45,130,255,.1),0 4px 16px rgba(45,130,255,.08)}
+  .address-card.selected .addr-radio-dot{background:#2D82FF;box-shadow:inset 0 0 0 3px #fff}
+  .address-card.default-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2D82FF,#8C30F5);border-radius:16px 16px 0 0}
+  .addr-radio{width:22px;height:22px;border-radius:50%;border:2px solid #CBD5E1;display:flex;align-items:center;justify-content:center;transition:all .2s ease;flex-shrink:0}
+  .addr-radio-dot{width:10px;height:10px;border-radius:50%;background:transparent;transition:all .2s ease}
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  .toast-in{animation:slideInRight .35s ease-out forwards}
+  .toast-out{animation:slideOutRight .3s ease-in forwards}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .35s ease-out forwards}
+  @keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+  .scale-in{animation:scaleIn .25s ease-out forwards}
+  @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  .cart-badge{animation:pulseBadge 2s ease-in-out infinite}
+  .form-input{width:100%;border:1.5px solid #E2E8F0;border-radius:12px;padding:12px 14px;font-size:14px;color:#1E293B;background:#fff;transition:all .15s ease}
+  .form-input:focus{border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.08)}
+  .form-input.error{border-color:#EF4444;box-shadow:0 0 0 3px rgba(239,68,68,.08)}
+  .form-input::placeholder{color:#94A3B8}
+  .form-label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+  .form-error{font-size:11px;color:#EF4444;margin-top:4px;display:none}
+  .form-error.show{display:block}
+  .label-chip{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s ease;display:inline-flex;align-items:center;gap:6px;color:#475569;background:#fff}
+  .label-chip:hover{border-color:#2D82FF;color:#2D82FF}
+  .label-chip.active{border-color:#2D82FF;background:#EFF6FF;color:#2D82FF;font-weight:600}
+  .modal-backdrop{backdrop-filter:blur(4px)}
+  .addr-action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;transition:all .15s ease;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none;background:transparent;color:#64748B}
+  .addr-action-btn:hover{background:#F1F5F9}
+  .addr-action-btn.danger:hover{background:#FEF2F2;color:#EF4444}
+  @keyframes removeCard{to{opacity:0;transform:scale(.95);max-height:0;margin:0;padding:0;border-width:0;overflow:hidden}}
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 pointer-events-none" style="max-width:380px"></div>
+
+<!-- TOP BAR -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Secure Checkout — 256-bit SSL Encrypted</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Customer Care</a>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 max-w-md mx-auto hidden sm:flex items-center gap-0 px-4">
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle active"><span class="material-icons text-[18px]">location_on</span></div>
+        <span class="text-[10px] font-semibold text-cc-blue">Address</span>
+      </div>
+      <div class="step-line upcoming" id="step-line-1"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle upcoming" id="step-circle-2"><span class="material-icons text-[18px]">payment</span></div>
+        <span class="text-[10px] font-medium text-slate-400" id="step-label-2">Payment</span>
+      </div>
+      <div class="step-line upcoming" id="step-line-2"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="step-circle upcoming" id="step-circle-3"><span class="material-icons text-[18px]">check_circle</span></div>
+        <span class="text-[10px] font-medium text-slate-400" id="step-label-3">Confirm</span>
+      </div>
+    </div>
+    <div class="sm:hidden flex-1 text-center">
+      <p class="text-white/60 text-[10px] font-medium uppercase tracking-wider">Step 1 of 3</p>
+      <p class="text-white text-xs font-bold">Select Address</p>
+    </div>
+    <div class="flex items-center gap-3 text-white shrink-0">
+      <a href="#" class="relative flex items-center gap-1.5 text-xs hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <span class="material-icons text-[20px]">shopping_cart</span>
+        <span class="hidden md:inline">Cart</span>
+        <span class="cart-badge bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">6</span>
+      </a>
+      <span class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10">
+        <span class="material-icons text-[18px]">lock</span>
+        <span class="hidden md:inline">Secure</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+    <a href="#" class="hover:text-cc-blue transition">Home</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <a href="#" class="hover:text-cc-blue transition">Cart</a>
+    <span class="material-icons text-[14px]">chevron_right</span>
+    <span class="text-slate-800 font-semibold">Checkout: Address</span>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- LEFT -->
+    <div class="flex-1 min-w-0">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 mb-5">
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-cc-blue/10 flex items-center justify-center">
+              <span class="material-icons text-cc-blue text-xl">location_on</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">Select Delivery Address</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Choose a saved address or add a new one</p>
+            </div>
+          </div>
+          <span id="addr-count-badge" class="text-xs bg-cc-ice text-slate-500 font-bold px-3 py-1 rounded-full">0 saved</span>
+        </div>
+        <div id="address-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <button onclick="openAddressModal()" class="mt-4 w-full border-2 border-dashed border-slate-300 hover:border-cc-blue rounded-2xl p-5 flex items-center justify-center gap-3 text-slate-500 hover:text-cc-blue transition group">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-cc-blue/10 flex items-center justify-center transition">
+            <span class="material-icons text-xl">add</span>
+          </div>
+          <div class="text-left">
+            <p class="font-semibold text-sm">Add a New Address</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Save a new shipping address to your account</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- Contact Section (shown after address selected) -->
+      <div id="contact-section" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 mb-5 hidden fade-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-cc-purple/10 flex items-center justify-center">
+            <span class="material-icons text-cc-purple text-xl">phone</span>
+          </div>
+          <div>
+            <h3 class="font-heading font-bold text-base text-slate-900">Contact for Delivery</h3>
+            <p class="text-xs text-slate-500 mt-0.5">We'll use this for delivery updates & OTP verification</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Full Name</label>
+            <input type="text" id="contact-name" class="form-input" placeholder="Enter your name" value="Rahul Sharma">
+          </div>
+          <div>
+            <label class="form-label">Phone Number</label>
+            <div class="flex">
+              <span class="flex items-center px-4 bg-slate-50 border border-r-0 border-slate-200 rounded-l-xl text-sm text-slate-500 font-medium shrink-0">+91</span>
+              <input type="tel" id="contact-phone" class="form-input rounded-l-none" placeholder="10-digit number" maxlength="10" value="9876543210">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="lg:w-[380px] shrink-0">
+      <div class="lg:sticky lg:top-[80px] space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="bg-gradient-to-r from-cc-dark to-slate-800 text-white px-5 py-4 flex items-center justify-between">
+            <h3 class="font-heading font-bold text-sm flex items-center gap-2">
+              <span class="material-icons text-cc-yellow text-lg">shopping_basket</span> Order Summary
+            </h3>
+            <a href="#" class="text-xs text-white/70 hover:text-white transition flex items-center gap-1">Edit <span class="material-icons text-[14px]">edit</span></a>
+          </div>
+          <div id="sidebar-cart-items" class="p-4 space-y-3 max-h-[260px] overflow-y-auto scrollbar-none"></div>
+          <div class="border-t border-slate-100 px-5 py-4 space-y-2">
+            <div class="flex justify-between text-sm"><span class="text-slate-500">Subtotal (6 items)</span><span class="font-medium text-slate-800" id="summary-subtotal">₹0</span></div>
+            <div class="flex justify-between text-sm"><span class="text-slate-500">Discount</span><span class="font-medium text-green-600" id="summary-discount">−₹0</span></div>
+            <div class="flex justify-between text-sm"><span class="text-slate-500">Delivery</span><span class="font-medium text-green-600">FREE</span></div>
+            <div class="flex justify-between text-sm"><span class="text-slate-500">Tax (GST)</span><span class="font-medium text-slate-800" id="summary-gst">₹0</span></div>
+            <div class="border-t border-dashed border-slate-200 pt-3 flex justify-between items-baseline">
+              <span class="font-heading font-bold text-slate-900">Total</span>
+              <span class="font-heading font-extrabold text-xl text-cc-orange" id="summary-total">₹0</span>
+            </div>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
+              <span class="material-icons text-green-600 text-[16px]">savings</span>
+              <p class="text-[11px] text-green-700 font-medium">You save <span id="summary-savings">₹0</span> on this order</p>
+            </div>
+          </div>
+        </div>
+        <div id="delivery-info-card" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hidden fade-up">
+          <h4 class="font-heading font-semibold text-sm text-slate-800 flex items-center gap-2 mb-3">
+            <span class="material-icons text-cc-blue text-lg">schedule</span> Delivery Estimate
+          </h4>
+          <div id="delivery-info-content"></div>
+        </div>
+        <button id="continue-btn" onclick="continueToPayment()" disabled class="w-full bg-cc-orange hover:bg-orange-600 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition shadow-lg text-base flex items-center justify-center gap-2">
+          Continue to Payment <span class="material-icons text-lg">arrow_forward</span>
+        </button>
+        <p class="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
+          <span class="material-icons text-[12px]">lock</span> Safe & Secure SSL Encrypted Checkout
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
+  <div class="px-4 py-3 flex items-center justify-between">
+    <div>
+      <p class="text-[10px] text-slate-400 font-medium uppercase">Total Amount</p>
+      <p class="font-heading font-extrabold text-xl text-cc-orange" id="mobile-summary-total">₹0</p>
+    </div>
+    <button id="continue-btn-mobile" onclick="continueToPayment()" disabled class="bg-cc-orange hover:bg-orange-600 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2 shadow-md">
+      Continue <span class="material-icons text-[18px]">arrow_forward</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== ADDRESS MODAL ===== -->
+<div id="address-modal" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center overflow-hidden hidden">
+  <div onclick="closeAddressModal()" class="absolute inset-0 bg-black/50 modal-backdrop cursor-pointer"></div>
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-xl w-full shadow-2xl relative z-10 max-h-[92vh] flex flex-col scale-in">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <h3 id="modal-title" class="font-heading font-bold text-lg text-slate-900 flex items-center gap-2">
+        <span class="material-icons text-cc-blue">add_location</span> <span id="modal-title-text">Add New Address</span>
+      </h3>
+      <button onclick="closeAddressModal()" class="text-slate-400 hover:text-slate-600 transition"><span class="material-icons">close</span></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <!-- Label -->
+      <div>
+        <label class="form-label">Address Label</label>
+        <div class="flex flex-wrap gap-2" id="label-chips">
+          <button type="button" class="label-chip active" data-label="Home" onclick="selectLabel(this)"><span class="material-icons text-[16px]">home</span> Home</button>
+          <button type="button" class="label-chip" data-label="Office" onclick="selectLabel(this)"><span class="material-icons text-[16px]">business</span> Office</button>
+          <button type="button" class="label-chip" data-label="Other" onclick="selectLabel(this)"><span class="material-icons text-[16px]">place</span> Other</button>
+        </div>
+        <input type="hidden" id="addr-label" value="Home">
+        <input type="text" id="addr-custom-label" class="form-input mt-2 hidden" placeholder="e.g. Warehouse, Parents' House" maxlength="60">
+      </div>
+      <!-- Name -->
+      <div>
+        <label class="form-label">Full Name <span class="text-red-400">*</span></label>
+        <input type="text" id="addr-name" class="form-input" placeholder="Recipient's full name" maxlength="120">
+        <p class="form-error" id="err-name">Please enter a valid name</p>
+      </div>
+      <!-- Phone -->
+      <div>
+        <label class="form-label">Mobile Number <span class="text-red-400">*</span></label>
+        <div class="flex">
+          <span class="flex items-center px-4 bg-slate-50 border border-r-0 border-slate-200 rounded-l-xl text-sm text-slate-500 font-medium shrink-0">+91</span>
+          <input type="tel" id="addr-phone" class="form-input rounded-l-none" placeholder="10-digit mobile number" maxlength="10">
+        </div>
+        <p class="form-error" id="err-phone">Please enter a valid 10-digit mobile number</p>
+      </div>
+      <!-- Line 1 -->
+      <div>
+        <label class="form-label">Address Line 1 <span class="text-red-400">*</span></label>
+        <input type="text" id="addr-line1" class="form-input" placeholder="House no., Building, Street, Area" maxlength="255">
+        <p class="form-error" id="err-line1">Please enter your address</p>
+      </div>
+      <!-- Line 2 -->
+      <div>
+        <label class="form-label">Address Line 2 <span class="text-slate-400 font-normal">(Optional)</span></label>
+        <input type="text" id="addr-line2" class="form-input" placeholder="Landmark, Colony, Sector" maxlength="255">
+      </div>
+      <!-- City + State -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">City <span class="text-red-400">*</span></label>
+          <input type="text" id="addr-city" class="form-input" placeholder="e.g. Mumbai" maxlength="100">
+          <p class="form-error" id="err-city">Please enter city</p>
+        </div>
+        <div>
+          <label class="form-label">State <span class="text-red-400">*</span></label>
+          <select id="addr-state" class="form-input cursor-pointer">
+            <option value="">Select State</option>
+            <option>Andhra Pradesh</option>
+            <option>Arunachal Pradesh</option>
+            <option>Assam</option>
+            <option>Bihar</option>
+            <option>Chhattisgarh</option>
+            <option>Goa</option>
+            <option>Gujarat</option>
+            <option>Haryana</option>
+            <option>Himachal Pradesh</option>
+            <option>Jharkhand</option>
+            <option>Karnataka</option>
+            <option>Kerala</option>
+            <option>Madhya Pradesh</option>
+            <option>Maharashtra</option>
+            <option>Manipur</option>
+            <option>Meghalaya</option>
+            <option>Mizoram</option>
+            <option>Nagaland</option>
+            <option>Odisha</option>
+            <option>Punjab</option>
+            <option>Rajasthan</option>
+            <option>Sikkim</option>
+            <option>Tamil Nadu</option>
+            <option>Telangana</option>
+            <option>Tripura</option>
+            <option>Uttar Pradesh</option>
+            <option>Uttarakhand</option>
+            <option>West Bengal</option>
+            <option>Andaman and Nicobar Islands</option>
+            <option>Chandigarh</option>
+            <option>Dadra and Nagar Haveli and Daman and Diu</option>
+            <option>Delhi</option>
+            <option>Jammu and Kashmir</option>
+            <option>Ladakh</option>
+            <option>Lakshadweep</option>
+            <option>Puducherry</option>
+          </select>
+          <p class="form-error" id="err-state">Please select state</p>
+        </div>
+      </div>
+      <!-- Pincode -->
+      <div>
+        <label class="form-label">Pincode <span class="text-red-400">*</span></label>
+        <input type="text" id="addr-pincode" class="form-input" placeholder="6-digit pincode" maxlength="6">
+        <p class="form-error" id="err-pincode">Please enter a valid 6-digit pincode</p>
+      </div>
+      <!-- Is Default -->
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="addr-default" class="w-4 h-4 text-cc-blue border-slate-300 rounded focus:ring-cc-blue/20">
+        <label for="addr-default" class="text-xs font-semibold text-slate-600 cursor-pointer">Set as default address</label>
+      </div>
+    </div>
+    <div class="p-5 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeAddressModal()" class="flex-1 bg-white border border-slate-200 text-slate-700 font-semibold py-3 rounded-xl hover:bg-slate-50 transition text-sm">Cancel</button>
+      <button onclick="saveAddress()" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition text-sm">Save Address</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRMATION MODAL ===== -->
+<div id="delete-modal" class="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden hidden">
+  <div onclick="closeDeleteModal()" class="absolute inset-0 bg-black/50 modal-backdrop cursor-pointer"></div>
+  <div class="bg-white rounded-2xl max-w-sm w-[90%] shadow-2xl relative z-10 p-6 scale-in">
+    <div class="text-center">
+      <div class="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
+        <span class="material-icons text-red-500 text-2xl">delete_outline</span>
+      </div>
+      <h3 class="font-heading font-bold text-lg text-slate-800 mb-2">Delete Address?</h3>
+      <p class="text-sm text-slate-500 mb-6">Are you sure you want to remove this address from your profile?</p>
+      <div class="flex gap-3">
+        <button onclick="closeDeleteModal()" class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition text-sm">Cancel</button>
+        <button id="confirm-delete-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition text-sm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== MOCK DATABASE ====================
+let addresses = [
+  {
+    id: 1,
+    label: 'Home',
+    name: 'Rahul Sharma',
+    phone: '9876543210',
+    line1: 'Flat 402, Royal Palms Residency, Road No. 4',
+    line2: 'Near Central Park, Sector 15',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400001',
+    is_default: true
+  },
+  {
+    id: 2,
+    label: 'Office',
+    name: 'Rahul Sharma',
+    phone: '9123456789',
+    line1: 'ClickCodex Tech Labs, Level 6, Block C',
+    line2: 'EcoSpace IT Park, Outer Ring Road',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    pincode: '560103',
+    is_default: false
+  }
+];
+
+const cartItems = [
+  { name: 'TrueSound Pro Wireless Earbuds with ANC', qty: 1, price: 1499, base_price: 2999, image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=120&auto=format&fit=crop&q=80', label: 'Color: Midnight Black' },
+  { name: 'FitTrack AMOLED Smart Watch', qty: 1, price: 2799, base_price: 3999, image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=120&auto=format&fit=crop&q=80', label: 'Strap: Large' },
+  { name: 'Urban Trail Laptop Backpack 15.6"', qty: 2, price: 899, base_price: 1199, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=120&auto=format&fit=crop&q=80', label: '' },
+  { name: 'HomeChef Digital Air Fryer 4.5L', qty: 1, price: 3199, base_price: 3999, image: 'https://images.unsplash.com/photo-1626509653290-18d9a934b55d?w=120&auto=format&fit=crop&q=80', label: '' },
+  { name: 'SwiftCharge 65W GaN Fast Charger', qty: 1, price: 999, base_price: 1999, image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=120&auto=format&fit=crop&q=80', label: '' },
+  { name: 'Cotton Luxe Casual Shirt', qty: 1, price: 599, base_price: 1499, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=120&auto=format&fit=crop&q=80', label: 'Size: L' }
+];
+
+let selectedAddressId = null;
+let editingAddressId = null;
+let deleteTargetId = null;
+
+// ==================== TOAST ALERT ====================
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const colors = { success: 'bg-green-600', error: 'bg-red-500', info: 'bg-cc-blue', warning: 'bg-amber-500' };
+  const icons = { success: 'check_circle', error: 'error', info: 'info', warning: 'warning' };
+  
+  const t = document.createElement('div');
+  t.className = `toast-in pointer-events-auto flex items-center gap-3 ${colors[type]} text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium`;
+  t.innerHTML = `<span class="material-icons text-lg">${icons[type]}</span><span class="flex-1">${msg}</span>`;
+  container.appendChild(t);
+  
+  setTimeout(() => {
+    t.classList.replace('toast-in', 'toast-out');
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
+}
+
+// ==================== RENDERING CODE ====================
+function init() {
+  renderCartSummary();
+  renderAddresses();
+  
+  const defaultAddress = addresses.find(a => a.is_default);
+  if (defaultAddress) {
+    selectAddress(defaultAddress.id);
+  }
+}
+
+function renderCartSummary() {
+  const container = document.getElementById('sidebar-cart-items');
+  let mrpSubtotal = 0;
+  let sellingSubtotal = 0;
+  let totalQty = 0;
+
+  container.innerHTML = cartItems.map(item => {
+    mrpSubtotal += item.base_price * item.qty;
+    sellingSubtotal += item.price * item.qty;
+    totalQty += item.qty;
+
+    return `
+      <div class="flex gap-3 text-slate-700 text-xs">
+        <img src="${item.image}" class="w-12 h-12 rounded-lg bg-slate-50 object-contain border border-slate-100 p-1 shrink-0">
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-slate-800 truncate" title="${item.name}">${item.name}</p>
+          <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+            <span>Qty: ${item.qty}</span>
+            <span class="font-semibold text-slate-800">${formatPrice(item.price * item.qty)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const discount = mrpSubtotal - sellingSubtotal;
+  const gst = Math.round(sellingSubtotal * 0.18); // Simulated 18% overall GST
+  const finalTotal = sellingSubtotal + gst;
+
+  // Update Summary DOM
+  document.getElementById('summary-subtotal').textContent = formatPrice(mrpSubtotal);
+  document.getElementById('summary-discount').textContent = `−${formatPrice(discount)}`;
+  document.getElementById('summary-gst').textContent = formatPrice(gst);
+  document.getElementById('summary-total').textContent = formatPrice(finalTotal);
+  document.getElementById('mobile-summary-total').textContent = formatPrice(finalTotal);
+  document.getElementById('summary-savings').textContent = formatPrice(discount);
+}
+
+function formatPrice(val) {
+  return '₹' + Math.round(val).toLocaleString('en-IN');
+}
+
+function renderAddresses() {
+  const container = document.getElementById('address-cards-grid');
+  document.getElementById('addr-count-badge').textContent = `${addresses.length} saved`;
+
+  container.innerHTML = addresses.map(addr => {
+    const isSelected = selectedAddressId === addr.id;
+    return `
+      <div onclick="selectAddress(${addr.id})" 
+           class="address-card p-5 ${isSelected ? 'selected' : ''} ${addr.is_default ? 'default-card' : ''} flex flex-col justify-between">
+        <div class="flex items-start gap-3">
+          <div class="addr-radio mt-1">
+            <div class="addr-radio-dot"></div>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-heading font-bold text-sm text-slate-900">${addr.label}</span>
+              ${addr.is_default ? '<span class="bg-slate-100 text-slate-600 font-bold text-[9px] px-1.5 py-0.5 rounded-md tracking-wider uppercase">Default</span>' : ''}
+            </div>
+            <p class="font-semibold text-xs text-slate-800 mt-2">${addr.name}</p>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">${addr.line1}, ${addr.line2 ? addr.line2 + ', ' : ''}${addr.city}, ${addr.state} - <span class="font-semibold text-slate-700">${addr.pincode}</span></p>
+            <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+              <span class="material-icons text-slate-400 text-[14px]">phone</span> +91 ${addr.phone}
+            </p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-4 border-t border-slate-100 pt-3">
+          <button onclick="event.stopPropagation(); editAddress(${addr.id})" class="addr-action-btn hover:text-cc-blue">
+            <span class="material-icons text-[15px]">edit</span> Edit
+          </button>
+          <button onclick="event.stopPropagation(); confirmDeleteAddress(${addr.id})" class="addr-action-btn danger">
+            <span class="material-icons text-[15px]">delete_outline</span> Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== SELECTION LOGIC ====================
+function selectAddress(id) {
+  selectedAddressId = id;
+  renderAddresses();
+
+  const addr = addresses.find(a => a.id === id);
+  if (!addr) return;
+
+  // Populate Delivery estimate
+  const deliveryCard = document.getElementById('delivery-info-card');
+  const deliveryContent = document.getElementById('delivery-info-content');
+  const contactSec = document.getElementById('contact-section');
+
+  deliveryCard.classList.remove('hidden');
+  contactSec.classList.remove('hidden');
+
+  // Calculate generic delivery estimates based on pincode
+  const today = new Date();
+  const estDate = new Date(today);
+  estDate.setDate(today.getDate() + 3);
+  const formattedEst = estDate.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
+  deliveryContent.innerHTML = `
+    <div class="flex items-center gap-2">
+      <span class="material-icons text-green-600 text-[16px]">local_shipping</span>
+      <p class="text-xs text-slate-600">Guaranteed delivery to <span class="font-bold text-slate-800">${addr.pincode}</span> by <span class="font-bold text-green-600">${formattedEst}</span></p>
+    </div>
+  `;
+
+  // Pre-fill contact inputs with selected address info
+  document.getElementById('contact-name').value = addr.name;
+  document.getElementById('contact-phone').value = addr.phone;
+
+  // Enable proceeding controls
+  document.getElementById('continue-btn').disabled = false;
+  document.getElementById('continue-btn-mobile').disabled = false;
+}
+
+// ==================== MODAL ACTIONS ====================
+function openAddressModal() {
+  editingAddressId = null;
+  document.getElementById('modal-title-text').textContent = 'Add New Address';
+  
+  // Clear Inputs
+  clearForm();
+  document.getElementById('address-modal').classList.remove('hidden');
+}
+
+function editAddress(id) {
+  editingAddressId = id;
+  const addr = addresses.find(a => a.id === id);
+  if (!addr) return;
+
+  document.getElementById('modal-title-text').textContent = 'Edit Address';
+  
+  // Set label chips
+  const chips = document.querySelectorAll('#label-chips button');
+  let isCustom = true;
+  chips.forEach(chip => {
+    if (chip.getAttribute('data-label') === addr.label) {
+      selectLabel(chip);
+      isCustom = false;
+    }
+  });
+  if (isCustom) {
+    const otherChip = Array.from(chips).find(c => c.getAttribute('data-label') === 'Other');
+    if (otherChip) {
+      selectLabel(otherChip);
+      const customInput = document.getElementById('addr-custom-label');
+      customInput.value = addr.label;
+      customInput.classList.remove('hidden');
+    }
+  }
+
+  // Populate standard inputs
+  document.getElementById('addr-name').value = addr.name;
+  document.getElementById('addr-phone').value = addr.phone;
+  document.getElementById('addr-line1').value = addr.line1;
+  document.getElementById('addr-line2').value = addr.line2;
+  document.getElementById('addr-city').value = addr.city;
+  document.getElementById('addr-state').value = addr.state;
+  document.getElementById('addr-pincode').value = addr.pincode;
+  document.getElementById('addr-default').checked = addr.is_default;
+
+  clearFormErrors();
+  document.getElementById('address-modal').classList.remove('hidden');
+}
+
+function closeAddressModal() {
+  document.getElementById('address-modal').classList.add('hidden');
+}
+
+function clearForm() {
+  const chips = document.querySelectorAll('#label-chips button');
+  selectLabel(chips[0]); // default to Home
+  document.getElementById('addr-custom-label').value = '';
+  document.getElementById('addr-custom-label').classList.add('hidden');
+  
+  document.getElementById('addr-name').value = '';
+  document.getElementById('addr-phone').value = '';
+  document.getElementById('addr-line1').value = '';
+  document.getElementById('addr-line2').value = '';
+  document.getElementById('addr-city').value = '';
+  document.getElementById('addr-state').value = '';
+  document.getElementById('addr-pincode').value = '';
+  document.getElementById('addr-default').checked = false;
+
+  clearFormErrors();
+}
+
+function selectLabel(elem) {
+  document.querySelectorAll('#label-chips button').forEach(b => b.classList.remove('active'));
+  elem.classList.add('active');
+  
+  const val = elem.getAttribute('data-label');
+  document.getElementById('addr-label').value = val;
+  
+  const customInput = document.getElementById('addr-custom-label');
+  if (val === 'Other') {
+    customInput.classList.remove('hidden');
+  } else {
+    customInput.classList.add('hidden');
+  }
+}
+
+// ==================== FORM VALIDATION ====================
+function validateForm() {
+  let isValid = true;
+  clearFormErrors();
+
+  const name = document.getElementById('addr-name');
+  if (!name.value.trim() || name.value.trim().length < 2) {
+    showError('name');
+    name.classList.add('error');
+    isValid = false;
+  }
+
+  const phone = document.getElementById('addr-phone');
+  if (!/^\d{10}$/.test(phone.value.trim())) {
+    showError('phone');
+    phone.classList.add('error');
+    isValid = false;
+  }
+
+  const line1 = document.getElementById('addr-line1');
+  if (!line1.value.trim() || line1.value.trim().length < 6) {
+    showError('line1');
+    line1.classList.add('error');
+    isValid = false;
+  }
+
+  const city = document.getElementById('addr-city');
+  if (!city.value.trim()) {
+    showError('city');
+    city.classList.add('error');
+    isValid = false;
+  }
+
+  const state = document.getElementById('addr-state');
+  if (!state.value) {
+    showError('state');
+    state.classList.add('error');
+    isValid = false;
+  }
+
+  const pincode = document.getElementById('addr-pincode');
+  if (!/^\d{6}$/.test(pincode.value.trim())) {
+    showError('pincode');
+    pincode.classList.add('error');
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+function showError(fieldId) {
+  document.getElementById(`err-${fieldId}`).classList.add('show');
+}
+
+function clearFormErrors() {
+  document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('.form-input').forEach(i => i.classList.remove('error'));
+}
+
+// ==================== SAVE ADDRESS ====================
+function saveAddress() {
+  if (!validateForm()) return;
+
+  const labelType = document.getElementById('addr-label').value;
+  const finalLabel = labelType === 'Other' 
+    ? (document.getElementById('addr-custom-label').value.trim() || 'Other') 
+    : labelType;
+
+  const isDefaultChecked = document.getElementById('addr-default').checked;
+
+  const formData = {
+    label: finalLabel,
+    name: document.getElementById('addr-name').value.trim(),
+    phone: document.getElementById('addr-phone').value.trim(),
+    line1: document.getElementById('addr-line1').value.trim(),
+    line2: document.getElementById('addr-line2').value.trim(),
+    city: document.getElementById('addr-city').value.trim(),
+    state: document.getElementById('addr-state').value,
+    pincode: document.getElementById('addr-pincode').value.trim(),
+    is_default: isDefaultChecked
+  };
+
+  if (isDefaultChecked) {
+    addresses.forEach(a => a.is_default = false);
+  }
+
+  if (editingAddressId !== null) {
+    // Edit flow
+    const index = addresses.findIndex(a => a.id === editingAddressId);
+    if (index !== -1) {
+      addresses[index] = { id: editingAddressId, ...formData };
+      showToast('Address updated successfully');
+    }
+  } else {
+    // Add flow
+    const newId = addresses.length > 0 ? Math.max(...addresses.map(a => a.id)) + 1 : 1;
+    const isFirst = addresses.length === 0;
+    
+    const newAddress = { 
+      id: newId, 
+      ...formData,
+      is_default: isFirst ? true : isDefaultChecked 
+    };
+    
+    addresses.push(newAddress);
+    showToast('New address saved successfully');
+    
+    // Automatically select the newly created address
+    selectedAddressId = newId;
+  }
+
+  closeAddressModal();
+  renderAddresses();
+  
+  if (selectedAddressId) {
+    selectAddress(selectedAddressId);
+  }
+}
+
+// ==================== DELETE PROCESS ====================
+function confirmDeleteAddress(id) {
+  deleteTargetId = id;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+}
+
+document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+  if (deleteTargetId !== null) {
+    addresses = addresses.filter(a => a.id !== deleteTargetId);
+    showToast('Address deleted successfully', 'info');
+
+    if (selectedAddressId === deleteTargetId) {
+      selectedAddressId = null;
+      document.getElementById('delivery-info-card').classList.add('hidden');
+      document.getElementById('contact-section').classList.add('hidden');
+      document.getElementById('continue-btn').disabled = true;
+      document.getElementById('continue-btn-mobile').disabled = true;
+    }
+
+    // Fallback default address check
+    if (addresses.length > 0 && !addresses.some(a => a.is_default)) {
+      addresses[0].is_default = true;
+    }
+
+    closeDeleteModal();
+    renderAddresses();
+  }
+});
+
+// ==================== SUBMIT ORDER / CONTINUE ====================
+function continueToPayment() {
+  const contactName = document.getElementById('contact-name').value.trim();
+  const contactPhone = document.getElementById('contact-phone').value.trim();
+
+  if (!contactName || !/^\d{10}$/.test(contactPhone)) {
+    showToast('Please check the contact information before continuing', 'warning');
+    return;
+  }
+
+  showToast('Proceeding to payment gateway...', 'success');
+  
+  // Progress indicators simulation
+  setTimeout(() => {
+    const stepCircle2 = document.getElementById('step-circle-2');
+    const stepLine1 = document.getElementById('step-line-1');
+    const stepLabel2 = document.getElementById('step-label-2');
+
+    stepCircle2.className = "step-circle active";
+    stepLine1.className = "step-line completed";
+    stepLabel2.className = "text-[10px] font-semibold text-cc-blue";
+  }, 1000);
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

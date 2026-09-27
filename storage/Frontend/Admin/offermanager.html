@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offers Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;overflow-y-auto;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+  .offer-type-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .scope-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;font-size:.75rem;font-weight:600;background:#F1F5F9;color:#475569}
+  .scope-chip.all{background:#DBEAFE;color:#1E40AF}
+  .scope-chip.category{background:#F3E8FF;color:#6B21A8}
+  .scope-chip.product{background:#ECFEFF;color:#155E75}
+  .applicability-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;transition:background .15s}
+  .applicability-row:hover{background:#F8FAFC}
+  .timeline-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .timeline-line{width:2px;background:#E2E8F0;flex-shrink:0}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .fade-slide-in{animation:fadeSlideIn .2s ease}
+  .spark-bar{display:flex;align-items:flex-end;gap:2px;height:32px}
+  .spark-bar span{width:4px;border-radius:2px}
+  .bxgy-field{display:none}.bxgy-field.show{display:block}
+  .combo-field{display:none}.combo-field.show{display:block}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">tune</span><span class="nav-label">Attributes & Units</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Tags Manager</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">local_offer</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Offers</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search offers..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="renderOffersTable()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Offers Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Create & manage <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">offers</span> with <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">offer_applicability</span> rules</p>
+      </div>
+      <button class="btn-primary text-sm" onclick="openOfferModal()">
+        <span class="material-icons text-[18px]">add_circle</span> Create Offer
+      </button>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Offers</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="kpiTotal">0</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">COUNT(offers)</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center"><span class="material-icons text-cc-blue text-[22px]">local_offer</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Now</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-green-600 mt-1" id="kpiActive">0</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">is_active=1 AND NOW() BETWEEN starts_at AND ends_at</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center"><span class="material-icons text-green-600 text-[22px]">check_circle</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#22C55E;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Scheduled</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-cc-blue mt-1" id="kpiScheduled">0</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">is_active=1 AND starts_at > NOW()</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cc-blue/10 flex items-center justify-center"><span class="material-icons text-cc-blue text-[22px]">schedule</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div>
+      </div>
+      <div class="kpi-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Expired</p>
+            <p class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-400 mt-1" id="kpiExpired">0</p>
+            <p class="text-[11px] text-slate-400 mt-1 mono">ends_at < NOW() OR is_active=0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center"><span class="material-icons text-slate-400 text-[22px]">event_busy</span></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#CBD5E1;border-radius:0 0 16px 16px"></div>
+      </div>
+    </div>
+
+    <!-- ===== OFFER TYPE BREAKDOWN ===== -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-icons text-cc-orange text-[22px]">donut_large</span>
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900">Offer Type Distribution</h2>
+          <p class="text-xs text-slate-400 mono">offers.offer_type ENUM: 'percentage' | 'flat' | 'buy_x_get_y' | 'combo'</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="typeBreakdown">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="mt-4 flex rounded-full overflow-hidden h-3" id="typeBar"></div>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1.5 w-fit">
+      <button class="tab-btn active" id="tabList" onclick="switchTab('list')"><span class="material-icons text-[16px] align-middle mr-1">list</span>All Offers</button>
+      <button class="tab-btn" id="tabTimeline" onclick="switchTab('timeline')"><span class="material-icons text-[16px] align-middle mr-1">timeline</span>Timeline View</button>
+    </div>
+
+    <!-- ===== OFFERS TABLE ===== -->
+    <div id="listSection">
+      <div class="section-card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-blue text-[22px]">local_offer</span>
+            <div>
+              <h2 class="font-heading text-lg font-bold text-slate-900">All Offers</h2>
+              <p class="text-xs text-slate-400 mono">offers ← LEFT JOIN offer_applicability ON offer_id</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg offer-filter-btn" data-filter="all" onclick="filterOffers('all',this)">All</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="active" onclick="filterOffers('active',this)">Active</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="scheduled" onclick="filterOffers('scheduled',this)">Scheduled</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="expired" onclick="filterOffers('expired',this)">Expired</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="percentage" onclick="filterOffers('percentage',this)">% Off</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="flat" onclick="filterOffers('flat',this)">Flat</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="buy_x_get_y" onclick="filterOffers('buy_x_get_y',this)">BXGY</button>
+            <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn" data-filter="combo" onclick="filterOffers('combo',this)">Combo</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Offer</th>
+                <th>Type <span class="text-slate-300 font-normal normal-case">(offer_type)</span></th>
+                <th>Discount</th>
+                <th>Conditions</th>
+                <th>Applicability <span class="text-slate-300 font-normal normal-case">(offer_applicability)</span></th>
+                <th>Schedule</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="offersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TIMELINE VIEW ===== -->
+    <div id="timelineSection" class="hidden">
+      <div class="section-card p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="material-icons text-cc-purple text-[22px]">timeline</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Offer Timeline</h2>
+            <p class="text-xs text-slate-400 mono">offers.starts_at, offers.ends_at — visual schedule overview</p>
+          </div>
+        </div>
+        <div id="timelineContainer" class="space-y-0"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: OFFER CRUD ===== -->
+<div class="modal-backdrop" id="offerModal">
+  <div class="modal-panel w-full max-w-2xl mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="offerModalTitle">Create Offer</h3>
+      <button class="btn-icon" onclick="closeModal('offerModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editOfferId">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Offer Name <span class="text-slate-400 font-normal mono text-xs">(offers.name)</span></label>
+          <input type="text" class="input-field" id="offerName" placeholder="e.g. Diwali Sale 20% Off">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+          <textarea class="input-field" rows="2" id="offerDesc" placeholder="Internal notes about this offer..."></textarea>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Offer Type <span class="text-slate-400 font-normal mono text-xs">(offers.offer_type)</span></label>
+          <select class="input-field" id="offerType" onchange="onTypeChange()">
+            <option value="percentage">Percentage (%) Off</option>
+            <option value="flat">Flat Amount Off</option>
+            <option value="buy_x_get_y">Buy X Get Y (BXGY)</option>
+            <option value="combo">Combo Deal</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Discount Value <span class="text-slate-400 font-normal mono text-xs">(offers.discount_value)</span></label>
+          <input type="number" class="input-field" id="offerDiscount" placeholder="e.g. 20" step="0.01" min="0">
+          <p class="text-[11px] text-slate-400 mt-1" id="discountHint">% or flat amount depending on type</p>
+        </div>
+      </div>
+
+      <!-- BXGY Fields -->
+      <div class="bxgy-field" id="bxgyFields">
+        <div class="border border-cc-blue/20 bg-cc-blue/[.02] rounded-xl p-4 space-y-3">
+          <p class="text-sm font-semibold text-cc-blue flex items-center gap-2"><span class="material-icons text-[18px]">shopping_cart</span>Buy X Get Y Configuration</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Buy Quantity (X)</label>
+              <input type="number" class="input-field" id="bxgyBuyQty" placeholder="2" min="1" value="2">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Get Quantity (Y)</label>
+              <input type="number" class="input-field" id="bxgyGetQty" placeholder="1" min="1" value="1">
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400">discount_value represents the % off on the "free" item (use 100 for fully free)</p>
+        </div>
+      </div>
+
+      <!-- Combo Fields -->
+      <div class="combo-field" id="comboFields">
+        <div class="border border-cc-purple/20 bg-cc-purple/[.02] rounded-xl p-4 space-y-3">
+          <p class="text-sm font-semibold text-cc-purple flex items-center gap-2"><span class="material-icons text-[18px]">layers</span>Combo Deal Configuration</p>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Combo Description</label>
+            <input type="text" class="input-field" id="comboDesc" placeholder="e.g. Earbuds + Case at ₹1,799">
+          </div>
+          <p class="text-[11px] text-slate-400">discount_value is the combo bundle price override. Applicability should include all products in the combo.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Min Order Value <span class="text-slate-400 font-normal mono text-xs">(offers.min_order_value)</span></label>
+          <input type="number" class="input-field" id="offerMinOrder" placeholder="e.g. 500" step="0.01" min="0">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Max Discount Cap <span class="text-slate-400 font-normal mono text-xs">(offers.max_discount_cap)</span></label>
+          <input type="number" class="input-field" id="offerMaxCap" placeholder="e.g. 500" step="0.01" min="0">
+          <p class="text-[11px] text-slate-400 mt-1">Applies to percentage offers — null = no cap</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Start Date <span class="text-slate-400 font-normal mono text-xs">(offers.starts_at)</span></label>
+          <input type="datetime-local" class="input-field" id="offerStart">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">End Date <span class="text-slate-400 font-normal mono text-xs">(offers.ends_at)</span></label>
+          <input type="datetime-local" class="input-field" id="offerEnd">
+          <p class="text-[11px] text-slate-400 mt-1">Leave empty for no end date</p>
+        </div>
+      </div>
+
+      <!-- Applicability -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <label class="block text-sm font-semibold text-slate-700">Applicability <span class="text-slate-400 font-normal mono text-xs">(offer_applicability.scope)</span></label>
+          <button class="text-xs text-cc-blue font-semibold hover:underline flex items-center gap-1" onclick="addApplicabilityRow()"><span class="material-icons text-[14px]">add</span> Add Rule</button>
+        </div>
+        <div id="applicabilityRows" class="space-y-2"></div>
+        <p class="text-[11px] text-slate-400 mt-2 mono">INSERT INTO offer_applicability (offer_id, scope, ref_id)</p>
+      </div>
+
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">offers.is_active</p>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="offerActive" checked><span class="slider"></span></label>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="border border-dashed border-slate-300 rounded-xl p-4">
+        <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-3 text-center" id="previewTitle">Discount Preview (Single Item)</p>
+        <div class="flex items-center justify-center gap-6 flex-wrap">
+          <div class="text-center">
+            <p class="text-xs text-slate-400 mb-1">Original</p>
+            <p class="text-lg font-bold text-slate-400 line-through mono" id="previewOriginal">₹1,499</p>
+          </div>
+          <span class="material-icons text-cc-blue text-[24px]">arrow_forward</span>
+          <div class="text-center">
+            <p class="text-xs text-slate-400 mb-1">After Discount</p>
+            <p class="text-2xl font-extrabold text-green-600 mono" id="previewDiscounted">₹1,199</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs text-slate-400 mb-1">You Save</p>
+            <p class="text-lg font-bold text-cc-orange mono" id="previewSaving">₹300 (20%)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('offerModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveOffer()" id="saveOfferBtn">Create Offer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DELETE ===== -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4"><span class="material-icons text-red-500 text-[28px]">delete_forever</span></div>
+      <h3 class="font-heading text-lg font-bold text-slate-900">Delete Offer?</h3>
+      <p class="text-sm text-slate-500 mt-2" id="deleteMessage"></p>
+      <p class="text-xs text-slate-400 mt-1 mono" id="deleteSql"></p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger text-sm" onclick="confirmDelete()" style="background:#DC2626;color:#fff;border-color:#DC2626"><span class="material-icons text-[16px]">delete</span> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: VIEW OFFER DETAIL ===== -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Offer Details</h3>
+      <button class="btn-icon" onclick="closeModal('detailModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6" id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+let nextOfferId = 9;
+let nextApplicabilityId = 20;
+let offerFilterMode = 'all';
+let deleteCallback = null;
+let tempApplicability = [];
+
+const samplePrice = 1499;
+
+const categories = [
+  { id: 1, name: 'Electronics' }, { id: 2, name: 'Audio' },
+  { id: 3, name: 'Clothing' }, { id: 4, name: 'Home & Kitchen' },
+  { id: 5, name: 'Accessories' }, { id: 6, name: 'Footwear' },
+  { id: 7, name: 'Beauty' }, { id: 8, name: 'Sports' }
+];
+
+const sampleProducts = [
+  { id: 1, name: 'TrueSound Pro Earbuds', sku: 'CC-EAR-001' },
+  { id: 2, name: 'FitTrack Smart Watch', sku: 'CC-WAT-012' },
+  { id: 3, name: 'HomeChef Air Fryer 4.5L', sku: 'CC-AFR-021' },
+  { id: 4, name: 'Urban Trail Backpack', sku: 'CC-BPK-034' },
+  { id: 5, name: 'Running Shoes Ultra', sku: 'CC-SHO-201' },
+  { id: 6, name: 'Wireless Charging Pad', sku: 'CC-WCP-019' },
+];
+
+function now() { return new Date(); }
+function daysAgo(d) { const dt = new Date(); dt.setDate(dt.getDate() - d); return dt; }
+function daysFromNow(d) { const dt = new Date(); dt.setDate(dt.getDate() + d); return dt; }
+function fmt(dt) { if (!dt) return '—'; const d = new Date(dt); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+function fmtDate(dt) { if (!dt) return '—'; return new Date(dt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); }
+
+function toLocal(dt) { 
+  if (!dt) return ''; 
+  const d = new Date(dt); 
+  if (isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + 
+         String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(d.getDate()).padStart(2, '0') + 'T' + 
+         String(d.getHours()).padStart(2, '0') + ':' + 
+         String(d.getMinutes()).padStart(2, '0'); 
+}
+
+let offers = [
+  { id: 1, name: 'Diwali Mega Sale', description: 'Flat 20% off across all electronics for Diwali season', offer_type: 'percentage', discount_value: 20, min_order_value: 999, max_discount_cap: 2000, starts_at: daysAgo(5), ends_at: daysFromNow(10), is_active: true, created_at: daysAgo(15) },
+  { id: 2, name: 'Flat ₹500 Off on Watches', description: 'Fixed discount on all smart watches', offer_type: 'flat', discount_value: 500, min_order_value: 2000, max_discount_cap: null, starts_at: daysAgo(2), ends_at: daysFromNow(5), is_active: true, created_at: daysAgo(10) },
+  { id: 3, name: 'Buy 2 Get 1 Free — Clothing', description: 'Buy any 2 clothing items, get 1 free (lowest price)', offer_type: 'buy_x_get_y', discount_value: 100, min_order_value: null, max_discount_cap: null, starts_at: daysAgo(1), ends_at: daysFromNow(15), is_active: true, created_at: daysAgo(7), bxgy_buy_qty: 2, bxgy_get_qty: 1 },
+  { id: 4, name: 'Earbuds + Case Combo', description: 'TrueSound Pro Earbuds bundled with premium case at special price', offer_type: 'combo', discount_value: 1799, min_order_value: null, max_discount_cap: null, starts_at: daysAgo(10), ends_at: daysFromNow(20), is_active: true, created_at: daysAgo(20), combo_description: 'Earbuds + Case Combo Deal' },
+  { id: 5, name: 'Weekend Flash Sale 30%', description: 'Weekend-only 30% off on selected categories', offer_type: 'percentage', discount_value: 30, min_order_value: 499, max_discount_cap: 1500, starts_at: daysFromNow(2), ends_at: daysFromNow(4), is_active: true, created_at: daysAgo(1) },
+  { id: 6, name: 'New User Welcome ₹200 Off', description: 'First order discount for new users', offer_type: 'flat', discount_value: 200, min_order_value: 799, max_discount_cap: null, starts_at: daysAgo(60), ends_at: null, is_active: true, created_at: daysAgo(60) },
+  { id: 7, name: 'Summer Clearance Sale', description: 'End of season clearance — up to 50% off', offer_type: 'percentage', discount_value: 50, min_order_value: 0, max_discount_cap: 3000, starts_at: daysAgo(45), ends_at: daysAgo(5), is_active: false, created_at: daysAgo(60) },
+  { id: 8, name: 'Buy 3 Footwear Get 30% Off', description: 'Bulk footwear purchase discount', offer_type: 'buy_x_get_y', discount_value: 30, min_order_value: 3000, max_discount_cap: null, starts_at: daysFromNow(7), ends_at: daysFromNow(30), is_active: true, created_at: daysAgo(3), bxgy_buy_qty: 3, bxgy_get_qty: 1 },
+];
+
+let offerApplicability = [
+  { id: 1, offer_id: 1, scope: 'category', ref_id: 1 },
+  { id: 2, offer_id: 1, scope: 'category', ref_id: 2 },
+  { id: 3, offer_id: 2, scope: 'category', ref_id: 2 },
+  { id: 4, offer_id: 2, scope: 'product', ref_id: 2 },
+  { id: 5, offer_id: 3, scope: 'category', ref_id: 3 },
+  { id: 6, offer_id: 4, scope: 'product', ref_id: 1 },
+  { id: 7, offer_id: 5, scope: 'category', ref_id: 1 },
+  { id: 8, offer_id: 5, scope: 'category', ref_id: 5 },
+  { id: 9, offer_id: 5, scope: 'category', ref_id: 7 },
+  { id: 10, offer_id: 6, scope: 'all', ref_id: null },
+  { id: 11, offer_id: 7, scope: 'all', ref_id: null },
+  { id: 12, offer_id: 8, scope: 'category', ref_id: 6 },
+  { id: 13, offer_id: 3, scope: 'product', ref_id: 6 },
+];
+
+// ============ HELPERS ============
+function getOfferStatus(o) {
+  if (!o.is_active) return 'inactive';
+  const n = now().getTime();
+  const start = new Date(o.starts_at).getTime();
+  const end = o.ends_at ? new Date(o.ends_at).getTime() : null;
+  if (start > n) return 'scheduled';
+  if (end && end < n) return 'expired';
+  return 'active';
+}
+
+function getStatusBadge(status) {
+  const map = {
+    active: '<span class="badge badge-green"><span class="material-icons text-[11px]">check_circle</span>Active</span>',
+    scheduled: '<span class="badge badge-blue"><span class="material-icons text-[11px]">schedule</span>Scheduled</span>',
+    expired: '<span class="badge badge-slate"><span class="material-icons text-[11px]">event_busy</span>Expired</span>',
+    inactive: '<span class="badge badge-red"><span class="material-icons text-[11px]">cancel</span>Inactive</span>'
+  };
+  return map[status] || '';
+}
+
+function getTypeBadge(type) {
+  const map = {
+    percentage: '<span class="badge badge-blue"><span class="material-icons text-[11px]">percent</span>Percentage</span>',
+    flat: '<span class="badge badge-orange"><span class="material-icons text-[11px]">currency_rupee</span>Flat</span>',
+    buy_x_get_y: '<span class="badge badge-purple"><span class="material-icons text-[11px]">shopping_cart</span>BXGY</span>',
+    combo: '<span class="badge badge-cyan"><span class="material-icons text-[11px]">layers</span>Combo</span>'
+  };
+  return map[type] || '';
+}
+
+function getTypeIcon(type) {
+  const map = { percentage: 'percent', flat: 'currency_rupee', buy_x_get_y: 'shopping_cart', combo: 'layers' };
+  const colors = { percentage: '#2D82FF', flat: '#FF5100', buy_x_get_y: '#8C30F5', combo: '#06B6D4' };
+  return `<div class="offer-type-icon" style="background:${colors[type]}15"><span class="material-icons" style="color:${colors[type]};font-size:20px">${map[type]}</span></div>`;
+}
+
+function getDiscountLabel(o) {
+  switch(o.offer_type) {
+    case 'percentage': return `${o.discount_value}% off` + (o.max_discount_cap ? ` <span class="text-[10px] text-slate-400">(max ₹${o.max_discount_cap.toLocaleString('en-IN')})</span>` : '');
+    case 'flat': return `₹${o.discount_value.toLocaleString('en-IN')} off`;
+    case 'buy_x_get_y': return `Buy ${o.bxgy_buy_qty || 2} Get ${o.bxgy_get_qty || 1} <span class="text-[10px] text-slate-400">(${o.discount_value}% off get item)</span>`;
+    case 'combo': return `${o.combo_description || 'Combo Bundle'} at ₹${o.discount_value.toLocaleString('en-IN')}`;
+    default: return '—';
+  }
+}
+
+function getApplicabilityForOffer(offerId) {
+  return offerApplicability.filter(oa => oa.offer_id === offerId);
+}
+
+function renderApplicabilityChips(offerId) {
+  const rows = getApplicabilityForOffer(offerId);
+  if (rows.length === 0) return '<span class="text-xs text-slate-400 italic">No rules set</span>';
+  return rows.map(r => {
+    if (r.scope === 'all') return '<span class="scope-chip all"><span class="material-icons text-[12px]">public</span>All Products</span>';
+    if (r.scope === 'category') {
+      const cat = categories.find(c => c.id === r.ref_id);
+      return `<span class="scope-chip category"><span class="material-icons text-[12px]">category</span>${cat ? cat.name : 'Cat #'+r.ref_id}</span>`;
+    }
+    if (r.scope === 'product') {
+      const prod = sampleProducts.find(p => p.id === r.ref_id);
+      return `<span class="scope-chip product"><span class="material-icons text-[12px]">inventory_2</span>${prod ? prod.name : 'Prod #'+r.ref_id}</span>`;
+    }
+    return '';
+  }).join(' ');
+}
+
+// ============ SIDEBAR ============
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function collapseSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('mainArea').classList.toggle('expanded');
+  document.getElementById('collapseIcon').textContent = document.getElementById('sidebar').classList.contains('collapsed') ? 'menu' : 'menu_open';
+}
+
+// ============ MODAL ============
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', () => closeModal(m.id)));
+
+// ============ TOAST ============
+function showToast(message, type = 'success') {
+  const c = { success:'#16A34A', error:'#DC2626', info:'#2D82FF', warning:'#D97706' };
+  const i = { success:'check_circle', error:'error', info:'info', warning:'warning' };
+  const t = document.createElement('div'); t.className='toast'; t.style.background=c[type];
+  t.innerHTML=`<span class="material-icons text-[20px]">${i[type]}</span> ${message}`;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+}
+
+// ============ TABS ============
+function switchTab(tab) {
+  document.getElementById('tabList').classList.toggle('active',tab==='list');
+  document.getElementById('tabTimeline').classList.toggle('active',tab==='timeline');
+  document.getElementById('listSection').classList.toggle('hidden',tab!=='list');
+  document.getElementById('timelineSection').classList.toggle('hidden',tab!=='timeline');
+  if(tab==='timeline') renderTimeline();
+}
+
+// ============ KPIs ============
+function updateKPIs() {
+  document.getElementById('kpiTotal').textContent = offers.length;
+  document.getElementById('kpiActive').textContent = offers.filter(o=>getOfferStatus(o)==='active').length;
+  document.getElementById('kpiScheduled').textContent = offers.filter(o=>getOfferStatus(o)==='scheduled').length;
+  document.getElementById('kpiExpired').textContent = offers.filter(o=>getOfferStatus(o)==='expired'||getOfferStatus(o)==='inactive').length;
+}
+
+// ============ TYPE BREAKDOWN ============
+function renderTypeBreakdown() {
+  const types = ['percentage','flat','buy_x_get_y','combo'];
+  const labels = ['Percentage','Flat','BXGY','Combo'];
+  const colors = ['#2D82FF','#FF5100','#8C30F5','#06B6D4'];
+  const icons = ['percent','currency_rupee','shopping_cart','layers'];
+  const container = document.getElementById('typeBreakdown');
+  const bar = document.getElementById('typeBar');
+  const total = offers.length || 1;
+
+  let html = '';
+  let barHtml = '';
+  types.forEach((t,i) => {
+    const count = offers.filter(o=>o.offer_type===t).length;
+    const pct = ((count/total)*100).toFixed(0);
+    html += `
+      <div class="border rounded-xl p-3.5 text-center hover:shadow-md transition cursor-pointer" style="border-color:${colors[i]}30;background:${colors[i]}05" onclick="filterOffers('${t}',document.querySelector('.offer-filter-btn[data-filter=${t}]'))">
+        <span class="material-icons text-[24px]" style="color:${colors[i]}">${icons[i]}</span>
+        <p class="text-xl font-bold text-slate-800 font-heading mt-1">${count}</p>
+        <p class="text-[11px] font-semibold" style="color:${colors[i]}">${labels[i]}</p>
+        <p class="text-[10px] text-slate-400 mono mt-0.5">${pct}%</p>
+      </div>`;
+    if (count > 0) barHtml += `<div style="width:${pct}%;background:${colors[i]}" title="${labels[i]}: ${count}"></div>`;
+  });
+  container.innerHTML = html;
+  bar.innerHTML = barHtml;
+}
+
+// ============ RENDER OFFERS TABLE ============
+function renderOffersTable() {
+  const tbody = document.getElementById('offersTableBody');
+  let filtered = [...offers].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  const search = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  if (search) filtered = filtered.filter(o => o.name.toLowerCase().includes(search) || o.offer_type.includes(search));
+
+  const statusFilters = ['active','scheduled','expired'];
+  const typeFilters = ['percentage','flat','buy_x_get_y','combo'];
+  if (statusFilters.includes(offerFilterMode)) filtered = filtered.filter(o=>getOfferStatus(o)===offerFilterMode);
+  else if (typeFilters.includes(offerFilterMode)) filtered = filtered.filter(o=>o.offer_type===offerFilterMode);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10"><span class="material-icons text-slate-300 text-[40px]">local_offer</span><p class="text-slate-500 mt-2 font-medium">No offers found</p></td></tr>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(o => {
+    const status = getOfferStatus(o);
+    const conditions = [];
+    if (o.min_order_value) conditions.push(`Min ₹${o.min_order_value.toLocaleString('en-IN')}`);
+    if (o.max_discount_cap) conditions.push(`Cap ₹${o.max_discount_cap.toLocaleString('en-IN')}`);
+    if (o.offer_type === 'buy_x_get_y') conditions.push(`Buy ${o.bxgy_buy_qty || 2} Get ${o.bxgy_get_qty || 1}`);
+
+    html += `
+      <tr class="fade-slide-in">
+        <td>
+          <div class="flex items-center gap-3">
+            ${getTypeIcon(o.offer_type)}
+            <div class="min-w-0">
+              <p class="font-semibold text-slate-800 text-sm truncate max-w-[200px]">${o.name}</p>
+              <p class="text-[10px] text-slate-400 mono">id: ${o.id}</p>
+            </div>
+          </div>
+        </td>
+        <td>${getTypeBadge(o.offer_type)}</td>
+        <td>
+          <span class="font-bold text-slate-800 text-sm">${getDiscountLabel(o)}</span>
+        </td>
+        <td>
+          ${conditions.length > 0 ? conditions.map(c=>`<p class="text-xs text-slate-500">${c}</p>`).join('') : '<span class="text-xs text-slate-400">—</span>'}
+        </td>
+        <td><div class="flex flex-wrap gap-1.5">${renderApplicabilityChips(o.id)}</div></td>
+        <td>
+          <p class="text-xs text-slate-600 font-medium">${fmtDate(o.starts_at)}</p>
+          <p class="text-[10px] text-slate-400 flex items-center gap-1"><span class="material-icons text-[12px]">arrow_downward</span>${o.ends_at ? fmtDate(o.ends_at) : 'No end'}</p>
+        </td>
+        <td>
+          <div class="flex items-center gap-2">
+            <label class="toggle-switch" style="transform:scale(.75)">
+              <input type="checkbox" ${o.is_active?'checked':''} onchange="toggleOffer(${o.id})">
+              <span class="slider"></span>
+            </label>
+            ${getStatusBadge(status)}
+          </div>
+        </td>
+        <td>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" style="width:30px;height:30px" onclick="viewOffer(${o.id})" title="View"><span class="material-icons text-[16px]">visibility</span></button>
+            <button class="btn-icon" style="width:30px;height:30px" onclick="editOffer(${o.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+            <button class="btn-icon" style="width:30px;height:30px" onclick="duplicateOffer(${o.id})" title="Duplicate"><span class="material-icons text-[16px]">content_copy</span></button>
+            <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteOffer(${o.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+  updateKPIs();
+}
+
+function filterOffers(filter, btn) {
+  offerFilterMode = filter;
+  document.querySelectorAll('.offer-filter-btn').forEach(b => b.className = 'text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition offer-filter-btn');
+  if (btn) btn.className = 'text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg offer-filter-btn';
+  renderOffersTable();
+}
+
+// ============ TIMELINE ============
+function renderTimeline() {
+  const container = document.getElementById('timelineContainer');
+  const sorted = [...offers].sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at));
+  let html = '';
+  sorted.forEach((o,i) => {
+    const status = getOfferStatus(o);
+    const dotColors = { active:'#22C55E', scheduled:'#2D82FF', expired:'#CBD5E1', inactive:'#EF4444' };
+    const lineColor = i < sorted.length - 1 ? dotColors[status] : 'transparent';
+    const isNow = status === 'active';
+    html += `
+      <div class="flex gap-4 ${i < sorted.length-1 ? 'pb-6' : ''}">
+        <div class="flex flex-col items-center">
+          <div class="timeline-dot" style="background:${dotColors[status]};box-shadow:0 0 0 4px ${dotColors[status]}25"></div>
+          ${i < sorted.length-1 ? `<div class="timeline-line flex-1" style="background:${lineColor}30"></div>` : ''}
+        </div>
+        <div class="flex-1 -mt-1">
+          <div class="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md hover:border-slate-300 transition">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div class="flex items-start gap-3">
+                ${getTypeIcon(o.offer_type)}
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-heading text-sm font-bold text-slate-800">${o.name}</h4>
+                    ${getStatusBadge(status)}
+                    ${isNow ? '<span class="badge badge-green text-[10px]"><span class="material-icons text-[10px]">fiber_manual_record</span>LIVE NOW</span>' : ''}
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1">${o.description || '—'}</p>
+                  <div class="flex flex-wrap gap-1.5 mt-2">${renderApplicabilityChips(o.id)}</div>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-sm font-bold text-slate-800">${getDiscountLabel(o)}</p>
+                <p class="text-[10px] text-slate-400 mt-1">${fmt(o.starts_at)}</p>
+                <p class="text-[10px] text-slate-400">${o.ends_at ? '→ '+fmt(o.ends_at) : '→ No end'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html || '<p class="text-center text-slate-400 py-8">No offers to display</p>';
+}
+
+// ============ OFFER MODAL ============
+function onTypeChange() {
+  const type = document.getElementById('offerType').value;
+  document.getElementById('bxgyFields').classList.toggle('show', type === 'buy_x_get_y');
+  document.getElementById('comboFields').classList.toggle('show', type === 'combo');
+  const hints = { percentage: '% off (e.g. 20 for 20% off)', flat: 'Flat ₹ amount off (e.g. 500)', buy_x_get_y: '% off on get item (100 = fully free)', combo: 'Combo bundle price in ₹' };
+  document.getElementById('discountHint').textContent = hints[type];
+  updateDiscountPreview();
+}
+
+function updateDiscountPreview() {
+  const type = document.getElementById('offerType').value;
+  const val = parseFloat(document.getElementById('offerDiscount').value) || 0;
+  const cap = parseFloat(document.getElementById('offerMaxCap').value) || null;
+  const bxgyBuyQty = parseInt(document.getElementById('bxgyBuyQty').value) || 2;
+  const bxgyGetQty = parseInt(document.getElementById('bxgyGetQty').value) || 1;
+
+  let original = samplePrice, discounted = samplePrice, saving = 0, pct = 0;
+  let previewLabel = "Discount Preview (Single Item)";
+
+  if (type === 'percentage' && val > 0) {
+    saving = (original * val / 100);
+    if (cap && saving > cap) saving = cap;
+    discounted = original - saving;
+    pct = val;
+  } else if (type === 'flat' && val > 0) {
+    saving = Math.min(val, original);
+    discounted = original - saving;
+    pct = ((saving / original) * 100).toFixed(1);
+  } else if (type === 'buy_x_get_y') {
+    previewLabel = `Discount Preview (Buy ${bxgyBuyQty} + Get ${bxgyGetQty} items)`;
+    original = samplePrice * (bxgyBuyQty + bxgyGetQty);
+    saving = (samplePrice * bxgyGetQty) * (val / 100);
+    discounted = original - saving;
+    pct = ((saving / original) * 100).toFixed(1);
+  } else if (type === 'combo') {
+    previewLabel = "Discount Preview (2-Item Bundle Deal)";
+    original = samplePrice * 2;
+    discounted = val > 0 ? val : original;
+    saving = Math.max(0, original - discounted);
+    pct = ((saving / original) * 100).toFixed(1);
+  }
+
+  if (discounted < 0) discounted = 0;
+  document.getElementById('previewTitle').textContent = previewLabel;
+  document.getElementById('previewOriginal').textContent = '₹' + original.toLocaleString('en-IN');
+  document.getElementById('previewDiscounted').textContent = '₹' + discounted.toLocaleString('en-IN');
+  document.getElementById('previewSaving').textContent = '₹' + saving.toLocaleString('en-IN') + ' (' + pct + '%)';
+}
+
+// Attach live preview listeners
+['offerDiscount','offerMaxCap','offerMinOrder','bxgyBuyQty','bxgyGetQty','offerType'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateDiscountPreview);
+  document.getElementById(id).addEventListener('change', updateDiscountPreview);
+});
+
+function addApplicabilityRow() {
+  tempApplicability.push({ scope: 'all', ref_id: null });
+  renderApplicabilityRows();
+}
+
+function removeApplicabilityRow(idx) {
+  tempApplicability.splice(idx, 1);
+  renderApplicabilityRows();
+}
+
+function renderApplicabilityRows() {
+  const container = document.getElementById('applicabilityRows');
+  if (tempApplicability.length === 0) {
+    container.innerHTML = '<div class="text-center py-4 border border-dashed border-slate-300 rounded-xl"><p class="text-sm text-slate-400">No applicability rules</p><p class="text-[11px] text-slate-400 mt-1">Offer applies to nothing — click "Add Rule" above</p></div>';
+    return;
+  }
+  let html = '';
+  tempApplicability.forEach((rule, i) => {
+    const catOptions = categories.map(c => `<option value="${c.id}" ${rule.ref_id===c.id?'selected':''}>${c.name}</option>`).join('');
+    const prodOptions = sampleProducts.map(p => `<option value="${p.id}" ${rule.ref_id===p.id?'selected':''}>${p.name} (${p.sku})</option>`).join('');
+    html += `
+      <div class="flex items-center gap-2 fade-slide-in">
+        <select class="input-field" style="width:140px" onchange="tempApplicability[${i}].scope=this.value; tempApplicability[${i}].ref_id=null; renderApplicabilityRows()">
+          <option value="all" ${rule.scope==='all'?'selected':''}>All Products</option>
+          <option value="category" ${rule.scope==='category'?'selected':''}>Category</option>
+          <option value="product" ${rule.scope==='product'?'selected':''}>Specific Product</option>
+        </select>
+        ${rule.scope === 'category' ? `<select class="input-field flex-1" onchange="tempApplicability[${i}].ref_id=parseInt(this.value)"><option value="">Select category...</option>${catOptions}</select>` : ''}
+        ${rule.scope === 'product' ? `<select class="input-field flex-1" onchange="tempApplicability[${i}].ref_id=parseInt(this.value)"><option value="">Select product...</option>${prodOptions}</select>` : ''}
+        ${rule.scope === 'all' ? '<span class="flex-1 text-xs text-slate-400 bg-slate-50 rounded-lg px-3 py-2.5 mono">Applies to all products</span>' : ''}
+        <button class="btn-icon danger" style="width:32px;height:32px;flex-shrink:0" onclick="removeApplicabilityRow(${i})"><span class="material-icons text-[16px]">close</span></button>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function openOfferModal(editId) {
+  if (editId) {
+    const o = offers.find(x=>x.id===editId);
+    if(!o) return;
+    document.getElementById('offerModalTitle').textContent = 'Edit Offer';
+    document.getElementById('saveOfferBtn').textContent = 'Update Offer';
+    document.getElementById('editOfferId').value = o.id;
+    document.getElementById('offerName').value = o.name;
+    document.getElementById('offerDesc').value = o.description || '';
+    document.getElementById('offerType').value = o.offer_type;
+    document.getElementById('offerDiscount').value = o.discount_value;
+    document.getElementById('bxgyBuyQty').value = o.bxgy_buy_qty || 2;
+    document.getElementById('bxgyGetQty').value = o.bxgy_get_qty || 1;
+    document.getElementById('comboDesc').value = o.combo_description || '';
+    document.getElementById('offerMinOrder').value = o.min_order_value || '';
+    document.getElementById('offerMaxCap').value = o.max_discount_cap || '';
+    document.getElementById('offerStart').value = toLocal(o.starts_at);
+    document.getElementById('offerEnd').value = o.ends_at ? toLocal(o.ends_at) : '';
+    document.getElementById('offerActive').checked = o.is_active;
+    tempApplicability = getApplicabilityForOffer(o.id).map(r=>({scope:r.scope,ref_id:r.ref_id}));
+  } else {
+    document.getElementById('offerModalTitle').textContent = 'Create Offer';
+    document.getElementById('saveOfferBtn').textContent = 'Create Offer';
+    document.getElementById('editOfferId').value = '';
+    document.getElementById('offerName').value = '';
+    document.getElementById('offerDesc').value = '';
+    document.getElementById('offerType').value = 'percentage';
+    document.getElementById('offerDiscount').value = '';
+    document.getElementById('bxgyBuyQty').value = 2;
+    document.getElementById('bxgyGetQty').value = 1;
+    document.getElementById('comboDesc').value = '';
+    document.getElementById('offerMinOrder').value = '';
+    document.getElementById('offerMaxCap').value = '';
+    document.getElementById('offerStart').value = toLocal(now());
+    document.getElementById('offerEnd').value = '';
+    document.getElementById('offerActive').checked = true;
+    tempApplicability = [{ scope: 'all', ref_id: null }];
+  }
+  onTypeChange();
+  renderApplicabilityRows();
+  updateDiscountPreview();
+  openModal('offerModal');
+}
+
+function editOffer(id) { openOfferModal(id); }
+
+function saveOffer() {
+  const editId = document.getElementById('editOfferId').value;
+  const name = document.getElementById('offerName').value.trim();
+  const desc = document.getElementById('offerDesc').value.trim();
+  const type = document.getElementById('offerType').value;
+  const discount = parseFloat(document.getElementById('offerDiscount').value);
+  const bxgyBuyQty = parseInt(document.getElementById('bxgyBuyQty').value) || 2;
+  const bxgyGetQty = parseInt(document.getElementById('bxgyGetQty').value) || 1;
+  const comboDesc = document.getElementById('comboDesc').value.trim();
+  const minOrder = parseFloat(document.getElementById('offerMinOrder').value) || null;
+  const maxCap = parseFloat(document.getElementById('offerMaxCap').value) || null;
+  const startStr = document.getElementById('offerStart').value;
+  const endStr = document.getElementById('offerEnd').value;
+  const isActive = document.getElementById('offerActive').checked;
+
+  if (!name) { showToast('Offer name is required','error'); return; }
+  if (isNaN(discount) || discount < 0) { showToast('Valid discount value is required','error'); return; }
+  if (!startStr) { showToast('Start date is required','error'); return; }
+
+  const startsAt = new Date(startStr);
+  const endsAt = endStr ? new Date(endStr) : null;
+
+  // Applicability Validation
+  let hasInvalidApplicability = false;
+  tempApplicability.forEach(r => {
+    if ((r.scope === 'category' || r.scope === 'product') && !r.ref_id) {
+      hasInvalidApplicability = true;
+    }
+  });
+  if (hasInvalidApplicability) {
+    showToast('Please select a valid category or product for your applicability rules.', 'error');
+    return;
+  }
+
+  if (editId) {
+    const o = offers.find(x=>x.id===parseInt(editId));
+    if(o) {
+      o.name=name; o.description=desc; o.offer_type=type; o.discount_value=discount;
+      o.bxgy_buy_qty = (type === 'buy_x_get_y') ? bxgyBuyQty : null;
+      o.bxgy_get_qty = (type === 'buy_x_get_y') ? bxgyGetQty : null;
+      o.combo_description = (type === 'combo') ? comboDesc : null;
+      o.min_order_value=minOrder; o.max_discount_cap=maxCap;
+      o.starts_at=startsAt; o.ends_at=endsAt; o.is_active=isActive;
+      
+      // Update applicability mapping
+      offerApplicability = offerApplicability.filter(oa=>oa.offer_id!==o.id);
+      tempApplicability.forEach(r => {
+        if(r.scope==='all'||r.ref_id) {
+          offerApplicability.push({ id: nextApplicabilityId++, offer_id: o.id, scope: r.scope, ref_id: r.scope==='all'?null:r.ref_id });
+        }
+      });
+      showToast(`Offer "${name}" updated`,'success');
+    }
+  } else {
+    const newId = nextOfferId++;
+    offers.push({ 
+      id:newId, 
+      name, 
+      description:desc, 
+      offer_type:type, 
+      discount_value:discount, 
+      bxgy_buy_qty: (type === 'buy_x_get_y') ? bxgyBuyQty : null,
+      bxgy_get_qty: (type === 'buy_x_get_y') ? bxgyGetQty : null,
+      combo_description: (type === 'combo') ? comboDesc : null,
+      min_order_value:minOrder, 
+      max_discount_cap:maxCap, 
+      starts_at:startsAt, 
+      ends_at:endsAt, 
+      is_active:isActive, 
+      created_at:now() 
+    });
+    tempApplicability.forEach(r => {
+      if(r.scope==='all'||r.ref_id) {
+        offerApplicability.push({ id: nextApplicabilityId++, offer_id: newId, scope: r.scope, ref_id: r.scope==='all'?null:r.ref_id });
+      }
+    });
+    showToast(`Offer "${name}" created`,'success');
+  }
+  closeModal('offerModal');
+  renderOffersTable();
+  renderTypeBreakdown();
+}
+
+function toggleOffer(id) {
+  const o = offers.find(x=>x.id===id);
+  if(o) { o.is_active=!o.is_active; showToast(`"${o.name}" ${o.is_active?'activated':'deactivated'}`,'info'); renderOffersTable(); renderTypeBreakdown(); }
+}
+
+function duplicateOffer(id) {
+  const o = offers.find(x=>x.id===id);
+  if(!o) return;
+  const newId = nextOfferId++;
+  const newOffer = { ...o, id:newId, name:o.name+' (Copy)', created_at:now() };
+  offers.push(newOffer);
+  const oldApps = getApplicabilityForOffer(id);
+  oldApps.forEach(a => { offerApplicability.push({ id:nextApplicabilityId++, offer_id:newId, scope:a.scope, ref_id:a.ref_id }); });
+  showToast(`Duplicated as "${newOffer.name}"`,'success');
+  renderOffersTable(); renderTypeBreakdown();
+}
+
+function deleteOffer(id) {
+  const o = offers.find(x=>x.id===id);
+  if(!o) return;
+  deleteCallback = () => {
+    offers = offers.filter(x=>x.id!==id);
+    offerApplicability = offerApplicability.filter(oa=>oa.offer_id!==id);
+    showToast(`Offer "${o.name}" deleted`,'success');
+    renderOffersTable(); renderTypeBreakdown();
+  };
+  document.getElementById('deleteMessage').textContent = `Delete offer "${o.name}"? This will also remove all offer_applicability rows.`;
+  document.getElementById('deleteSql').textContent = `DELETE FROM offers WHERE id = ${id}; DELETE FROM offer_applicability WHERE offer_id = ${id};`;
+  openModal('deleteModal');
+}
+
+function confirmDelete() { if(deleteCallback){deleteCallback();deleteCallback=null;} closeModal('deleteModal'); }
+
+// ============ VIEW DETAIL ============
+function viewOffer(id) {
+  const o = offers.find(x=>x.id===id);
+  if(!o) return;
+  const status = getOfferStatus(o);
+  const apps = getApplicabilityForOffer(id);
+  let appsHtml = '';
+  if(apps.length === 0) {
+    appsHtml = '<p class="text-sm text-slate-400 italic">No applicability rules — offer applies to nothing</p>';
+  } else {
+    appsHtml = apps.map(a => {
+      if(a.scope==='all') return '<div class="applicability-row"><span class="material-icons text-cc-blue text-[18px]">public</span><span class="text-sm text-slate-700">All Products</span><span class="mono text-xs text-slate-400 ml-auto">scope = \'all\'</span></div>';
+      if(a.scope==='category') { const c=categories.find(x=>x.id===a.ref_id); return `<div class="applicability-row"><span class="material-icons text-cc-purple text-[18px]">category</span><span class="text-sm text-slate-700">${c?c.name:'Cat #'+a.ref_id}</span><span class="mono text-xs text-slate-400 ml-auto">ref_id = ${a.ref_id}</span></div>`; }
+      if(a.scope==='product') { const p=sampleProducts.find(x=>x.id===a.ref_id); return `<div class="applicability-row"><span class="material-icons text-cyan-600 text-[18px]">inventory_2</span><span class="text-sm text-slate-700">${p?p.name:'Prod #'+a.ref_id}</span><span class="mono text-xs text-slate-400 ml-auto">ref_id = ${a.ref_id}</span></div>`; }
+      return '';
+    }).join('');
+  }
+
+  let configDetails = '';
+  if (o.offer_type === 'buy_x_get_y') {
+    configDetails = `
+      <div class="col-span-2 bg-slate-50 rounded-xl p-3 border border-cc-blue/15">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">BXGY Logic</p>
+        <p class="text-sm font-semibold text-slate-700 mt-1">Buy ${o.bxgy_buy_qty || 2} Get ${o.bxgy_get_qty || 1} (${o.discount_value}% Discount on free items)</p>
+      </div>`;
+  } else if (o.offer_type === 'combo') {
+    configDetails = `
+      <div class="col-span-2 bg-slate-50 rounded-xl p-3 border border-cc-purple/15">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Combo Details</p>
+        <p class="text-sm font-semibold text-slate-700 mt-1">${o.combo_description || '—'}</p>
+      </div>`;
+  }
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="space-y-5">
+      <div class="flex items-start gap-4">
+        ${getTypeIcon(o.offer_type)}
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-heading text-xl font-bold text-slate-900">${o.name}</h3>
+            ${getStatusBadge(status)}
+          </div>
+          <p class="text-sm text-slate-500 mt-1">${o.description || 'No description'}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Offer Type</p>
+          <div class="mt-1">${getTypeBadge(o.offer_type)}</div>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Discount</p>
+          <p class="text-lg font-bold text-slate-800 mt-1">${getDiscountLabel(o)}</p>
+        </div>
+        ${configDetails}
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Min Order Value</p>
+          <p class="text-lg font-bold text-slate-800 mt-1">${o.min_order_value ? '₹'+o.min_order_value.toLocaleString('en-IN') : '—'}</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Max Discount Cap</p>
+          <p class="text-lg font-bold text-slate-800 mt-1">${o.max_discount_cap ? '₹'+o.max_discount_cap.toLocaleString('en-IN') : '—'}</p>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1"><span class="material-icons text-[16px]">schedule</span> Schedule</p>
+        <div class="bg-slate-50 rounded-xl p-3 flex items-center gap-4">
+          <div><p class="text-[10px] text-slate-400">Starts</p><p class="text-sm font-semibold text-slate-700 mono">${fmt(o.starts_at)}</p></div>
+          <span class="material-icons text-slate-300">arrow_forward</span>
+          <div><p class="text-[10px] text-slate-400">Ends</p><p class="text-sm font-semibold text-slate-700 mono">${o.ends_at ? fmt(o.ends_at) : 'No end date'}</p></div>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1"><span class="material-icons text-[16px]">rule</span> Applicability Rules <span class="mono text-[10px] text-slate-400 font-normal">(offer_applicability WHERE offer_id = ${o.id})</span></p>
+        <div class="border border-slate-200 rounded-xl overflow-hidden">${appsHtml}</div>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-slate-400 mono pt-2 border-t border-slate-100">
+        <span>offers.id: ${o.id}</span>
+        <span>is_active: ${o.is_active?1:0}</span>
+        <span>created_at: ${fmt(o.created_at)}</span>
+      </div>
+    </div>`;
+  openModal('detailModal');
+}
+
+// ============ INIT ============
+function init() {
+  updateKPIs();
+  renderTypeBreakdown();
+  renderOffersTable();
+}
+init();
+</script>
+</body>
+</html>

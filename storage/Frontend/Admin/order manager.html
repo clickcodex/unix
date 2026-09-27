@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders Manager — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .badge-indigo{background:#E0E7FF;color:#3730A3}
+  .badge-amber{background:#FEF3C7;color:#92400E}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .kpi-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -8px rgba(15,23,42,.08)}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .fade-slide-in{animation:fadeSlideIn .2s ease}
+  .spark-bar{display:flex;align-items:flex-end;gap:2px;height:32px}
+  .spark-bar span{width:4px;border-radius:2px}
+  .status-select{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2364748B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:28px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.8rem;font-weight:600;padding:6px 12px;color:#475569;cursor:pointer;transition:border-color .15s}
+  .status-select:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .timeline-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.1)}
+  .timeline-line{width:2px;flex-shrink:0}
+  .fin-row{display:grid;grid-template-columns:100px 1fr;gap:4px;font-size:.8rem;padding:3px 0}
+  .fin-row .label{color:#94A3B8;text-align:right}
+  .fin-row .value{color:#334155;font-weight:500}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0"><svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg></div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">tune</span><span class="nav-label">Attributes & Units</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Tags Manager</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_offer</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">confirmation_number</span><span class="nav-label">Coupons</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0"><p class="text-white text-sm font-semibold truncate">Arvind Sharma</p><p class="text-white/35 text-xs truncate">Super Admin</p></div>
+  </div>
+</aside>
+
+<div class="main-area min-h-screen" id="mainArea">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Orders</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-72 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search by order #, customer, phone..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="renderTable()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue"><span class="material-icons text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span></button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block"><p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p><p class="text-[11px] text-slate-400">Super Admin</p></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900">Orders Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Filterable order queue by status &amp; payment &mdash; <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">orders</span></p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button class="btn-secondary text-sm" onclick="exportOrders()"><span class="material-icons text-[18px]">download</span> Export</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Total</p><p class="font-heading text-xl font-extrabold text-slate-900 mt-0.5" id="kpiTotal">0</p></div><div class="w-9 h-9 rounded-lg bg-cc-blue/10 flex items-center justify-center"><span class="material-icons text-cc-blue text-[18px]">shopping_bag</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#2D82FF;border-radius:0 0 16px 16px"></div></div>
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Today</p><p class="font-heading text-xl font-extrabold text-cc-orange mt-0.5" id="kpiToday">0</p></div><div class="w-9 h-9 rounded-lg bg-cc-orange/10 flex items-center justify-center"><span class="material-icons text-cc-orange text-[18px]">today</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#FF5100;border-radius:0 0 16px 16px"></div></div>
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Revenue</p><p class="font-heading text-xl font-extrabold text-green-600 mt-0.5" id="kpiRevenue">₹0</p></div><div class="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center"><span class="material-icons text-green-600 text-[18px]">account_balance_wallet</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#22C55E;border-radius:0 0 16px 16px"></div></div>
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pending</p><p class="font-heading text-xl font-extrabold text-yellow-600 mt-0.5" id="kpiPending">0</p></div><div class="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center"><span class="material-icons text-yellow-600 text-[18px]">schedule</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#EAB308;border-radius:0 0 16px 16px"></div></div>
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Unpaid</p><p class="font-heading text-xl font-extrabold text-red-500 mt-0.5" id="kpiUnpaid">0</p></div><div class="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center"><span class="material-icons text-red-500 text-[18px]">money_off</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#EF4444;border-radius:0 0 16px 16px"></div></div>
+      <div class="kpi-card p-4"><div class="flex items-start justify-between mb-2"><div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Returns</p><p class="font-heading text-xl font-extrabold text-cc-purple mt-0.5" id="kpiReturns">0</p></div><div class="w-9 h-9 rounded-lg bg-cc-purple/10 flex items-center justify-center"><span class="material-icons text-cc-purple text-[18px]">assignment_return</span></div></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#8C30F5;border-radius:0 0 16px 16px"></div></div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="section-card p-5 sm:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-icons text-cc-blue text-[22px]">donut_large</span>
+        <div><h2 class="font-heading text-lg font-bold text-slate-900">Order Status Queue</h2><p class="text-xs text-slate-400 mono">orders.status ENUM: pending → confirmed → processing → shipped → delivered | cancelled | return_requested → returned → refunded</p></div>
+      </div>
+      <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-9 gap-2.5" id="statusGrid"></div>
+      <div class="mt-4 flex rounded-full overflow-hidden h-3" id="statusBar"></div>
+    </div>
+
+    <!-- Filters + Table -->
+    <div class="section-card">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-orange text-[22px]">shopping_bag</span>
+          <div><h2 class="font-heading text-lg font-bold text-slate-900">All Orders</h2><p class="text-xs text-slate-400 mono">SELECT * FROM orders ORDER BY placed_at DESC</p></div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <select class="status-select text-xs" id="statusFilter" onchange="renderTable()"><option value="all">All Status</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option><option value="return_requested">Return Req.</option><option value="returned">Returned</option><option value="refunded">Refunded</option></select>
+          <select class="status-select text-xs" id="paymentFilter" onchange="renderTable()"><option value="all">All Payment</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option><option value="refunded">Refunded</option><option value="partially_refunded">Partial Refund</option></select>
+          <input type="date" class="status-select text-xs" id="dateFilter" onchange="renderTable()" style="padding-right:10px">
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table"><thead><tr>
+          <th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Placed</th><th>Actions</th>
+        </tr></thead><tbody id="ordersBody"></tbody></table>
+      </div>
+      <div class="flex items-center justify-between px-5 sm:px-6 py-3 border-t border-slate-100">
+        <p class="text-xs text-slate-400" id="resultCount">Showing 0 orders</p>
+        <div class="flex items-center gap-1" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ORDER DETAIL -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal-panel w-full max-w-2xl mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Order Details</h3>
+      <button class="btn-icon" onclick="closeModal('detailModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6" id="detailContent"></div>
+  </div>
+</div>
+
+<!-- MODAL: STATUS CHANGE -->
+<div class="modal-backdrop" id="statusModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Change Status</h3>
+      <button class="btn-icon" onclick="closeModal('statusModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <p class="text-sm text-slate-500">Order: <span class="font-bold text-slate-800 mono" id="statusOrderNum"></span></p>
+      <p class="text-xs text-slate-400 mono" id="statusCurrent"></p>
+      <select class="input-field" id="newStatus"></select>
+      <textarea class="input-field" rows="2" id="statusNote" placeholder="Optional note for this status change..."></textarea>
+      <p class="text-[11px] text-slate-400 mono">INSERT INTO order_status_history (order_id, status, note, changed_by)</p>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('statusModal')">Cancel</button>
+      <button class="btn-primary" onclick="applyStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SC={yellow:'#EAB308',blue:'#2D82FF',cyan:'#06B6D4',indigo:'#6366F1',green:'#22C55E',red:'#EF4444',orange:'#F97316',amber:'#D97706',slate:'#94A3B8'};
+const statusConf={
+  pending:{label:'Pending',color:SC.yellow,bg:'#FEF3C7',badge:'badge-yellow',icon:'schedule'},
+  confirmed:{label:'Confirmed',color:SC.blue,bg:'#DBEAFE',badge:'badge-blue',icon:'check_circle_outline'},
+  processing:{label:'Processing',color:SC.cyan,bg:'#ECFEFF',badge:'badge-cyan',icon:'autorenew'},
+  shipped:{label:'Shipped',color:SC.indigo,bg:'#E0E7FF',badge:'badge-indigo',icon:'local_shipping'},
+  delivered:{label:'Delivered',color:SC.green,bg:'#DCFCE7',badge:'badge-green',icon:'done_all'},
+  cancelled:{label:'Cancelled',color:SC.red,bg:'#FFE4E6',badge:'badge-red',icon:'cancel'},
+  return_requested:{label:'Return Req.',color:SC.orange,bg:'#FFF7ED',badge:'badge-orange',icon:'assignment_return'},
+  returned:{label:'Returned',color:SC.amber,bg:'#FEF3C7',badge:'badge-amber',icon:'undo'},
+  refunded:{label:'Refunded',color:SC.slate,bg:'#F1F5F9',badge:'badge-slate',icon:'money_off'}
+};
+const paymentConf={
+  paid:{label:'Paid',badge:'badge-green',icon:'check_circle'},
+  unpaid:{label:'Unpaid',badge:'badge-slate',icon:'money_off'},
+  refunded:{label:'Refunded',badge:'badge-red',icon:'replay'},
+  partially_refunded:{label:'Partial Refund',badge:'badge-orange',icon:'money_off'}
+};
+
+function now(){return new Date()}
+function daysAgo(d){const t=new Date();t.setDate(t.getDate()-d);return t}
+function hoursAgo(h){const t=new Date();t.setTime(t.getTime()-h*3600000);return t}
+function fmt(dt){if(!dt)return '—';const d=new Date(dt);return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}
+function fmtD(dt){if(!dt)return '—';return new Date(dt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}
+function fmtT(dt){if(!dt)return '—';return new Date(dt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}
+function fmtMoney(n){return '₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+let statusTarget=null;
+const PAGE_SIZE=10;
+let currentPage=1;
+
+const users=[
+  {id:1,name:'Rahul Kumar',initials:'RK',color:'cc-blue',phone:'9876543210',city:'Mumbai'},
+  {id:2,name:'Priya Sharma',initials:'PS',color:'cc-pink',phone:'9876543211',city:'Delhi'},
+  {id:3,name:'Amit Jain',initials:'AJ',color:'cc-purple',phone:'9876543212',city:'Bangalore'},
+  {id:4,name:'Meera Gupta',initials:'MG',color:'cc-orange',phone:'9876543213',city:'Hyderabad'},
+  {id:5,name:'Vikram Patel',initials:'VP',color:'green-600',phone:'9876543214',city:'Ahmedabad'},
+  {id:6,name:'Neha Reddy',initials:'NR',color:'cc-yellow',phone:'9876543215',city:'Chennai'},
+  {id:7,name:'Suresh Kulkarni',initials:'SK',color:'slate-500',phone:'9876543216',city:'Pune'},
+  {id:8,name:'Deepa Menon',initials:'DM',color:'cc-blue',phone:'9876543217',city:'Kochi'},
+  {id:9,name:'Arjun Nair',initials:'AN',color:'cc-purple',phone:'9876543218',city:'Kolkata'},
+  {id:10,name:'Kavita Singh',initials:'KS',color:'cc-orange',phone:'9876543219',city:'Jaipur'},
+];
+
+const items=[
+  {name:'TrueSound Pro Earbuds',qty:1,price:1499},
+  {name:'FitTrack Smart Watch',qty:1,price:2799},
+  {name:'HomeChef Air Fryer 4.5L',qty:1,price:3199},
+  {name:'Cotton Kurti Set',qty:2,price:1299},
+  {name:'BoomBox Mini Speaker',qty:1,price:799},
+  {name:'Laptop Backpack Pro',qty:1,price:1899},
+  {name:'Running Shoes Ultra',qty:1,price:2499},
+  {name:'Organic Face Serum',qty:2,price:799},
+  {name:'Stainless Steel Cookware Set',qty:1,price:4999},
+  {name:'Noise Cancelling Headphones',qty:1,price:3499},
+  {name:'Bamboo Water Bottle 1L',qty:3,price:499},
+  {name:'Wireless Charging Pad',qty:1,price:699},
+];
+
+function genItems(){const n=Math.floor(Math.random()*3)+1;const sel=[];for(let i=0;i<n;i++)sel.push({...items[Math.floor(Math.random()*items.length)],qty:Math.floor(Math.random()*3)+1});return sel;}
+function genOrderNumber(d,i){const dt=new Date(d);return 'ORD-'+dt.getFullYear()+String(dt.getMonth()+1).padStart(2,'0')+String(dt.getDate()).padStart(2,'0')+'-'+String(1000+i).padStart(4,'0');}
+
+let orders=[];
+(function genOrders(){
+  const statuses=['pending','pending','pending','pending','confirmed','confirmed','confirmed','processing','processing','shipped','shipped','shipped','shipped','shipped','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','delivered','cancelled','cancelled','return_requested','returned','refunded'];
+  const payments=['paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','paid','unpaid','unpaid','unpaid','unpaid','unpaid','paid','paid','paid','refunded','partially_refunded'];
+  for(let i=0;i<35;i++){
+    const d=daysAgo(Math.floor(i/3));const u=users[i%users.length];const its=genItems();
+    const sub=its.reduce((s,it)=>s+it.price*it.qty,0);const disc=Math.random()>.7?Math.round(sub*(.05+Math.random()*.15)):0;const ship=Math.random()>.5?99:0;const tax=Math.round((sub-disc)*0.05);const total=sub-disc+ship+tax;
+    const placed=new Date(d);placed.setHours(8+Math.floor(Math.random()*12));placed.setMinutes(Math.floor(Math.random()*60));
+    orders.push({
+      id:i+1,order_number:genOrderNumber(d,i),user_id:u.id,shipping_name:u.name,shipping_phone:u.phone,
+      shipping_city:u.city,shipping_state:'Maharashtra',shipping_country:'India',shipping_postal:'400001',
+      shipping_line1:Math.floor(Math.random()*900+100)+', Sector '+Math.floor(Math.random()*50+1),
+      subtotal:sub,discount_amount:disc,shipping_charge:ship,tax_amount:tax,total_amount:total,
+      currency:'INR',offer_id:disc>0?Math.floor(Math.random()*5)+1:null,coupon_code:disc>0&&Math.random()>.5?'DIWALI20':null,
+      status:statuses[i]||'pending',payment_status:payments[i]||'paid',
+      items:its,placed_at:placed,
+      confirmed_at:statuses[i]==='confirmed'||['processing','shipped','delivered'].includes(statuses[i])?new Date(placed.getTime()+3600000*(1+Math.floor(Math.random()*4))):null,
+      shipped_at:['shipped','delivered'].includes(statuses[i])?new Date(placed.getTime()+3600000*(12+Math.floor(Math.random()*48))):null,
+      delivered_at:statuses[i]==='delivered'?new Date(placed.getTime()+3600000*(36+Math.floor(Math.random()*72))):null,
+      cancelled_at:statuses[i]==='cancelled'?new Date(placed.getTime()+3600000*(2+Math.floor(Math.random()*24))):null,
+      created_at:placed,updated_at:placed
+    });
+  }
+})();
+
+// SIDEBAR
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('sidebarOverlay').classList.toggle('show')}
+function collapseSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');document.getElementById('mainArea').classList.toggle('expanded');document.getElementById('collapseIcon').textContent=document.getElementById('sidebar').classList.contains('collapsed')?'menu':'menu_open'}
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',()=>closeModal(m.id)));
+
+function showToast(msg,type='success'){const c={success:'#16A34A',error:'#DC2626',info:'#2D82FF',warning:'#D97706'};const i={success:'check_circle',error:'error',info:'info',warning:'warning'};const t=document.createElement('div');t.className='toast';t.style.background=c[type];t.innerHTML=`<span class="material-icons text-[20px]">${i[type]}</span> ${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+// KPIs
+function updateKPIs(){
+  const today=new Date();today.setHours(0,0,0,0);
+  document.getElementById('kpiTotal').textContent=orders.length.toLocaleString();
+  document.getElementById('kpiToday').textContent=orders.filter(o=>new Date(o.placed_at)>=today).length;
+  const rev=orders.filter(o=>o.payment_status==='paid').reduce((s,o)=>s+o.total_amount,0);
+  document.getElementById('kpiRevenue').textContent='₹'+(rev/100000).toFixed(1)+'L';
+  document.getElementById('kpiPending').textContent=orders.filter(o=>o.status==='pending').length;
+  document.getElementById('kpiUnpaid').textContent=orders.filter(o=>o.payment_status==='unpaid').length;
+  document.getElementById('kpiReturns').textContent=orders.filter(o=>['return_requested','returned','refunded'].includes(o.status)).length;
+}
+
+// STATUS GRID
+function renderStatusGrid(){
+  const total=orders.length||1;
+  const order=['pending','confirmed','processing','shipped','delivered','cancelled','return_requested','returned','refunded'];
+  document.getElementById('statusGrid').innerHTML=order.map(s=>{
+    const c=statusConf[s];const count=orders.filter(o=>o.status===s).length;const pct=((count/total)*100).toFixed(0);
+    return `<div class="rounded-xl p-3 text-center cursor-pointer hover:shadow-md transition" style="background:${c.bg};border:1.5px solid ${c.color}30" onclick="document.getElementById('statusFilter').value='${s}';renderTable()">
+      <span class="material-icons text-[20px]" style="color:${c.color}">${c.icon}</span>
+      <p class="text-lg font-bold font-heading mt-1" style="color:${c.color}">${count}</p>
+      <p class="text-[10px] font-semibold" style="color:${c.color}">${c.label}</p>
+      <p class="text-[9px] mono mt-0.5" style="color:${c.color}80">${pct}%</p>
+    </div>`;
+  }).join('');
+  document.getElementById('statusBar').innerHTML=order.map(s=>{const c=statusConf[s];const count=orders.filter(o=>o.status===s).length;const pct=((count/total)*100);return count>0?`<div style="width:${pct}%;background:${c.color}" title="${c.label}: ${count}"></div>`:'';}).join('');
+}
+
+// TABLE
+function renderTable(){
+  const tbody=document.getElementById('ordersBody');
+  const sf=document.getElementById('statusFilter').value;
+  const pf=document.getElementById('paymentFilter').value;
+  const df=document.getElementById('dateFilter').value;
+  const search=(document.getElementById('globalSearch')?.value||'').toLowerCase();
+
+  let filtered=[...orders].sort((a,b)=>new Date(b.placed_at)-new Date(a.placed_at));
+  if(sf!=='all')filtered=filtered.filter(o=>o.status===sf);
+  if(pf!=='all')filtered=filtered.filter(o=>o.payment_status===pf);
+  if(df)filtered=filtered.filter(o=>o.placed_at.toISOString().slice(0,10)===df);
+  if(search)filtered=filtered.filter(o=>o.order_number.toLowerCase().includes(search)||o.shipping_name.toLowerCase().includes(search)||o.shipping_phone.includes(search));
+
+  const totalPages=Math.ceil(filtered.length/PAGE_SIZE)||1;
+  if(currentPage>totalPages)currentPage=totalPages;
+  const start=(currentPage-1)*PAGE_SIZE;
+  const paged=filtered.slice(start,start+PAGE_SIZE);
+
+  if(!paged.length){tbody.innerHTML=`<tr><td colspan="8" class="text-center py-12"><span class="material-icons text-slate-300 text-[40px]">inbox</span><p class="text-slate-500 mt-2 font-medium">No orders found</p></td></tr>`;document.getElementById('resultCount').textContent='No orders found';document.getElementById('pagination').innerHTML='';return;}
+
+  document.getElementById('resultCount').textContent=`Showing ${start+1}–${Math.min(start+PAGE_SIZE,filtered.length)} of ${filtered.length} orders`;
+
+  let html='';
+  paged.forEach(o=>{
+    const sc=statusConf[o.status];const pc=paymentConf[o.payment_status];
+    const itemSummary=o.items.map(it=>`${it.name} ×${it.qty}`).join(', ');
+    html+=`<tr class="fade-slide-in">
+      <td>
+        <p class="font-semibold text-slate-800 mono text-xs">${o.order_number}</p>
+        <p class="text-[10px] text-slate-400 mono">id: ${o.id}</p>
+      </td>
+      <td>
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-${o.shipping_name.split(' ')[1]==='Kumar'?'cc-blue':o.shipping_name.split(' ')[1]==='Sharma'?'cc-pink':o.shipping_name.split(' ')[1]==='Jain'?'cc-purple':o.shipping_name.split(' ')[1]=='Gupta'?'cc-orange':'green-600'}/10 flex items-center justify-center text-white text-[10px] font-bold shrink-0">${users.find(u=>u.id===o.user_id)?.initials||'?'}</div>
+          <div class="min-w-0">
+            <p class="font-medium text-slate-700 text-sm truncate max-w-[140px]">${o.shipping_name}</p>
+            <p class="text-[10px] text-slate-400 mono">${o.shipping_phone}</p>
+          </div>
+        </div>
+      </td>
+      <td><p class="text-sm text-slate-600 truncate max-w-[180px]" title="${itemSummary}">${itemSummary}</p></td>
+      <td>
+        <p class="font-semibold text-slate-800">${fmtMoney(o.total_amount)}</p>
+        ${o.discount_amount>0?`<p class="text-[10px] text-green-600 mono">-${fmtMoney(o.discount_amount)}</p>`:''}
+        <p class="text-[10px] text-slate-400 mono">${o.coupon_code?'coupon: '+o.coupon_code:''}</p>
+      </td>
+      <td><span class="badge ${pc.badge}"><span class="material-icons text-[11px]">${pc.icon}</span>${pc.label}</span></td>
+      <td><span class="badge ${sc.badge}"><span class="material-icons text-[11px]">${sc.icon}</span>${sc.label}</span></td>
+      <td>
+        <p class="text-sm text-slate-600">${fmtD(o.placed_at)}</p>
+        <p class="text-[10px] text-slate-400">${fmtT(o.placed_at)}</p>
+      </td>
+      <td>
+        <div class="flex items-center gap-1">
+          <button class="btn-icon" style="width:30px;height:30px" onclick="viewOrder(${o.id})" title="View"><span class="material-icons text-[16px]">visibility</span></button>
+          <button class="btn-icon" style="width:30px;height:30px" onclick="openStatusModal(${o.id})" title="Change Status"><span class="material-icons text-[16px]">swap_horiz</span></button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+
+  // Pagination
+  let pgHtml='';
+  if(totalPages>1){
+    pgHtml+=`<button class="btn-icon" style="width:32px;height:32px" ${currentPage===1?'opacity:.4':''} onclick="goPage(${currentPage-1})"><span class="material-icons text-[18px]">chevron_left</span></button>`;
+    for(let p=1;p<=totalPages;p++){
+      if(p===1||p===totalPages||Math.abs(p-currentPage)<=2){
+        pgHtml+=`<button class="btn-icon ${p===currentPage?'bg-cc-blue text-white border-cc-blue':'bg-white text-slate-600 border-slate-200'}" style="width:32px;height:32px;font-size:12px;font-weight:700" onclick="goPage(${p})">${p}</button>`;
+      } else if(Math.abs(p-currentPage)===3){
+        pgHtml+=`<span class="text-slate-400 text-xs px-1">...</span>`;
+      }
+    }
+    pgHtml+=`<button class="btn-icon" style="width:32px;height:32px" ${currentPage===totalPages?'opacity:.4':''} onclick="goPage(${currentPage+1})"><span class="material-icons text-[18px]">chevron_right</span></button>`;
+  }
+  document.getElementById('pagination').innerHTML=pgHtml;
+  updateKPIs();
+}
+
+function goPage(p){currentPage=p;renderTable();document.querySelector('.section-card').scrollIntoView({behavior:'smooth',block:'start'});}
+
+function exportOrders(){showToast('Exporting '+orders.length+' orders as CSV','info');}
+
+// VIEW ORDER DETAIL
+function viewOrder(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  const sc=statusConf[o.status];const pc=paymentConf[o.payment_status];
+  const u=users.find(x=>x.id===o.user_id)||{};
+
+  // Build status timeline
+  const timeline=[];
+  const statusFlow=['pending','confirmed','processing','shipped','delivered'];
+  const currentIdx=statusFlow.indexOf(o.status);
+  if(currentIdx>=0){
+    statusFlow.forEach((s,i)=>{
+      const c=statusConf[s];
+      let time='—';
+      if(i<=currentIdx){
+        if(s==='pending')time=fmt(o.placed_at);
+        else if(s==='confirmed')time=o.confirmed_at?fmt(o.confirmed_at):'—';
+        else if(s==='processing')time='—';
+        else if(s==='shipped')time=o.shipped_at?fmt(o.shipped_at):'—';
+        else if(s==='delivered')time=o.delivered_at?fmt(o.delivered_at):'—';
+      }
+      timeline.push({status:s,...c,time,done:i<=currentIdx});
+    });
+  }
+  // Add cancellation/return if applicable
+  if(o.status==='cancelled'&&o.cancelled_at)timeline.push({status:'cancelled',...statusConf.cancelled,time:fmt(o.cancelled_at),done:true});
+  if(o.status==='return_requested')timeline.push({status:'return_requested',...statusConf.return_requested,time:fmt(o.placed_at),done:true});
+  if(o.status==='returned')timeline.push({status:'returned',...statusConf.returned,time:fmt(o.placed_at),done:true});
+  if(o.status==='refunded')timeline.push({status:'refunded',...statusConf.refunded,time:fmt(o.placed_at),done:true});
+
+  let timelineHtml=timeline.map((t,i)=>`
+    <div class="flex gap-4 ${i<timeline.length-1?'pb-5':''}">
+      <div class="flex flex-col items-center">
+        <div class="timeline-dot" style="background:${t.done?t.color:'#CBD5E1'}"></div>
+        ${i<timeline.length-1?`<div class="timeline-line flex-1" style="background:${t.done?t.color+'30':'#E2E8F0'};min-height:32px"></div>`:''}
+      </div>
+      <div class="flex-1 -mt-1">
+        <p class="text-sm font-semibold ${t.done?'text-slate-800':'text-slate-400'}">${t.label}</p>
+        <p class="text-[11px] mono ${t.done?'text-slate-500':'text-slate-300'}">${t.time}</p>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('detailContent').innerHTML=`
+    <div class="space-y-6">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <p class="font-heading text-xl font-bold text-slate-900 mono">${o.order_number}</p>
+          <p class="text-xs text-slate-400 mt-0.5 mono">orders.id: ${o.id} | uuid: ${'xxxxxxxx-xxxx-xxxx-xxxx'.replace(/x/g,()=>Math.floor(Math.random()*16).toString(16))}</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">${statusBadge(o.status)}${statusBadgeP(o.payment_status)}</div>
+      </div>
+
+      <!-- Customer & Shipping -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-slate-50 rounded-xl p-4">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Customer</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm">${u.initials||'?'}</div>
+            <div><p class="font-semibold text-slate-800 text-sm">${u.name||'Unknown'}</p><p class="text-xs text-slate-400 mono">${u.phone||'—'}</p></div>
+          </div>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-4">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Shipping Address</p>
+          <p class="text-sm text-slate-700 font-medium">${o.shipping_name}</p>
+          <p class="text-xs text-slate-500">${o.shipping_line1}${o.shipping_line2?', '+o.shipping_line2:''}</p>
+          <p class="text-xs text-slate-500">${o.shipping_city}, ${o.shipping_state} — ${o.shipping_postal}</p>
+          <p class="text-xs text-slate-400 mono">${o.shipping_phone}</p>
+        </div>
+      </div>
+
+      <!-- Financials -->
+      <div class="bg-slate-50 rounded-xl p-4">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-3">Order Financials</p>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div><p class="text-[10px] text-slate-400">Subtotal</p><p class="text-sm font-bold text-slate-800 mono">${fmtMoney(o.subtotal)}</p></div>
+          <div><p class="text-[10px text-slate-400">Discount</p><p class="text-sm font-bold text-green-600 mono">-${fmtMoney(o.discount_amount)}</p></div>
+          <div><p class="text-[10px] text-slate-400">Shipping</p><p class="text-sm font-bold text-slate-800 mono">${fmtMoney(o.shipping_charge)}</p></div>
+          <div><p class="text-[10px] text-slate-400">Tax (GST)</p><p class="text-sm font-bold text-slate-800 mono">${fmtMoney(o.tax_amount)}</p></div>
+          <div class="sm:col-span-1 bg-white rounded-lg p-2 text-center"><p class="text-[10px] text-slate-400">Total</p><p class="text-base font-extrabold text-slate-900 mono">${fmtMoney(o.total_amount)}</p></div>
+        </div>
+        ${o.coupon_code?`<p class="text-xs text-slate-400 mt-2 mono">Coupon applied: ${o.coupon_code} | offer_id: ${o.offer_id||'NULL'}</p>`:''}
+        <p class="text-[10px] text-slate-400 mono mt-1">currency: ${o.currency}</p>
+      </div>
+
+      <!-- Items -->
+      <div>
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Order Items <span class="text-slate-300 font-normal normal-case">(JOIN order_items WHERE order_id = ${o.id})</span></p>
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <table class="w-full"><thead><tr class="bg-slate-50"><th class="text-[11px] text-slate-500 font-semibold px-4 py-2 text-left">Product</th><th class="text-[11px] text-slate-500 font-semibold px-4 py-2 text-right">Qty</th><th class="text-[11px] text-slate-500 font-semibold px-4 py-2 text-right">Price</th><th class="text-[11px] text-slate-500 font-semibold px-4 py-2 text-right">Line Total</th></tr></thead>
+          <tbody>${o.items.map(it=>`<tr><td class="px-4 py-2.5 text-sm text-slate-700 font-medium">${it.name}</td><td class="px-4 py-2.5 text-sm text-center text-slate-600">${it.qty}</td><td class="px-4 py-2.5 text-sm text-right mono text-slate-600">${fmtMoney(it.price)}</td><td class="px-4 py-2.5 text-sm text-right font-semibold text-slate-800 mono">${fmtMoney(it.price*it.qty)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <div>
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-3">Status History <span class="text-slate-300 font-normal normal-case">(order_status_history WHERE order_id = ${o.id})</span></p>
+        <div class="pl-1">${timelineHtml}</div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs text-slate-400 mono pt-2 border-t border-slate-100 flex-wrap">
+        <span>placed_at: ${fmt(o.placed_at)}</span><span>updated_at: ${fmt(o.updated_at)}</span>
+      </div>
+    </div>`;
+  openModal('detailModal');
+}
+
+function statusBadge(s){const c=statusConf[s];return `<span class="badge ${c.badge}"><span class="material-icons text-[11px]">${c.icon}</span>${c.label}</span>`;}
+function statusBadgeP(s){const c=paymentConf[s];return `<span class="badge ${c.badge}"><span class="material-icons text-[11px]">${c.icon}</span>${c.label}</span>`;}
+
+// STATUS CHANGE
+function openStatusModal(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  statusTarget=id;
+  document.getElementById('statusOrderNum').textContent=o.order_number;
+  document.getElementById('statusCurrent').textContent=`Current: ${o.status} | ${o.payment_status}`;
+  const validNext=getValidTransitions(o.status);
+  const sel=document.getElementById('newStatus');
+  sel.innerHTML=validNext.map(s=>`<option value="${s}">${statusConf[s].label}</option>`).join('');
+  document.getElementById('statusNote').value='';
+  openModal('statusModal');
+}
+
+function getValidTransitions(current){
+  const map={pending:['confirmed','cancelled'],confirmed:['processing','cancelled'],processing:['shipped','cancelled'],shipped:['delivered'],delivered:['return_requested'],cancelled:[],return_requested:['returned'],returned:['refunded'],refunded:[]};
+  return map[current]||[];
+}
+
+function applyStatus(){
+  const o=orders.find(x=>x.id===statusTarget);if(!o)return;
+  const newS=document.getElementById('newStatus').value;
+  if(!newS){showToast('Select a status','error');return;}
+  o.status=newS;o.updated_at=now();
+  const nowISO=now().toISOString().slice(0,19).replace('T',' ');
+  if(newS==='confirmed')o.confirmed_at=now();
+  if(newS==='shipped')o.shipped_at=now();
+  if(newS==='delivered')o.delivered_at=now();
+  if(newS==='cancelled')o.cancelled_at=now();
+  if(newS==='refunded')o.payment_status='refunded';
+  closeModal('statusModal');
+  showToast(`${o.order_number} → ${statusConf[newS].label}`,'success');
+  renderTable();renderStatusGrid();
+}
+
+// INIT
+function init(){updateKPIs();renderStatusGrid();renderTable();}
+init();
+</script>
+</body>
+</html>

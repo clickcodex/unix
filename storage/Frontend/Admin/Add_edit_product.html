@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Product — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{cc:{yellow:'#FFB800',orange:'#FF5100',pink:'#FF006B',purple:'#8C30F5',blue:'#2D82FF',dark:'#0F172A',light:'#F8FAFC',ice:'#F1F5F9'}},fontFamily:{heading:['Poppins','sans-serif'],body:['Inter','sans-serif']}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:6px;height:6px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A8B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 3px 0 rgba(0,0,0,0.05)}
+  .form-field{width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.8125rem;color:#1E293B;transition:all .15s ease;background:#fff}
+  .form-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .form-field::placeholder{color:#94A3B8}
+  .form-field:disabled{background:#F8FAFC;color:#94A3B8;cursor:not-allowed;opacity:.6}
+  
+  .img-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;border:2px solid #E2E8F0;cursor:pointer;transition:all .15s ease;flex-shrink:0}
+  .img-thumb:hover{border-color:#2D82FF;transform:scale(1.05)}
+  .img-thumb.primary{border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.2)}
+  
+  .spec-chip{display:inline-flex;align-items:center;gap:4px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:4px 10px;font-size:.75rem;color:#475569}
+  .tag-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:.6875rem;font-weight:600;white-space:nowrap}
+  
+  .action-btn{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;color:#94A8B8}
+  .action-btn:hover{background:#F1F5F9;color:#2D82FF}
+  .action-btn.danger:hover{background:#FFE4E6;color:#FF006B}
+  
+  .toast-container{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .toast-item{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;font-size:.875rem;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);animation:toast-in .35s cubic-bezier(.4,0,.2,1) forwards;border:1px solid transparent}
+  .toast-item.removing{animation:toast-out .3s ease forwards}
+  .toast-success{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+  .toast-error{background:#FFF1F2;border-color:#FECDD3;color:#9F1239}
+  .toast-info{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+  
+  @keyframes toast-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes toast-out{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+  
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  
+  /* Specification and dynamic rows configurations */
+  .spec-row{display:grid;grid-template-columns:40px 140px 150px 1fr;gap:10px;align-items:center}
+  .variant-row{display:grid;grid-template-columns:40px 120px 1fr 110px 80px;gap:10px;align-items:center;padding:10px;background:#FAFBFC;border-radius:10px;border:1px solid #E2E8F0}
+  .img-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px;background:#FAFBFC;border-radius:10px;border:1px solid #E2E8F0}
+  .tag-row{display:grid;grid-template-columns:40px 140px 1fr auto;gap:10px;align-items:center;padding:10px;background:#FAFBFC;border-radius:10px;border:1px solid #E2E8F0}
+  
+  .img-row img{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid #E2E8F0;transition:all .15s ease}
+  .img-row img.primary{border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.25)}
+  
+  .remove-spec-btn{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #E2E8F0;color:#94A8B8;transition:all .15s ease;cursor:pointer;flex-shrink:0;background:#fff}
+  .remove-spec-btn:hover{border-color:#FF006B;color:#FF006B;background:#FFF1F2}
+  
+  .img-set-primary-btn{font-size:.6875rem;font-weight:600;color:#2D82FF;background:transparent;border:1px solid #2D82FF;border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s ease}
+  .img-set-primary-btn:hover{background:#EFF6FF;color:#1E40AF}
+  
+  .attr-select{padding:7px 10px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.75rem;color:#475569;background:#fff;width:100%}
+  .attr-select:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  
+  /* Modal styling */
+  .modal-overlay {position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .modal-overlay.show {opacity:1;pointer-events:auto}
+  .modal-box {background:#fff;border-radius:16px;border:1px solid #E2E8F0;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);transform:scale(0.95);transition:transform .2s ease;width:90%;margin:20px}
+  .modal-overlay.show .modal-box {transform:scale(1)}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100">
+        <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+        <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+      </svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN AREA -->
+<div class="main-area min-h-screen pb-12" id="mainArea">
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <span class="material-icons text-2xl">menu</span>
+        </button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <span class="material-icons text-2xl" id="collapseIcon">menu_open</span>
+        </button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Management</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">Products</span>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">Edit</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-72 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search products, SKUs, UUIDs..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Breadcrumb Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 font-heading">Edit Product</h1>
+        <p class="text-xs text-slate-500 mono mt-1">UPDATE products SET ... WHERE id = <span class="text-cc-blue font-semibold" id="editIdDisplay">1</span></p>
+      </div>
+      <div class="flex gap-2.5">
+        <button type="button" onclick="softDelete('TrueSound Pro Wireless Earbuds')" class="px-4 py-2 border border-red-200 text-cc-pink hover:bg-red-50 font-semibold text-sm rounded-xl transition flex items-center gap-2">
+          <span class="material-icons text-sm">delete_outline</span> Soft Delete
+        </button>
+        <button type="button" onclick="restoreProduct('TrueSound Pro Wireless Earbuds')" class="px-4 py-2 border border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-semibold text-sm rounded-xl transition flex items-center gap-2">
+          <span class="material-icons text-sm">restore</span> Restore
+        </button>
+      </div>
+    </div>
+
+    <form id="productForm" onsubmit="handleFormSubmit(event)">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- ===== LEFT: PRIMARY FORM DATA (Colspan 2) ===== -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Basic Details Card -->
+          <div class="section-card p-5 sm:p-6">
+            <div class="flex items-center gap-3 mb-5 border-b border-slate-100 pb-4">
+              <div class="w-9 h-9 rounded-xl bg-cc-blue/10 flex items-center justify-center text-cc-blue shrink-0">
+                <span class="material-icons text-[20px]">info</span>
+              </div>
+              <div>
+                <h3 class="font-heading text-base font-bold text-slate-900">Basic Information</h3>
+                <p class="text-xs text-slate-400">Core database parameters of the product entity</p>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1.5">name <span class="mono text-slate-400 font-normal">VARCHAR(255)</span></label>
+                  <input type="text" id="fName" value="TrueSound Pro Wireless Earbuds" class="form-field" required>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1.5">sku <span class="mono text-slate-400 font-normal">VARCHAR(100) UNIQUE</span></label>
+                  <input type="text" id="fSku" value="CC-EAR-001" class="form-field mono" required>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">slug <span class="mono text-slate-400 font-normal">VARCHAR(300) UNIQUE</span></label>
+                <input type="text" id="fSlug" value="truesound-pro-wireless-earbuds-anc" class="form-field mono" required>
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">short_description <span class="mono text-slate-400 font-normal">TEXT NULL</span></label>
+                <input type="text" id="fShortDesc" value="Experience premium active noise cancellation with refined high-fidelity audio engineering." class="form-field">
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">description <span class="mono text-slate-400 font-normal">LONGTEXT NULL — Rich Content</span></label>
+                <textarea id="fDescription" rows="6" class="form-field resize-y font-body" placeholder="Detailed product specifications, markup instructions, or product narrative HTML..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Media Assets Card -->
+          <div class="section-card p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-cc-pink/10 flex items-center justify-center text-cc-pink shrink-0">
+                  <span class="material-icons text-[20px]">photo_library</span>
+                </div>
+                <div>
+                  <h3 class="font-heading text-base font-bold text-slate-900">Product Images</h3>
+                  <p class="text-xs text-slate-400">Insert and organize visual image arrays</p>
+                </div>
+              </div>
+              <button type="button" onclick="addImageRow()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                <span class="material-icons text-[16px]">add_photo_alternate</span> Add Image Row
+              </button>
+            </div>
+
+            <div id="imageRows" class="space-y-3">
+              <!-- Initial Image Row 1 (Primary) -->
+              <div class="img-row">
+                <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=120&auto=format&fit=crop&q=80" class="primary" alt="Thumbnail">
+                <input type="text" class="form-field text-xs mono" value="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=120&auto=format&fit=crop&q=80">
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] text-cc-blue font-semibold mono is-primary-label">is_primary: 1</span>
+                  <button type="button" onclick="setPrimary(this)" class="img-set-primary-btn bg-slate-100 hover:bg-slate-200">Set Primary</button>
+                  <button type="button" onclick="removeImageRow(this)" class="remove-spec-btn"><span class="material-icons text-[16px]">delete</span></button>
+                </div>
+              </div>
+              
+              <!-- Initial Image Row 2 -->
+              <div class="img-row">
+                <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=120&auto=format&fit=crop&q=80" alt="Thumbnail">
+                <input type="text" class="form-field text-xs mono" value="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=120&auto=format&fit=crop&q=80">
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] text-slate-500 mono is-primary-label">is_primary: 0</span>
+                  <button type="button" onclick="setPrimary(this)" class="img-set-primary-btn bg-slate-100 hover:bg-slate-200">Set Primary</button>
+                  <button type="button" onclick="removeImageRow(this)" class="remove-spec-btn"><span class="material-icons text-[16px]">delete</span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Videos Section -->
+            <div class="mt-8 pt-6 border-t border-slate-100">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Video Assets (product_videos)</h4>
+                <button type="button" onclick="addVideoRow()" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold px-2.5 py-1 rounded-md transition">
+                  <span class="material-icons text-[14px]">videocam</span> Add Video
+                </button>
+              </div>
+              
+              <div id="videoRows" class="space-y-3">
+                <!-- Initial Video 1 -->
+                <div class="bg-white rounded-xl border border-slate-200 p-4">
+                  <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-semibold text-slate-500 mb-1">video_url <span class="mono text-slate-400 font-normal">VARCHAR(500)</span></label>
+                      <input type="url" class="form-field mono text-xs" value="https://cdn.clickcodex.in/videos/earbuds-demo.mp4">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-semibold text-slate-500 mb-1">video_type</label>
+                      <select class="form-field text-xs pr-8">
+                        <option value="upload" selected>upload</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="vimeo">Vimeo</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-semibold text-slate-500 mb-1">thumbnail_url</label>
+                      <input type="url" class="form-field text-xs" value="https://cdn.clickcodex.in/thumbs/earbuds-thumb.jpg">
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="w-full">
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">title</label>
+                        <input type="text" class="form-field text-xs" value="Main Demo Promo Video">
+                      </div>
+                      <button type="button" onclick="removeVideoRow(this)" class="remove-spec-btn mt-5"><span class="material-icons text-[16px]">delete</span></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Specifications Card -->
+          <div class="section-card p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-cc-purple/10 flex items-center justify-center text-cc-purple shrink-0">
+                  <span class="material-icons text-[20px]">tune</span>
+                </div>
+                <div>
+                  <h3 class="font-heading text-base font-bold text-slate-900">Custom Attributes</h3>
+                  <p class="text-xs text-slate-400">Specifications stored in schema properties key-value mappings</p>
+                </div>
+              </div>
+              <button type="button" onclick="addSpecRow()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                <span class="material-icons text-[16px]">add</span> Add Parameter
+              </button>
+            </div>
+
+            <div id="specRows" class="space-y-3">
+              <!-- Spec 1 -->
+              <div class="spec-row">
+                <button type="button" class="remove-spec-btn" onclick="removeSpecRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <div>
+                  <select class="attr-select">
+                    <option value="Connectivity" selected>Connectivity</option>
+                    <option value="General">General</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Build">Build</option>
+                    <option value="Health">Health</option>
+                  </select>
+                </div>
+                <input type="text" class="form-field text-xs" value="Bluetooth Standard">
+                <input type="text" class="form-field text-xs" value="Bluetooth 5.3">
+              </div>
+              <!-- Spec 2 -->
+              <div class="spec-row">
+                <button type="button" class="remove-spec-btn" onclick="removeSpecRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <div>
+                  <select class="attr-select">
+                    <option value="Connectivity">Connectivity</option>
+                    <option value="General">General</option>
+                    <option value="Audio" selected>Audio</option>
+                    <option value="Build">Build</option>
+                    <option value="Health">Health</option>
+                  </select>
+                </div>
+                <input type="text" class="form-field text-xs" value="Driver Configuration">
+                <input type="text" class="form-field text-xs" value="12mm high-output dynamic driver">
+              </div>
+              <!-- Spec 3 -->
+              <div class="spec-row">
+                <button type="button" class="remove-spec-btn" onclick="removeSpecRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <div>
+                  <select class="attr-select">
+                    <option value="Connectivity">Connectivity</option>
+                    <option value="General">General</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Build" selected>Build</option>
+                    <option value="Health">Health</option>
+                  </select>
+                </div>
+                <input type="text" class="form-field text-xs" value="IP Rating Protection">
+                <input type="text" class="form-field text-xs" value="IPX5 Water Resistant">
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Variants Card -->
+          <div class="section-card p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-cc-orange/10 flex items-center justify-center text-cc-orange shrink-0">
+                  <span class="material-icons text-[20px]">layers</span>
+                </div>
+                <div>
+                  <h3 class="font-heading text-base font-bold text-slate-900">SKU Variants</h3>
+                  <p class="text-xs text-slate-400">Override base item prices and track distinct stock inventories</p>
+                </div>
+              </div>
+              <button type="button" onclick="addVariantRow()" class="flex items-center gap-1.5 bg-cc-purple hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                <span class="material-icons text-[16px]">add</span> Add Variant
+              </button>
+            </div>
+
+            <div id="variantRows" class="space-y-3">
+              <!-- Variant 1 -->
+              <div class="variant-row">
+                <button type="button" class="remove-spec-btn" onclick="removeVariantRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <div>
+                  <select class="attr-select">
+                    <option value="Color" selected>Color</option>
+                    <option value="Size">Size</option>
+                    <option value="Storage">Storage</option>
+                  </select>
+                </div>
+                <input type="text" class="form-field text-xs" value="Carbon Black">
+                <input type="number" class="form-field text-xs text-center" value="2999.00" step="0.01" placeholder="₹ Price">
+                <input type="number" class="form-field text-xs text-center" value="112" placeholder="Qty">
+              </div>
+              
+              <!-- Variant 2 -->
+              <div class="variant-row">
+                <button type="button" class="remove-spec-btn" onclick="removeVariantRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <div>
+                  <select class="attr-select">
+                    <option value="Color" selected>Color</option>
+                    <option value="Size">Size</option>
+                    <option value="Storage">Storage</option>
+                  </select>
+                </div>
+                <input type="text" class="form-field text-xs" value="Alpine White">
+                <input type="number" class="form-field text-xs text-center" value="3199.00" step="0.01" placeholder="₹ Price">
+                <input type="number" class="form-field text-xs text-center" value="85" placeholder="Qty">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT: SYSTEM PARAMETERS & METADATA (Colspan 1) ===== -->
+        <div class="space-y-6">
+          
+          <!-- Publish & Flag Status Card -->
+          <div class="section-card p-5">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <span class="material-icons text-cc-blue">toggle_on</span>
+              <h4 class="font-heading font-bold text-sm text-slate-800">Publish Flags</h4>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100/70 transition">
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">is_active</p>
+                  <p class="text-[10px] text-slate-400">Available to customers</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer select-none">
+                  <input type="checkbox" id="fIsActive" class="sr-only peer" checked>
+                  <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cc-blue"></div>
+                </label>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100/70 transition">
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">is_featured</p>
+                  <p class="text-[10px] text-slate-400">Display in top galleries</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer select-none">
+                  <input type="checkbox" id="fIsFeatured" class="sr-only peer">
+                  <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cc-yellow"></div>
+                </label>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100/70 transition">
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">is_in_stock</p>
+                  <p class="text-[10px] text-slate-400">Global stock visibility</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer select-none">
+                  <input type="checkbox" id="fIsInStock" class="sr-only peer" checked>
+                  <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Category & Sort Assignment -->
+            <div class="mt-4 pt-4 border-t border-slate-100 space-y-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">category_id (FK Relation)</label>
+                <select id="fCategory" class="form-field text-xs" required>
+                  <option value="1">1 — Mobiles & Tablets</option>
+                  <option value="2" selected>2 — Electronics</option>
+                  <option value="3">3 — Fashion</option>
+                  <option value="4">4 — Home & Furniture</option>
+                  <option value="5">5 — Beauty & Personal Care</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">sort_order (Priority Rank)</label>
+                <input type="number" id="fSortOrder" value="10" min="0" class="form-field text-xs mono">
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Matrix with Real-Time Margin Calculations -->
+          <div class="section-card p-5">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <span class="material-icons text-cc-yellow">payments</span>
+              <h4 class="font-heading font-bold text-sm text-slate-800">Financial Matrix</h4>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Base Cost Price <span class="mono font-normal">DECIMAL</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-xs font-semibold text-slate-400">₹</span>
+                  <input type="number" id="fCostPrice" value="1200.00" step="0.01" class="form-field pl-7 text-xs mono" oninput="calculateMargins()" required>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Store Base MSRP <span class="mono font-normal">DECIMAL</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-xs font-semibold text-slate-400">₹</span>
+                  <input type="number" id="fBasePrice" value="2999.00" step="0.01" class="form-field pl-7 text-xs mono" oninput="calculateMargins()" required>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sale Discounted Price <span class="mono font-normal">DECIMAL</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-xs font-semibold text-slate-400">₹</span>
+                  <input type="number" id="fSalePrice" value="2499.00" step="0.01" class="form-field pl-7 text-xs mono" oninput="calculateMargins()" placeholder="No Active Sale Discount">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Currency Code</label>
+                  <input type="text" id="fCurrency" value="INR" class="form-field text-xs font-semibold mono" readonly>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tax Rate (%)</label>
+                  <input type="number" id="fTaxRate" value="18.00" step="0.01" class="form-field text-xs mono">
+                </div>
+              </div>
+
+              <!-- Margin Visual Board -->
+              <div id="marginContainer" class="p-3 bg-slate-50 rounded-xl border border-slate-200 mt-2 space-y-1.5">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Financial Margin Metrics</p>
+                <div class="flex justify-between items-center text-xs text-slate-600">
+                  <span>Net Estimated Profit:</span>
+                  <span id="marginProfit" class="font-bold text-slate-900 text-sm">₹1299.00</span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-600">
+                  <span>Profit Margin %:</span>
+                  <span id="marginPercentage" class="font-bold text-emerald-600 text-sm">52.0%</span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-600">
+                  <span>Investment Markup %:</span>
+                  <span id="markupPercentage" class="font-bold text-indigo-600 text-xs">108.3%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logistical Details & Dynamic Units -->
+          <div class="section-card p-5">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <span class="material-icons text-cc-purple">local_shipping</span>
+              <h4 class="font-heading font-bold text-sm text-slate-800">Dimensions & Units</h4>
+            </div>
+
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">unit_id (FK Relation)</label>
+                  <select id="fUnitId" class="form-field text-xs">
+                    <option value="">Select unit</option>
+                    <option value="1">1 — Kilogram</option>
+                    <option value="2">2 — Gram</option>
+                    <option value="6" selected>6 — Count (piece)</option>
+                    <option value="7">7 — Meter</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">unit_value</label>
+                  <input type="number" id="fUnitValue" value="1.00" step="0.01" class="form-field text-xs mono">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100/80">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Weight (g)</label>
+                  <input type="number" id="fWeight" value="50" class="form-field text-xs mono" placeholder="NULL">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Length (mm)</label>
+                  <input type="number" id="fLength" value="60" class="form-field text-xs mono" placeholder="NULL">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Width (mm)</label>
+                  <input type="number" id="fWidth" value="45" class="form-field text-xs mono" placeholder="NULL">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Height (mm)</label>
+                  <input type="number" id="fHeight" value="25" class="form-field text-xs mono" placeholder="NULL">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Tags Component -->
+          <div class="section-card p-5">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-cc-pink">sell</span>
+                <h4 class="font-heading font-bold text-sm text-slate-800">Assigned Tags</h4>
+              </div>
+              <button type="button" onclick="addTag()" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold px-2.5 py-1 rounded-md transition">
+                <span class="material-icons text-[14px]">add</span> Add Tag
+              </button>
+            </div>
+
+            <div id="tagRows" class="space-y-3">
+              <!-- Custom Tag Row 1 -->
+              <div class="tag-row">
+                <button type="button" class="remove-spec-btn" onclick="removeTagRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <select class="attr-select text-xs">
+                  <option value="1" selected>Featured</option>
+                  <option value="2">Top Rated</option>
+                  <option value="3">New Arrival</option>
+                  <option value="4">Best Seller</option>
+                  <option value="5">Trending</option>
+                </select>
+                <input type="text" class="form-field text-xs" value="Popular Home Features" placeholder="Display label">
+                <button type="button" onclick="setTagColor(this, '#2D82FF')" class="w-6 h-6 rounded bg-cc-blue hover:scale-105 transition shrink-0" title="Apply Theme Color"></button>
+              </div>
+              
+              <!-- Custom Tag Row 2 -->
+              <div class="tag-row">
+                <button type="button" class="remove-spec-btn" onclick="removeTagRow(this)"><span class="material-icons text-[16px]">close</span></button>
+                <select class="attr-select text-xs">
+                  <option value="1">Featured</option>
+                  <option value="2">Top Rated</option>
+                  <option value="3">New Arrival</option>
+                  <option value="4" selected>Best Seller</option>
+                  <option value="5">Trending</option>
+                </select>
+                <input type="text" class="form-field text-xs" value="Best Sellers List" placeholder="Display label">
+                <button type="button" onclick="setTagColor(this, '#FF5100')" class="w-6 h-6 rounded bg-cc-orange hover:scale-105 transition shrink-0" title="Apply Theme Color"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO & Live Google Snippet Preview -->
+          <div class="section-card p-5">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <span class="material-icons text-emerald-500">travel_explore</span>
+              <h4 class="font-heading font-bold text-sm text-slate-800">SEO Fields</h4>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">meta_title <span class="mono text-slate-400 font-normal">VARCHAR(200)</span></label>
+                <input type="text" id="fMetaTitle" class="form-field text-xs" value="Buy TrueSound Pro Earbuds Online at Best Prices" oninput="syncSEOPreview()">
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">meta_description <span class="mono text-slate-400 font-normal">VARCHAR(500)</span></label>
+                <textarea id="fMetaDesc" rows="3" class="form-field text-xs resize-none" oninput="syncSEOPreview()">Shop from a wide range of TrueSound Pro Earbuds at best prices. Experience Premium active noise cancellation, heavy bass output, and durable IPX5 battery features.</textarea>
+              </div>
+
+              <!-- Live Google Snippet Widget -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Live Google Snippet Preview</p>
+                <div class="text-[11px] text-slate-500 truncate" id="seoPreviewUrl">https://clickcodex.com/products/truesound-pro-wireless-earbuds-anc</div>
+                <div class="text-[15px] text-indigo-700 font-medium hover:underline cursor-pointer truncate leading-tight" id="seoPreviewTitle">Buy TrueSound Pro Earbuds Online at Best Prices</div>
+                <div class="text-[11px] text-slate-600 line-clamp-2 leading-relaxed" id="seoPreviewDesc">Shop from a wide range of TrueSound Pro Earbuds at best prices. Experience Premium active noise cancellation, heavy bass output, and durable IPX5 battery features.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBMIT ACTION BOARD -->
+          <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col gap-2.5">
+            <button type="submit" class="w-full bg-cc-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+              <span class="material-icons text-[18px]">save</span>
+              <span>Update Entity Database</span>
+            </button>
+            <button type="button" onclick="showToast('info','Form configuration cleared to clean values.')" class="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-xl transition">
+              Reset Edits
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- SOFT DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box max-w-md mx-auto overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-cc-pink text-3xl">delete_outline</span>
+      </div>
+      <h3 class="font-heading text-lg font-bold text-slate-900 mb-2">Confirm Soft Delete?</h3>
+      <p class="text-sm text-slate-500 mb-1">You are setting the soft deletion flag for:</p>
+      <p class="text-sm font-semibold text-slate-800 mb-3" id="deleteName">—</p>
+      <p class="text-[11px] text-slate-400 font-mono bg-slate-50 p-2 rounded border border-slate-200 mb-4">UPDATE products SET deleted_at = NOW() WHERE id = ...</p>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5 text-left text-xs text-amber-800">
+        <span class="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
+          <span class="material-icons text-[16px]">warning</span> Soft Delete Impact Analysis:
+        </span>
+        Product sets <code class="bg-amber-100 px-1 rounded font-mono">deleted_at</code> timestamp. The entity is hidden from client storefront APIs but persists in databases to secure order audit dependencies.
+      </div>
+      <div class="flex gap-3">
+        <button onclick="executeSoftDelete()" class="flex-1 bg-cc-pink hover:bg-pink-700 text-white font-bold py-2.5 rounded-xl transition">Soft Delete</button>
+        <button onclick="closeModal('deleteModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl transition">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JAVASCRIPT LOGICS ==================== -->
+<script>
+// SIDEBAR COLLAPSE ACTIONS
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebarOverlay');
+  s.classList.toggle('mobile-open');
+  o.classList.toggle('show');
+  document.body.style.overflow = s.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function collapseSidebar() {
+  const s = document.getElementById('sidebar');
+  const m = document.getElementById('mainArea');
+  const i = document.getElementById('collapseIcon');
+  s.classList.toggle('collapsed');
+  m.classList.toggle('expanded');
+  i.textContent = s.classList.contains('collapsed') ? 'chevron_right' : 'menu_open';
+}
+
+// UNIFIED MODAL UTILITIES
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// SOFT DELETE TRIGGER
+function softDelete(name) {
+  document.getElementById('deleteName').textContent = name;
+  openModal('deleteModal');
+}
+
+function executeSoftDelete() {
+  const name = document.getElementById('deleteName').textContent;
+  closeModal('deleteModal');
+  showToast('error', `<strong>${name}</strong> successfully soft-deleted (deleted_at set to NOW()).`);
+}
+
+function restoreProduct(name) {
+  showToast('success', `<strong>${name}</strong> restored (deleted_at reverted to NULL).`);
+}
+
+// TOAST CONTAINER DISPATCHER
+function showToast(type, msg) {
+  const container = document.getElementById('toastContainer');
+  const item = document.createElement('div');
+  const icons = { success: 'check_circle', error: 'error', info: 'info' };
+  const classes = { success: 'toast-success', error: 'toast-error', info: 'toast-info' };
+  
+  item.className = `toast-item ${classes[type]}`;
+  item.innerHTML = `
+    <span class="material-icons text-[20px]">${icons[type]}</span>
+    <span class="flex-1">${msg}</span>
+    <button onclick="removeToast(this)" class="text-current opacity-60 hover:opacity-100 transition ml-2">
+      <span class="material-icons text-[16px] pointer-events-none">close</span>
+    </button>
+  `;
+  container.appendChild(item);
+  setTimeout(() => {
+    if (item.parentNode) removeToast(item.querySelector('button'));
+  }, 4500);
+}
+
+function removeToast(button) {
+  const item = button.closest('.toast-item');
+  if (item) {
+    item.classList.add('removing');
+    setTimeout(() => item.remove(), 300);
+  }
+}
+
+// REALTIME PRICING & PROFIT CALCULATION
+function calculateMargins() {
+  const baseCost = parseFloat(document.getElementById('fCostPrice').value) || 0;
+  const msrpPrice = parseFloat(document.getElementById('fBasePrice').value) || 0;
+  const saleInput = document.getElementById('fSalePrice').value;
+  const salePrice = saleInput !== '' ? parseFloat(saleInput) : null;
+
+  const resolvedPrice = salePrice !== null ? salePrice : msrpPrice;
+
+  if (baseCost > 0 && resolvedPrice > 0) {
+    const profit = resolvedPrice - baseCost;
+    const margin = (profit / resolvedPrice) * 100;
+    const markup = (profit / baseCost) * 100;
+
+    document.getElementById('marginProfit').textContent = `₹${profit.toFixed(2)}`;
+    document.getElementById('marginPercentage').textContent = `${margin.toFixed(1)}%`;
+    document.getElementById('markupPercentage').textContent = `${markup.toFixed(1)}%`;
+    document.getElementById('marginContainer').style.display = 'block';
+  } else {
+    document.getElementById('marginContainer').style.display = 'none';
+  }
+}
+
+// REALTIME SEO LIVE SNIPPET SYNC
+function syncSEOPreview() {
+  const pName = document.getElementById('fName').value || 'Unassigned Title';
+  const mTitle = document.getElementById('fMetaTitle').value || pName;
+  const mSlug = document.getElementById('fSlug').value || 'product-slug-identifier';
+  const mDesc = document.getElementById('fMetaDesc').value || 'No meta index narrative description configured. Update text variables to improve crawl discoverability indices.';
+
+  document.getElementById('seoPreviewTitle').textContent = mTitle;
+  document.getElementById('seoPreviewUrl').textContent = `https://clickcodex.com/products/${mSlug}`;
+  document.getElementById('seoPreviewDesc').textContent = mDesc;
+}
+
+// DYNAMIC LIST MULTIMEDIA ARRAY MANAGEMENT
+function addImageRow() {
+  const container = document.getElementById('imageRows');
+  const row = document.createElement('div');
+  row.className = 'img-row';
+  row.innerHTML = `
+    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=120&auto=format&fit=crop&q=80" alt="New Thumbnail">
+    <input type="text" class="form-field text-xs mono" value="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=120&auto=format&fit=crop&q=80">
+    <div class="flex items-center gap-3">
+      <span class="text-[10px] text-slate-500 mono is-primary-label">is_primary: 0</span>
+      <button type="button" onclick="setPrimary(this)" class="img-set-primary-btn bg-slate-100 hover:bg-slate-200">Set Primary</button>
+      <button type="button" onclick="removeImageRow(this)" class="remove-spec-btn"><span class="material-icons text-[16px]">delete</span></button>
+    </div>
+  `;
+  container.appendChild(row);
+  showToast('info', 'Appended empty dynamic product image slot.');
+}
+
+function removeImageRow(button) {
+  button.closest('.img-row').remove();
+  showToast('info', 'Removed product image index array reference.');
+}
+
+function setPrimary(button) {
+  const rows = document.querySelectorAll('#imageRows .img-row');
+  rows.forEach(r => {
+    r.querySelector('img').classList.remove('primary');
+    const label = r.querySelector('.is-primary-label');
+    label.textContent = 'is_primary: 0';
+    label.className = 'text-[10px] text-slate-500 mono is-primary-label';
+  });
+  
+  const targetRow = button.closest('.img-row');
+  targetRow.querySelector('img').classList.add('primary');
+  const targetLabel = targetRow.querySelector('.is-primary-label');
+  targetLabel.textContent = 'is_primary: 1';
+  targetLabel.className = 'text-[10px] text-cc-blue font-semibold mono is-primary-label';
+  showToast('success', 'Modified product primary focus image.');
+}
+
+// VIDEO ROWS DISPATCHER
+function addVideoRow() {
+  const container = document.getElementById('videoRows');
+  const row = document.createElement('div');
+  row.className = 'bg-white rounded-xl border border-slate-200 p-4';
+  row.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+      <div class="md:col-span-2">
+        <label class="block text-[10px] font-semibold text-slate-500 mb-1">video_url <span class="mono text-slate-400 font-normal">VARCHAR(500)</span></label>
+        <input type="url" class="form-field mono text-xs" value="https://cdn.clickcodex.in/videos/generic.mp4">
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-500 mb-1">video_type</label>
+        <select class="form-field text-xs pr-8">
+          <option value="upload" selected>upload</option>
+          <option value="youtube">YouTube</option>
+          <option value="vimeo">Vimeo</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-500 mb-1">thumbnail_url</label>
+        <input type="url" class="form-field text-xs" placeholder="https://cdn.clickcodex.in/thumbs/...">
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-full">
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">title</label>
+          <input type="text" class="form-field text-xs" placeholder="Video Title">
+        </div>
+        <button type="button" onclick="removeVideoRow(this)" class="remove-spec-btn mt-5"><span class="material-icons text-[16px]">delete</span></button>
+      </div>
+    </div>
+  `;
+  container.appendChild(row);
+  showToast('info', 'Appended empty video reference parameter card.');
+}
+
+function removeVideoRow(button) {
+  button.closest('.bg-white.rounded-xl.border').remove();
+  showToast('info', 'Video asset record removed from parameters.');
+}
+
+// CUSTOM SPECIFICATION INJECTION
+function addSpecRow() {
+  const container = document.getElementById('specRows');
+  const row = document.createElement('div');
+  row.className = 'spec-row';
+  row.innerHTML = `
+    <button type="button" class="remove-spec-btn" onclick="removeSpecRow(this)"><span class="material-icons text-[16px]">close</span></button>
+    <div>
+      <select class="attr-select">
+        <option value="Connectivity">Connectivity</option>
+        <option value="General" selected>General</option>
+        <option value="Audio">Audio</option>
+        <option value="Build">Build</option>
+        <option value="Health">Health</option>
+      </select>
+    </div>
+    <input type="text" class="form-field text-xs" placeholder="Parameter key">
+    <input type="text" class="form-field text-xs" placeholder="Parameter output value">
+  `;
+  container.appendChild(row);
+}
+
+function removeSpecRow(button) {
+  button.closest('.spec-row').remove();
+}
+
+// CUSTOM TAG MATRIX MANAGERS
+function addTag() {
+  const container = document.getElementById('tagRows');
+  const row = document.createElement('div');
+  row.className = 'tag-row';
+  row.innerHTML = `
+    <button type="button" class="remove-spec-btn" onclick="removeTagRow(this)"><span class="material-icons text-[16px]">close</span></button>
+    <select class="attr-select text-xs">
+      <option value="1">Featured</option>
+      <option value="2">Top Rated</option>
+      <option value="3">New Arrival</option>
+      <option value="4">Best Seller</option>
+      <option value="5" selected>Trending</option>
+    </select>
+    <input type="text" class="form-field text-xs" placeholder="Optional custom label">
+    <button type="button" onclick="setTagColor(this, '#8C30F5')" class="w-6 h-6 rounded bg-cc-purple hover:scale-105 transition shrink-0" title="Apply Theme Color"></button>
+  `;
+  container.appendChild(row);
+}
+
+function removeTagRow(button) {
+  button.closest('.tag-row').remove();
+}
+
+function setTagColor(button, color) {
+  const input = button.closest('.tag-row').querySelector('input');
+  if (input) {
+    input.style.borderColor = color;
+    input.style.boxShadow = `0 0 0 2px ${color}20`;
+  }
+}
+
+// CUSTOM SKU VARIANTS MANAGER
+function addVariantRow() {
+  const container = document.getElementById('variantRows');
+  const row = document.createElement('div');
+  row.className = 'variant-row';
+  row.innerHTML = `
+    <button type="button" class="remove-spec-btn" onclick="removeVariantRow(this)"><span class="material-icons text-[16px]">close</span></button>
+    <div>
+      <select class="attr-select">
+        <option value="Color" selected>Color</option>
+        <option value="Size">Size</option>
+        <option value="Storage">Storage</option>
+      </select>
+    </div>
+    <input type="text" class="form-field text-xs" placeholder="Variant Value e.g. Rose Gold">
+    <input type="number" class="form-field text-xs text-center" placeholder="Price override" step="0.01">
+    <input type="number" class="form-field text-xs text-center" placeholder="Stock Qty">
+  `;
+  container.appendChild(row);
+}
+
+function removeVariantRow(button) {
+  button.closest('.variant-row').remove();
+}
+
+// MAIN DATABASE SUBMISSION INTERACTION
+function handleFormSubmit(event) {
+  event.preventDefault();
+  
+  // Package structural data mock-up representation
+  const payload = {
+    id: 1,
+    name: document.getElementById('fName').value,
+    sku: document.getElementById('fSku').value,
+    slug: document.getElementById('fSlug').value,
+    category_id: document.getElementById('fCategory').value,
+    short_description: document.getElementById('fShortDesc').value,
+    description: document.getElementById('fDescription').value,
+    cost_price: parseFloat(document.getElementById('fCostPrice').value),
+    base_price: parseFloat(document.getElementById('fBasePrice').value),
+    sale_price: parseFloat(document.getElementById('fSalePrice').value) || null,
+    is_active: document.getElementById('fIsActive').checked ? 1 : 0,
+    is_featured: document.getElementById('fIsFeatured').checked ? 1 : 0,
+    is_in_stock: document.getElementById('fIsInStock').checked ? 1 : 0
+  };
+  
+  console.log("Saving entity schema payload:", payload);
+  showToast('success', '<strong>UPDATE SQL SUCCESS:</strong> Product transaction committed safely to relational memory schemas.');
+}
+
+// ON INITIALIZATION EXECUTIONS
+window.addEventListener('DOMContentLoaded', () => {
+  calculateMargins();
+  syncSEOPreview();
+});
+
+// ESCAPE HOTKEY UTILITIES
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal('deleteModal');
+  }
+});
+</script>
+</body>
+</html>

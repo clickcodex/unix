@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deals of the Day & Tagged Offers — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800', orange: '#FF5100', pink: '#FF006B',
+            purple: '#8C30F5', blue: '#2D82FF', dark: '#0F172A',
+            light: '#F8FAFC', ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  ::selection { background: #FF5100; color: #fff; }
+  .price-strike { text-decoration: line-through; color: #94A3B8; }
+  .stars { color: #FFB800; }
+
+  .product-card {
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid #E2E8F0;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: #2D82FF; opacity: 0; transition: opacity 0.25s ease;
+  }
+  .product-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08); border-color: #2D82FF; }
+  .product-card:hover::before { opacity: 1; }
+
+  /* Tag pill states */
+  .tag-pill {
+    transition: all 0.2s cubic-bezier(.4,0,.2,1);
+    border: 1.5px solid transparent;
+    white-space: nowrap;
+  }
+  .tag-pill:hover { transform: translateY(-2px); }
+  .tag-pill.active { box-shadow: 0 8px 16px -4px rgba(0,0,0,0.15); transform: translateY(-2px); }
+
+  .section-heading { position: relative; display: inline-block; }
+  .section-heading::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 48px; height: 3px; border-radius: 2px; background: #FF5100;
+  }
+
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+  @keyframes pulse-badge { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+
+  .offer-card { transition: transform .25s ease, box-shadow .25s ease; }
+  .offer-card:hover { transform: translateY(-4px); box-shadow: 0 16px 24px -6px rgba(15,23,42,0.12); }
+
+  .sort-select { -webkit-appearance: none; appearance: none; background-position: right 10px center; }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ================= TOP UTILITY BAR ================= -->
+<div class="bg-cc-dark text-white text-xs">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+    <p class="hidden sm:block text-white/80">Welcome to ClickCodex — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <span class="hover:text-white cursor-pointer transition flex items-center gap-1">
+        <span class="material-icons text-xs">location_on</span> Track Order
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN HEADER ================= -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button class="lg:hidden text-white hover:text-cc-yellow" aria-label="Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="index.html" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" id="search-input" onkeyup="handleSearch(event)" placeholder="Search for products, brands and more..." class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl" />
+      <button onclick="handleSearch({target:document.getElementById('search-input')})" class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <button class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span class="mt-0.5">Login</span>
+      </button>
+      <button class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+        <span id="wishlist-badge" class="absolute -top-1 -right-0.5 bg-cc-pink text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg scale-0">0</span>
+      </button>
+      <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.435M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.913-4.223 2.24-5.5H5.106M7.5 14.25L5.106 5.272M7.5 14.25L6.75 17.25m9.75-3h-9.75" /></svg>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span id="cart-badge" class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= ANNOUNCEMENT MARQUEE ================= -->
+<div class="bg-cc-orange text-white text-xs sm:text-sm py-2 overflow-hidden font-medium">
+  <div class="flex whitespace-nowrap" style="animation: cc-marquee 35s linear infinite;">
+    <div class="flex gap-12 pr-12">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>New deals refresh every day</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+    </div>
+    <div class="flex gap-12 pr-12" aria-hidden="true">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">flash_on</span>New deals refresh every day</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+    </div>
+  </div>
+  <style>@keyframes cc-marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}</style>
+</div>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- ================= PAGE HERO ================= -->
+  <section class="bg-gradient-to-r from-cc-purple to-cc-pink rounded-2xl overflow-hidden relative text-white p-6 sm:p-10 mb-8">
+    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+      <div>
+        <span class="bg-white/20 backdrop-blur-sm inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+          Live Now
+        </span>
+        <h1 class="font-heading text-2xl sm:text-4xl font-extrabold leading-tight">Tags &amp; Deals of the Day</h1>
+        <p class="mt-2 text-white/85 text-sm sm:text-base max-w-lg">Browse offers by tag — Featured, Trending, Best Sellers &amp; more — with live countdowns on select deals.</p>
+      </div>
+      <div class="shrink-0">
+        <p class="text-xs uppercase tracking-wider text-white/70 font-semibold mb-2 text-center sm:text-right">Deal ends in</p>
+        <div class="flex gap-2 text-cc-dark text-sm font-bold">
+          <span id="timer-hr" class="rounded-lg bg-white px-3 py-2 min-w-[52px] text-center">00h</span>
+          <span id="timer-min" class="rounded-lg bg-white px-3 py-2 min-w-[52px] text-center">00m</span>
+          <span id="timer-sec" class="rounded-lg bg-white px-3 py-2 min-w-[52px] text-center">00s</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAG FILTER STRIP (tags table, tag_type) ================= -->
+  <section class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-heading text-lg font-bold text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-purple">sell</span> Browse by Tag
+      </h2>
+      <button onclick="resetFilters()" class="text-sm font-semibold text-cc-blue hover:text-cc-dark transition flex items-center gap-1">
+        Reset <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="flex gap-2.5 overflow-x-auto scrollbar-none pb-2" id="tag-pill-row"></div>
+  </section>
+
+  <!-- ================= OFFERS STRIP (offers table: percentage / flat / bxgy / combo) ================= -->
+  <section class="mb-10">
+    <h2 class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900 mb-5">Active Offers</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="offers-grid"></div>
+  </section>
+
+  <!-- Active filter status -->
+  <div id="filter-status" class="mb-6 p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hidden items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full bg-cc-orange animate-pulse"></span>
+      <p class="text-sm text-slate-600">Showing products tagged: <span id="active-tag-lbl" class="font-bold text-cc-purple">All</span></p>
+    </div>
+    <button onclick="resetFilters()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition">Clear Filter</button>
+  </div>
+
+  <!-- ================= PRODUCT GRID (products + product_tags) ================= -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+      <h2 id="grid-title" class="section-heading font-heading text-xl sm:text-2xl font-bold text-slate-900">All Tagged Products</h2>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 font-medium hidden sm:inline">Sort by:</span>
+        <select id="sort-select" onchange="applySort()" class="sort-select bg-white border border-slate-200 text-xs font-semibold text-slate-700 px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-cc-blue">
+          <option value="relevance">Relevance</option>
+          <option value="price_low">Price: Low to High</option>
+          <option value="price_high">Price: High to Low</option>
+          <option value="rating">Avg. Rating</option>
+          <option value="discount">Highest Discount</option>
+        </select>
+      </div>
+    </div>
+    <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    <p id="empty-state" class="hidden text-center text-slate-400 text-sm font-medium py-16">No products matched this tag right now.</p>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-cc-dark text-white/80 text-sm">
+  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-heading font-bold text-white text-lg">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <p class="text-xs text-white/50">India's fastest growing online marketplace for electronics, fashion & more.</p>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Help</h4>
+      <ul class="space-y-2 text-xs">
+        <li><a href="#" class="hover:text-cc-orange transition">Shipping</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Returns</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Policy</h4>
+      <ul class="space-y-2 text-xs">
+        <li><a href="#" class="hover:text-cc-orange transition">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Terms of Use</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-3 text-sm">Get in Touch</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[16px]">phone</span>1800-233-4555</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[16px]">email</span>support@clickcodex.in</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-4 text-center text-xs text-white/40">
+    © 2026 ClickCodex Retail Pvt. Ltd. All rights reserved.
+  </div>
+</footer>
+
+<!-- ================= SHOPPING CART DRAWER ================= -->
+<div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+        <span class="material-icons text-cc-orange">shopping_basket</span> Shopping Cart
+      </h3>
+      <button onclick="toggleCartDrawer(false)" class="text-slate-400 hover:text-slate-600"><span class="material-icons">close</span></button>
+    </div>
+    <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+    <div class="border-t border-slate-100 p-5 bg-slate-50 space-y-4">
+      <div class="flex justify-between text-base font-bold text-slate-800"><span>Grand Total:</span><span id="cart-grandtotal">₹0</span></div>
+      <button onclick="checkoutCart()" class="w-full text-center bg-cc-pink hover:bg-pink-700 text-white text-base font-bold py-3.5 rounded-xl transition shadow-md">Proceed to Secure Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">home</span><span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <button class="flex flex-col items-center justify-center text-cc-blue py-1">
+    <span class="material-icons text-2xl">local_offer</span><span class="text-[10px] font-semibold">Deals</span>
+  </button>
+  <button onclick="toggleCartDrawer(true)" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">shopping_cart</span><span class="text-[10px] font-semibold">Cart</span>
+    <span id="cart-badge-mobile" class="absolute top-0 right-2 bg-cc-orange text-white text-[9px] font-extrabold rounded-full h-4 w-4 flex items-center justify-center shadow-md">0</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">favorite_border</span><span class="text-[10px] font-semibold">Wishlist</span>
+  </button>
+  <button class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue py-1">
+    <span class="material-icons text-2xl">person_outline</span><span class="text-[10px] font-semibold">Profile</span>
+  </button>
+</div>
+
+<script>
+  // =============================================================
+  // MOCK DATA — modeled on tags, offers, offer_applicability,
+  // banners, products, product_tags tables
+  // =============================================================
+
+  // tags table (matches your seeded rows exactly)
+  const TAGS = [
+    { id: 1, name: "Featured",        slug: "featured",        tag_type: "featured",        color_hex: "#6C63FF", icon: "star" },
+    { id: 2, name: "Top Rated",       slug: "top-rated",       tag_type: "top_rated",       color_hex: "#F59E0B", icon: "military_tech" },
+    { id: 3, name: "New Arrival",     slug: "new-arrival",     tag_type: "new_arrival",     color_hex: "#10B981", icon: "fiber_new" },
+    { id: 4, name: "Best Seller",     slug: "best-seller",     tag_type: "best_seller",     color_hex: "#EF4444", icon: "whatshot" },
+    { id: 5, name: "Trending",        slug: "trending",        tag_type: "trending",        color_hex: "#3B82F6", icon: "trending_up" },
+    { id: 6, name: "On Offer",        slug: "on-offer",        tag_type: "offer",           color_hex: "#F97316", icon: "sell" },
+    { id: 7, name: "Limited Edition", slug: "limited-edition", tag_type: "limited_edition", color_hex: "#8B5CF6", icon: "diamond" }
+  ];
+
+  // offers table (percentage / flat / buy_x_get_y / combo)
+  const OFFERS = [
+    { id: 1, name: "Mega Electronics Sale", offer_type: "percentage", discount_value: 30, min_order_value: 999, max_discount_cap: 2000, ends_at: "2026-07-20", scope_label: "Electronics" },
+    { id: 2, name: "Flat ₹200 Off Fashion", offer_type: "flat", discount_value: 200, min_order_value: 799, max_discount_cap: null, ends_at: "2026-07-18", scope_label: "Fashion" },
+    { id: 3, name: "Buy 2 Get 1 Free — Toys", offer_type: "buy_x_get_y", discount_value: 100, min_order_value: null, max_discount_cap: null, ends_at: "2026-07-25", scope_label: "Toys" },
+    { id: 4, name: "Combo Deal — Audio Bundle", offer_type: "combo", discount_value: 25, min_order_value: 1500, max_discount_cap: 1000, ends_at: "2026-07-22", scope_label: "Audio" }
+  ];
+
+  // products + product_tags (each product carries an array of tag slugs)
+  const PRODUCTS = [
+    { id: 1, title: "TrueSound Pro Wireless Earbuds with ANC", category: "Audio", price: 1499, strikePrice: 2999, discount: 50, rating: 4.3, reviews: "2,341", image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=80", tags: ["on-offer", "trending"] },
+    { id: 2, title: "ClickCodex FitTrack Smart Watch, AMOLED", category: "Electronics", price: 2799, strikePrice: 3999, discount: 30, rating: 4.8, reviews: "5,120", image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&auto=format&fit=crop&q=80", tags: ["featured", "best-seller"] },
+    { id: 3, title: "Urban Trail Waterproof Laptop Backpack", category: "Furniture", price: 899, strikePrice: 1199, discount: 25, rating: 4.2, reviews: "986", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=80", tags: ["on-offer"] },
+    { id: 4, title: "BoomBox Mini Portable Bluetooth Speaker", category: "Audio", price: 799, strikePrice: 1599, discount: 50, rating: 4.5, reviews: "3,004", image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&auto=format&fit=crop&q=80", tags: ["on-offer", "best-seller"] },
+    { id: 5, title: "HomeChef Digital Air Fryer 4.5L", category: "Appliances", price: 3199, strikePrice: 3999, discount: 20, rating: 4.9, reviews: "1,752", image: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?w=500&auto=format&fit=crop&q=80", tags: ["top-rated"] },
+    { id: 6, title: "SprintX Men's Running Shoes", category: "Fashion", price: 1299, strikePrice: 1999, discount: 35, rating: 4.1, reviews: "1,142", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80", tags: ["new-arrival"] },
+    { id: 7, title: "VisionMax 43\" 4K Smart LED TV", category: "Electronics", price: 21499, strikePrice: 29999, discount: 28, rating: 4.7, reviews: "12,987", image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&auto=format&fit=crop&q=80", tags: ["best-seller", "featured"] },
+    { id: 8, title: "Women's Printed A-Line Ethnic Kurti", category: "Fashion", price: 499, strikePrice: 999, discount: 50, rating: 4.4, reviews: "3,110", image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&auto=format&fit=crop&q=80", tags: ["on-offer", "trending"] },
+    { id: 9, title: "RapidClick Wireless Gaming Mouse", category: "Electronics", price: 899, strikePrice: 1499, discount: 40, rating: 4.6, reviews: "1,532", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=80", tags: ["new-arrival", "trending"] },
+    { id: 10, title: "HomeChef 750W Mixer Grinder", category: "Appliances", price: 1999, strikePrice: 2999, discount: 33, rating: 4.5, reviews: "1,042", image: "https://images.unsplash.com/photo-1578643463396-0997cb5328c1?w=500&auto=format&fit=crop&q=80", tags: ["top-rated"] },
+    { id: 11, title: "UV-Protect Aviator Sunglasses", category: "Fashion", price: 649, strikePrice: 1299, discount: 50, rating: 4.3, reviews: "2,987", image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&auto=format&fit=crop&q=80", tags: ["best-seller", "on-offer"] },
+    { id: 12, title: "PixelPro DSLR Camera Kit 24MP", category: "Electronics", price: 34999, strikePrice: 42999, discount: 18, rating: 4.9, reviews: "842", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format&fit=crop&q=80", tags: ["limited-edition", "featured"] },
+    { id: 13, title: "ErgoComfort Mesh Office Chair", category: "Furniture", price: 6499, strikePrice: 9999, discount: 35, rating: 4.7, reviews: "1,204", image: "https://images.unsplash.com/photo-1580481072645-022f9a6dbf27?w=500&auto=format&fit=crop&q=80", tags: ["top-rated", "trending"] },
+    { id: 14, title: "Essence Eau De Parfum, 100ml", category: "Beauty", price: 1199, strikePrice: 1999, discount: 40, rating: 4.4, reviews: "2,987", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&auto=format&fit=crop&q=80", tags: ["limited-edition"] },
+    { id: 15, title: "FlexFit Anti-Slip Yoga Mat 6mm", category: "Sports", price: 599, strikePrice: 999, discount: 40, rating: 4.8, reviews: "1,530", image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&auto=format&fit=crop&q=80", tags: ["top-rated", "new-arrival"] },
+    { id: 16, title: "ChargeUp 20000mAh Power Bank", category: "Mobiles", price: 1399, strikePrice: 2499, discount: 44, rating: 4.6, reviews: "4,410", image: "https://images.unsplash.com/photo-1609592424109-dd77366b26ec?w=500&auto=format&fit=crop&q=80", tags: ["on-offer", "best-seller"] },
+    { id: 17, title: "BuildBlocks Creative Toy Set (120pcs)", category: "Toys", price: 899, strikePrice: 1499, discount: 40, rating: 4.7, reviews: "678", image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500&auto=format&fit=crop&q=80", tags: ["new-arrival"] }
+  ];
+
+  // =============================================================
+  // STATE
+  // =============================================================
+  let cart = [];
+  let selectedTag = "All";
+  let sortMode = "relevance";
+  let searchKeyword = "";
+
+  window.onload = function () {
+    renderTagPills();
+    renderOffers();
+    renderProducts();
+    initDealTimer();
+    updateCartDOM();
+  };
+
+  // ---------- Tag pills ----------
+  function renderTagPills() {
+    const row = document.getElementById('tag-pill-row');
+    row.innerHTML = `
+      <button onclick="filterByTag('All')" class="tag-pill ${selectedTag === 'All' ? 'active bg-cc-dark text-white' : 'bg-white text-slate-700 border-slate-200'} shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm">
+        <span class="material-icons text-base">apps</span> All Products
+      </button>`;
+    TAGS.forEach(tag => {
+      const active = selectedTag === tag.slug;
+      row.innerHTML += `
+        <button onclick="filterByTag('${tag.slug}')" class="tag-pill shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm"
+          style="${active ? `background:${tag.color_hex};color:#fff;` : `background:#fff;color:${tag.color_hex};border-color:${tag.color_hex}44;`}">
+          <span class="material-icons text-base">${tag.icon}</span> ${tag.name}
+        </button>`;
+    });
+  }
+
+  function filterByTag(slug) {
+    selectedTag = slug;
+    renderTagPills();
+    renderProducts();
+
+    const filterStatus = document.getElementById('filter-status');
+    const label = document.getElementById('active-tag-lbl');
+    const gridTitle = document.getElementById('grid-title');
+    if (slug === 'All') {
+      filterStatus.classList.add('hidden');
+      filterStatus.classList.remove('flex');
+      gridTitle.innerText = "All Tagged Products";
+    } else {
+      const tagObj = TAGS.find(t => t.slug === slug);
+      filterStatus.classList.remove('hidden');
+      filterStatus.classList.add('flex');
+      label.innerText = tagObj.name;
+      gridTitle.innerText = tagObj.name + " Products";
+    }
+
+    if (window.innerWidth < 768) {
+      document.getElementById('grid-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function resetFilters() {
+    selectedTag = "All";
+    sortMode = "relevance";
+    document.getElementById('sort-select').value = "relevance";
+    filterByTag("All");
+  }
+
+  // ---------- Offers ----------
+  function renderOffers() {
+    const grid = document.getElementById('offers-grid');
+    grid.innerHTML = "";
+    const colors = ['#2D82FF', '#FF5100', '#8C30F5', '#FF006B'];
+    const icons = { percentage: 'percent', flat: 'currency_rupee', buy_x_get_y: 'redeem', combo: 'inventory_2' };
+    const labels = { percentage: 'PERCENTAGE OFF', flat: 'FLAT DISCOUNT', buy_x_get_y: 'BUY X GET Y', combo: 'COMBO DEAL' };
+
+    OFFERS.forEach((offer, idx) => {
+      const c = colors[idx % colors.length];
+      let valueLine = "";
+      if (offer.offer_type === 'percentage') valueLine = `${offer.discount_value}% OFF`;
+      else if (offer.offer_type === 'flat') valueLine = `₹${offer.discount_value} OFF`;
+      else if (offer.offer_type === 'buy_x_get_y') valueLine = `Buy 2 Get 1`;
+      else valueLine = `${offer.discount_value}% Combo`;
+
+      const minOrder = offer.min_order_value ? `Min. order ₹${offer.min_order_value}` : `No minimum order`;
+      const capLine = offer.max_discount_cap ? ` • Cap ₹${offer.max_discount_cap}` : "";
+
+      grid.innerHTML += `
+        <div class="offer-card bg-white rounded-2xl p-5 border border-slate-100 cursor-pointer" onclick="showToast('Viewing offer: ${offer.name}', 'success')">
+          <div class="flex items-start justify-between mb-3">
+            <span class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:${c}1a;">
+              <span class="material-icons" style="color:${c};">${icons[offer.offer_type]}</span>
+            </span>
+            <span class="text-[9px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-md" style="background:${c}1a;color:${c};">${labels[offer.offer_type]}</span>
+          </div>
+          <p class="font-heading font-bold text-slate-800 text-sm leading-snug mb-1">${offer.name}</p>
+          <p class="font-heading font-extrabold text-xl" style="color:${c};">${valueLine}</p>
+          <p class="text-[11px] text-slate-400 mt-2">${minOrder}${capLine}</p>
+          <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1"><span class="material-icons text-xs">schedule</span> Ends ${offer.ends_at}</p>
+        </div>`;
+    });
+  }
+
+  // ---------- Products ----------
+  function renderProducts() {
+    const grid = document.getElementById('products-grid');
+    const empty = document.getElementById('empty-state');
+
+    let list = PRODUCTS.filter(p => {
+      const matchTag = selectedTag === "All" || p.tags.includes(selectedTag);
+      const matchSearch = p.title.toLowerCase().includes(searchKeyword.toLowerCase());
+      return matchTag && matchSearch;
+    });
+
+    // Sorting
+    if (sortMode === 'price_low') list = [...list].sort((a, b) => a.price - b.price);
+    else if (sortMode === 'price_high') list = [...list].sort((a, b) => b.price - a.price);
+    else if (sortMode === 'rating') list = [...list].sort((a, b) => b.rating - a.rating);
+    else if (sortMode === 'discount') list = [...list].sort((a, b) => b.discount - a.discount);
+
+    grid.innerHTML = "";
+    if (list.length === 0) {
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      list.forEach(p => grid.innerHTML += generateProductHTML(p));
+    }
+  }
+
+  function applySort() {
+    sortMode = document.getElementById('sort-select').value;
+    renderProducts();
+  }
+
+  function handleSearch(event) {
+    searchKeyword = event.target.value;
+    renderProducts();
+  }
+
+  function generateProductHTML(p) {
+    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+    const tagBadges = p.tags.slice(0, 2).map(slug => {
+      const t = TAGS.find(tag => tag.slug === slug);
+      return t ? `<span class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded z-10" style="background:${t.color_hex};color:#fff;">${t.name}</span>` : '';
+    }).join('');
+
+    return `
+      <div class="product-card rounded-2xl p-3 bg-white flex flex-col justify-between">
+        <div class="relative cursor-pointer group">
+          <div class="absolute top-2 left-2 z-10 flex flex-col gap-1">${tagBadges}</div>
+          <span class="absolute top-2 right-2 bg-cc-orange text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md z-10">${p.discount}% OFF</span>
+          <div class="rounded-xl overflow-hidden aspect-square w-full bg-slate-50 flex items-center justify-center mb-3">
+            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${p.title}">
+          </div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-[10px]">${p.category}</p>
+          <p class="text-xs sm:text-sm font-semibold line-clamp-2 h-10 text-slate-800 leading-snug mt-0.5 hover:text-cc-blue transition">${p.title}</p>
+          <div class="flex items-center gap-1 text-[10px] sm:text-xs stars mt-1.5">${stars} <span class="text-slate-400">(${p.reviews})</span></div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline gap-1.5 mb-2.5">
+            <span class="font-bold text-base sm:text-lg text-cc-dark">₹${p.price.toLocaleString('en-IN')}</span>
+            <span class="price-strike text-[10px] sm:text-xs">₹${p.strikePrice.toLocaleString('en-IN')}</span>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="addToCart(${p.id})" class="flex-1 bg-cc-blue hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 active:scale-95">
+              <span class="material-icons text-sm">add_shopping_cart</span> Add
+            </button>
+            <button onclick="showToast('Added to wishlist!', 'success')" class="bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 p-2 rounded-lg transition">
+              <span class="material-icons text-sm text-cc-pink">favorite_border</span>
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ---------- Countdown Timer ----------
+  function initDealTimer() {
+    let targetTime = new Date();
+    targetTime.setHours(targetTime.getHours() + 8);
+    function tick() {
+      const now = new Date();
+      const diff = targetTime - now;
+      if (diff <= 0) { targetTime = new Date(); targetTime.setHours(targetTime.getHours() + 8); return; }
+      const hrs = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      document.getElementById('timer-hr').innerText = String(hrs).padStart(2, '0') + 'h';
+      document.getElementById('timer-min').innerText = String(mins).padStart(2, '0') + 'm';
+      document.getElementById('timer-sec').innerText = String(secs).padStart(2, '0') + 's';
+    }
+    setInterval(tick, 1000);
+    tick();
+  }
+
+  // ---------- Cart ----------
+  function addToCart(id) {
+    const p = PRODUCTS.find(prod => prod.id === id);
+    if (!p) return;
+    const existing = cart.find(item => item.id === id);
+    if (existing) existing.qty += 1;
+    else cart.push({ ...p, qty: 1 });
+    updateCartDOM();
+    showToast(`${p.title.slice(0, 24)}... added to cart!`, "success");
+  }
+
+  function modifyCartQty(id, change) {
+    const item = cart.find(item => item.id === id);
+    if (!item) return;
+    item.qty += change;
+    if (item.qty <= 0) cart = cart.filter(item => item.id !== id);
+    updateCartDOM();
+  }
+
+  function updateCartDOM() {
+    const container = document.getElementById('cart-drawer-items');
+    container.innerHTML = "";
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center py-20">
+          <span class="material-icons text-slate-300 text-6xl">shopping_cart</span>
+          <p class="text-sm text-slate-500 font-semibold mt-4">Your shopping cart is empty</p>
+        </div>`;
+    } else {
+      cart.forEach(item => {
+        container.innerHTML += `
+          <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <img src="${item.image}" class="w-16 h-16 object-cover rounded-lg" alt="">
+            <div class="flex-1">
+              <p class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</p>
+              <p class="text-xs text-slate-500 mt-0.5">₹${item.price.toLocaleString('en-IN')} each</p>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center border border-slate-200 rounded-lg bg-white overflow-hidden">
+                  <button onclick="modifyCartQty(${item.id}, -1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">-</button>
+                  <span class="px-3 py-0.5 text-xs font-bold">${item.qty}</span>
+                  <button onclick="modifyCartQty(${item.id}, 1)" class="px-2 py-0.5 hover:bg-slate-100 font-bold text-xs">+</button>
+                </div>
+                <span class="text-xs font-bold text-cc-dark">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    const badgeCount = cart.reduce((acc, item) => acc + item.qty, 0);
+    document.getElementById('cart-grandtotal').innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+    document.getElementById('cart-badge').innerText = badgeCount;
+    document.getElementById('cart-badge-mobile').innerText = badgeCount;
+  }
+
+  function toggleCartDrawer(show) {
+    const drawer = document.getElementById('cart-drawer');
+    drawer.classList.toggle('translate-x-full', !show);
+  }
+
+  function checkoutCart() {
+    if (cart.length === 0) { showToast("Your cart is empty!", "error"); return; }
+    showToast("Secure order initiated! Thank you for choosing ClickCodex.", "success");
+    cart = [];
+    updateCartDOM();
+    toggleCartDrawer(false);
+  }
+
+  // ---------- Toasts ----------
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-3.5 rounded-xl shadow-xl font-medium text-sm text-white flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto max-w-xs`;
+    toast.classList.add(type === "success" ? 'bg-slate-900' : 'bg-cc-pink');
+    if (type === "success") toast.classList.add('border-l-4', 'border-cc-orange');
+    toast.innerHTML = `<span class="material-icons text-sm">${type === 'success' ? 'check_circle' : 'error'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => { toast.classList.add('translate-y-2', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 2800);
+  }
+</script>
+</body>
+</html>

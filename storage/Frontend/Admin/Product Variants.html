@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Variants — ClickCodex Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: { yellow:'#FFB800', orange:'#FF5100', pink:'#FF006B', purple:'#8C30F5', blue:'#2D82FF', dark:'#0F172A', light:'#F8FAFC', ice:'#F1F5F9' }
+        },
+        fontFamily: { heading:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F1F5F9}
+  h1,h2,h3,h4,.font-heading{font-family:'Poppins',sans-serif}
+  ::selection{background:#FF5100;color:#fff}
+  .scrollbar-thin::-webkit-scrollbar{width:5px}
+  .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+  .sidebar{width:260px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-brand-text,.sidebar.collapsed .sidebar-user-info{display:none}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}
+  .sidebar.collapsed .nav-item .material-icons{margin-right:0}
+  .nav-item{display:flex;align-items:center;padding:9px 14px;border-radius:10px;color:#94A3B8;font-size:.875rem;font-weight:500;transition:all .15s ease;cursor:pointer;width:100%;text-decoration:none}
+  .nav-item:hover{background:rgba(45,130,255,.08);color:#2D82FF}
+  .nav-item.active{background:rgba(45,130,255,.12);color:#2D82FF;font-weight:600}
+  .nav-item .material-icons{font-size:20px;margin-right:12px;flex-shrink:0}
+  .main-area{margin-left:260px;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+  .main-area.expanded{margin-left:72px}
+  .section-card{background:#fff;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden}
+  .data-table{width:100%;border-collapse:separate;border-spacing:0}
+  .data-table thead th{background:#F8FAFC;padding:12px 16px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748B;text-align:left;border-bottom:1.5px solid #E2E8F0;position:sticky;top:0;z-index:2}
+  .data-table thead th:first-child{border-radius:12px 0 0 0}
+  .data-table thead th:last-child{border-radius:0 12px 0 0}
+  .data-table tbody td{padding:12px 16px;font-size:.875rem;color:#475569;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+  .data-table tbody tr{transition:background .1s ease}
+  .data-table tbody tr:hover{background:#F8FAFC}
+  .data-table tbody tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .badge-green{background:#DCFCE7;color:#166534}
+  .badge-yellow{background:#FEF3C7;color:#92400E}
+  .badge-red{background:#FFE4E6;color:#9F1239}
+  .badge-blue{background:#DBEAFE;color:#1E40AF}
+  .badge-purple{background:#F3E8FF;color:#6B21A8}
+  .badge-slate{background:#F1F5F9;color:#475569}
+  .badge-orange{background:#FFF7ED;color:#C2410C}
+  .badge-cyan{background:#ECFEFF;color:#155E75}
+  .mono{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+  .stock-bar{height:6px;border-radius:3px;background:#E2E8F0;overflow:hidden}
+  .stock-bar .fill{height:100%;border-radius:3px}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;backdrop-filter:blur(2px)}
+  .sidebar-overlay.show{display:block}
+  @media(max-width:1023px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);width:260px!important}
+    .sidebar.mobile-open{transform:translateX(0)}
+    .main-area{margin-left:0!important}
+  }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  .modal-backdrop.show{display:flex}
+  .modal-panel{background:#fff;border-radius:20px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px -15px rgba(15,23,42,.3)}
+  .attr-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:8px;font-size:.8rem;font-weight:600;border:1.5px solid #E2E8F0;transition:all .15s ease;cursor:default}
+  .attr-chip:hover{border-color:#2D82FF}
+  .attr-chip .remove-attr{cursor:pointer;opacity:.5;transition:opacity .15s}
+  .attr-chip .remove-attr:hover{opacity:1;color:#FF006B}
+  .variant-row-enter{animation:slideIn .25s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:100;padding:14px 20px;border-radius:14px;font-size:.875rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px -8px rgba(0,0,0,.25);animation:toastIn .35s ease,toastOut .35s ease 2.6s forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}
+  .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+  .toggle-switch input{opacity:0;width:0;height:0}
+  .toggle-switch .slider{position:absolute;inset:0;background:#CBD5E1;border-radius:12px;transition:.25s}
+  .toggle-switch .slider::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-switch input:checked+.slider{background:#2D82FF}
+  .toggle-switch input:checked+.slider::before{transform:translateX(20px)}
+  .input-field{width:100%;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;color:#334155;transition:border-color .15s,box-shadow .15s;background:#fff}
+  .input-field:focus{outline:none;border-color:#2D82FF;box-shadow:0 0 0 3px rgba(45,130,255,.1)}
+  .input-field::placeholder{color:#94A3B8}
+  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#2D82FF;color:#fff;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 12px -2px rgba(45,130,255,.3)}
+  .btn-primary:hover{background:#2566CC;transform:translateY(-1px);box-shadow:0 6px 16px -2px rgba(45,130,255,.35)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#475569;font-size:.875rem;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #E2E8F0;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:#F8FAFC;border-color:#CBD5E1}
+  .btn-danger{display:inline-flex;align-items:center;gap:6px;background:#FEF2F2;color:#DC2626;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:10px;border:1.5px solid #FECACA;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;transition:all .15s}
+  .btn-icon:hover{background:#F8FAFC;border-color:#CBD5E1;color:#2D82FF}
+  .btn-icon.danger:hover{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
+  .matrix-cell{min-width:80px;padding:8px 10px;text-align:center;border:1px solid #F1F5F9;font-size:.8rem}
+  .matrix-cell.header{background:#F8FAFC;font-weight:700;color:#334155;border-bottom:2px solid #E2E8F0;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+  .matrix-cell.row-header{background:#F8FAFC;font-weight:600;color:#475569;text-align:left;border-right:2px solid #E2E8F0}
+  .matrix-cell.has-variant{background:#F0FDF4;cursor:pointer;transition:all .15s}
+  .matrix-cell.has-variant:hover{background:#DCFCE7;box-shadow:inset 0 0 0 2px #22C55E}
+  .matrix-cell.no-variant{background:#FAFAFA;color:#CBD5E1;cursor:pointer;transition:all .15s}
+  .matrix-cell.no-variant:hover{background:#F1F5F9;color:#94A3B8}
+  .tab-btn{padding:8px 18px;font-size:.8rem;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;color:#64748B;background:transparent;border:none}
+  .tab-btn:hover{color:#2D82FF;background:rgba(45,130,255,.06)}
+  .tab-btn.active{color:#2D82FF;background:rgba(45,130,255,.1)}
+</style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar fixed top-0 left-0 bottom-0 bg-cc-dark z-50 flex flex-col" id="sidebar">
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/5">
+    <div class="w-9 h-9 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 100 100"><path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/><path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
+    </div>
+    <span class="sidebar-brand-text font-heading font-extrabold text-lg text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+  </div>
+  <nav class="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-1">
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2">Main</p>
+    <a href="#" class="nav-item"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">shopping_bag</span><span class="nav-label">Orders</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">category</span><span class="nav-label">Categories</span></a>
+    <a href="#" class="nav-item active"><span class="material-icons">inventory_2</span><span class="nav-label">Products</span></a>
+    <a href="#" class="nav-item" style="padding-left:40px"><span class="material-icons text-[16px]">subdirectory_arrow_right</span><span class="nav-label text-xs">Variants</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">group</span><span class="nav-label">Users</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">Management</p>
+    <a href="#" class="nav-item"><span class="material-icons">reviews</span><span class="nav-label">Reviews</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">account_balance_wallet</span><span class="nav-label">Payments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">local_shipping</span><span class="nav-label">Shipments</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">sell</span><span class="nav-label">Offers</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">wallpaper</span><span class="nav-label">Banners</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">photo_library</span><span class="nav-label">Media</span></a>
+    <p class="sidebar-section-title text-[10px] font-bold text-white/25 uppercase tracking-widest px-3 mb-2 mt-6">System</p>
+    <a href="#" class="nav-item"><span class="material-icons">settings</span><span class="nav-label">Settings</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">history</span><span class="nav-label">Audit Log</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">notifications</span><span class="nav-label">Notifications</span></a>
+    <a href="#" class="nav-item"><span class="material-icons">logout</span><span class="nav-label">Logout</span></a>
+  </nav>
+  <div class="border-t border-white/5 px-4 py-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-sm shrink-0">AS</div>
+    <div class="sidebar-user-info min-w-0">
+      <p class="text-white text-sm font-semibold truncate">Arvind Sharma</p>
+      <p class="text-white/35 text-xs truncate">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area min-h-screen" id="mainArea">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl">menu</span></button>
+        <button onclick="collapseSidebar()" class="hidden lg:flex text-slate-400 hover:text-cc-blue p-1.5 rounded-lg hover:bg-slate-100 transition"><span class="material-icons text-2xl" id="collapseIcon">menu_open</span></button>
+        <div class="hidden sm:flex items-center gap-2 text-sm">
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Home</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <a href="#" class="text-slate-400 hover:text-cc-blue transition">Products</a>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-slate-700 font-medium">TrueSound Pro Earbuds</span>
+          <span class="material-icons text-slate-300 text-[16px]">chevron_right</span>
+          <span class="text-cc-blue font-semibold">Variants</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 gap-2 w-64 focus-within:border-cc-blue focus-within:ring-2 focus-within:ring-cc-blue/10 transition">
+          <span class="material-icons text-slate-400 text-[18px]">search</span>
+          <input type="text" placeholder="Search variants by SKU..." class="bg-transparent text-sm text-slate-700 w-full focus:outline-none placeholder:text-slate-400" id="globalSearch" oninput="filterVariants()">
+        </div>
+        <button class="relative p-2 rounded-xl hover:bg-slate-100 transition text-slate-500 hover:text-cc-blue">
+          <span class="material-icons text-[22px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-cc-pink rounded-full border-2 border-white"></span>
+        </button>
+        <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-cc-purple flex items-center justify-center text-white font-bold text-xs">AS</div>
+          <div class="hidden sm:block">
+            <p class="text-sm font-semibold text-slate-700 leading-tight">Arvind Sharma</p>
+            <p class="text-[11px] text-slate-400">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- Product Header -->
+    <div class="section-card">
+      <div class="p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row gap-5">
+          <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=120&auto=format&fit=crop&q=80" alt="" class="w-20 h-20 rounded-2xl object-cover shrink-0 border border-slate-100">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <h1 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">TrueSound Pro Earbuds</h1>
+                  <span class="badge badge-green"><span class="material-icons text-[12px]">check_circle</span> Active</span>
+                </div>
+                <p class="text-sm text-slate-500 mt-1">Base SKU: <span class="mono text-xs bg-slate-100 px-1.5 py-0.5 rounded font-medium">CC-EAR-001</span> &middot; Category: <span class="badge badge-blue text-[11px] py-0.5">Audio</span> &middot; Base Price: <span class="font-semibold text-slate-700">₹1,499.00</span></p>
+                <p class="text-xs text-slate-400 mt-1 mono">product_id: 142 &middot; product_variants JOIN variant_attribute_values JOIN product_attributes</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button class="btn-secondary text-sm" onclick="openBulkEditModal()">
+                  <span class="material-icons text-[18px]">edit_note</span> Bulk Edit
+                </button>
+                <button class="btn-primary text-sm" onclick="openAddVariantModal()">
+                  <span class="material-icons text-[18px]">add_circle</span> Add Variant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Stats strip -->
+      <div class="border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100">
+        <div class="px-5 py-3.5 text-center">
+          <p class="text-xl font-bold text-slate-800 font-heading" id="totalVariantCount">8</p>
+          <p class="text-[11px] text-slate-400 font-medium">Total Variants</p>
+        </div>
+        <div class="px-5 py-3.5 text-center">
+          <p class="text-xl font-bold text-green-600 font-heading" id="activeVariantCount">6</p>
+          <p class="text-[11px] text-slate-400 font-medium">Active</p>
+        </div>
+        <div class="px-5 py-3.5 text-center">
+          <p class="text-xl font-bold text-red-500 font-heading" id="outOfStockCount">2</p>
+          <p class="text-[11px] text-slate-400 font-medium">Out of Stock</p>
+        </div>
+        <div class="px-5 py-3.5 text-center">
+          <p class="text-xl font-bold text-cc-purple font-heading" id="totalStockCount">347</p>
+          <p class="text-[11px] text-slate-400 font-medium">Total Stock Units</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTRIBUTES SECTION -->
+    <div class="section-card">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-purple text-[22px]">tune</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Product Attributes</h2>
+            <p class="text-xs text-slate-400 mono">product_attributes WHERE product_id = 142</p>
+          </div>
+        </div>
+        <button class="btn-secondary text-xs" onclick="openAddAttributeModal()">
+          <span class="material-icons text-[16px]">add</span> Add Attribute
+        </button>
+      </div>
+      <div class="p-5 sm:p-6" id="attributesContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- TABS: Table / Matrix -->
+    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1.5 w-fit">
+      <button class="tab-btn active" id="tabTable" onclick="switchTab('table')">
+        <span class="material-icons text-[16px] align-middle mr-1">view_list</span>Variant Table
+      </button>
+      <button class="tab-btn" id="tabMatrix" onclick="switchTab('matrix')">
+        <span class="material-icons text-[16px] align-middle mr-1">grid_on</span>Variant Matrix
+      </button>
+    </div>
+
+    <!-- VARIANTS TABLE -->
+    <div class="section-card" id="variantTableSection">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-orange text-[22px">widgets</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">All Variants</h2>
+            <p class="text-xs text-slate-400 mono">product_variants ← JOIN variant_attribute_values ON variant_id</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg" onclick="filterByStatus('all')">All (8)</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition" onclick="filterByStatus('active')">Active</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition" onclick="filterByStatus('inactive')">Inactive</button>
+          <button class="text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition" onclick="filterByStatus('oos')">Out of Stock</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table" id="variantsTable">
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>SKU <span class="text-slate-300 font-normal normal-case">(product_variants.sku)</span></th>
+              <th>Attributes <span class="text-slate-300 font-normal normal-case">(variant_attribute_values)</span></th>
+              <th>Price Override</th>
+              <th>Cost Price</th>
+              <th>Stock</th>
+              <th>Weight (g)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="variantsTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VARIANT MATRIX -->
+    <div class="section-card hidden" id="variantMatrixSection">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-cc-blue text-[22px]">grid_on</span>
+          <div>
+            <h2 class="font-heading text-lg font-bold text-slate-900">Variant Matrix</h2>
+            <p class="text-xs text-slate-400 mono">Visual map — click empty cells to create variants</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-green-100 border border-green-300"></span> Has Variant</span>
+          <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-slate-50 border border-slate-200"></span> No Variant</span>
+        </div>
+      </div>
+      <div class="p-5 sm:p-6 overflow-x-auto" id="matrixContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: ADD/EDIT VARIANT ===== -->
+<div class="modal-backdrop" id="variantModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="variantModalTitle">Add Variant</h3>
+      <button class="btn-icon" onclick="closeModal('variantModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editVariantId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">SKU <span class="text-slate-400 font-normal mono text-xs">(product_variants.sku)</span></label>
+        <input type="text" class="input-field mono text-sm" id="variantSku" placeholder="e.g. CC-EAR-001-BLK-S">
+      </div>
+      <div id="attributeSelectsContainer">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Price Override (₹)</label>
+          <input type="number" class="input-field" id="variantPrice" placeholder="Leave empty for base price" step="0.01">
+          <p class="text-[11px] text-slate-400 mt-1">Base price: ₹1,499.00</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Cost Price (₹)</label>
+          <input type="number" class="input-field" id="variantCost" placeholder="Cost price" step="0.01">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Stock Quantity</label>
+          <input type="number" class="input-field" id="variantStock" placeholder="0" min="0">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Weight (grams)</label>
+          <input type="number" class="input-field" id="variantWeight" placeholder="0" step="0.1" min="0">
+        </div>
+      </div>
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Active</p>
+          <p class="text-[11px] text-slate-400">product_variants.is_active</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="variantActive" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('variantModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveVariant()" id="saveVariantBtn">Save Variant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: ADD ATTRIBUTE ===== -->
+<div class="modal-backdrop" id="attributeModal">
+  <div class="modal-panel w-full max-w-md mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900" id="attributeModalTitle">Add Attribute</h3>
+      <button class="btn-icon" onclick="closeModal('attributeModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="editAttributeId">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Attribute Name</label>
+        <input type="text" class="input-field" id="attributeName" placeholder="e.g. Color, Size, Material">
+        <p class="text-[11px] text-slate-400 mt-1 mono">product_attributes.attribute_name</p>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Values <span class="text-slate-400 font-normal text-xs">(comma-separated)</span></label>
+        <input type="text" class="input-field" id="attributeValues" placeholder="e.g. Black, White, Navy Blue">
+        <p class="text-[11px] text-slate-400 mt-1">These become available options when creating variants</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('attributeModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveAttribute()">Save Attribute</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: BULK EDIT ===== -->
+<div class="modal-backdrop" id="bulkEditModal">
+  <div class="modal-panel w-full max-w-lg mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <h3 class="font-heading text-lg font-bold text-slate-900">Bulk Edit Variants</h3>
+      <button class="btn-icon" onclick="closeModal('bulkEditModal')"><span class="material-icons text-[20px]">close</span></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
+        <span class="material-icons text-amber-500 text-[20px] mt-0.5">warning</span>
+        <div>
+          <p class="text-sm font-semibold text-amber-800">Apply to selected variants only</p>
+          <p class="text-xs text-amber-600 mt-0.5">Select variants in the table first, then choose what to update.</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Operation</label>
+        <select class="input-field" id="bulkOperation">
+          <option value="">Select operation...</option>
+          <option value="set_price">Set Price Override</option>
+          <option value="adjust_price">Adjust Price (± amount)</option>
+          <option value="set_stock">Set Stock Quantity</option>
+          <option value="add_stock">Add Stock (± amount)</option>
+          <option value="set_active">Set Active/Inactive</option>
+          <option value="delete">Delete Selected</option>
+        </select>
+      </div>
+      <div id="bulkValueContainer" class="hidden">
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5" id="bulkValueLabel">Value</label>
+        <input type="text" class="input-field" id="bulkValue" placeholder="">
+      </div>
+      <div class="flex items-center gap-3 text-sm text-slate-500">
+        <span class="material-icons text-[18px]">info</span>
+        <span><strong id="selectedCount">0</strong> variants selected</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('bulkEditModal')">Cancel</button>
+      <button class="btn-primary" onclick="applyBulkEdit()">Apply Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DELETE CONFIRM ===== -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-panel w-full max-w-sm mx-4" onclick="event.stopPropagation()">
+    <div class="p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-red-500 text-[28px]">delete_forever</span>
+      </div>
+      <h3 class="font-heading text-lg font-bold text-slate-900">Delete Variant?</h3>
+      <p class="text-sm text-slate-500 mt-2" id="deleteMessage">This will permanently remove this variant and its attribute values.</p>
+      <p class="text-xs text-slate-400 mt-1 mono">DELETE FROM product_variants WHERE id = ?</p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger text-sm" onclick="confirmDelete()" id="confirmDeleteBtn" style="background:#DC2626;color:#fff;border-color:#DC2626">
+        <span class="material-icons text-[16px]">delete</span> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA LAYER ============
+// Simulated data from: product_attributes, product_variants, variant_attribute_values
+
+let productId = 142;
+let basePrice = 1499.00;
+let deleteTargetId = null;
+
+let attributes = [
+  { id: 1, product_id: 142, name: 'Color', values: ['Black', 'White', 'Navy Blue'] },
+  { id: 2, product_id: 142, name: 'Size', values: ['Small', 'Medium', 'Large'] }
+];
+
+let variants = [
+  { id: 1, product_id: 142, sku: 'CC-EAR-001-BLK-S', price_override: null, cost_price: 620, stock_quantity: 45, weight: 42, is_active: true, attrValues: { 1: 'Black', 2: 'Small' } },
+  { id: 2, product_id: 142, sku: 'CC-EAR-001-BLK-M', price_override: null, cost_price: 640, stock_quantity: 78, weight: 44, is_active: true, attrValues: { 1: 'Black', 2: 'Medium' } },
+  { id: 3, product_id: 142, sku: 'CC-EAR-001-BLK-L', price_override: 100, cost_price: 660, stock_quantity: 32, weight: 46, is_active: true, attrValues: { 1: 'Black', 2: 'Large' } },
+  { id: 4, product_id: 142, sku: 'CC-EAR-001-WHT-S', price_override: null, cost_price: 620, stock_quantity: 0, weight: 42, is_active: false, attrValues: { 1: 'White', 2: 'Small' } },
+  { id: 5, product_id: 142, sku: 'CC-EAR-001-WHT-M', price_override: null, cost_price: 640, stock_quantity: 56, weight: 44, is_active: true, attrValues: { 1: 'White', 2: 'Medium' } },
+  { id: 6, product_id: 142, sku: 'CC-EAR-001-WHT-L', price_override: 100, cost_price: 660, stock_quantity: 0, weight: 46, is_active: false, attrValues: { 1: 'White', 2: 'Large' } },
+  { id: 7, product_id: 142, sku: 'CC-EAR-001-NVY-S', price_override: 50, cost_price: 650, stock_quantity: 28, weight: 42, is_active: true, attrValues: { 1: 'Navy Blue', 2: 'Small' } },
+  { id: 8, product_id: 142, sku: 'CC-EAR-001-NVY-M', price_override: 50, cost_price: 670, stock_quantity: 108, weight: 44, is_active: true, attrValues: { 1: 'Navy Blue', 2: 'Medium' } },
+];
+
+let selectedVariantIds = new Set();
+let currentFilter = 'all';
+let nextVariantId = 9;
+let nextAttributeId = 3;
+
+// ============ SIDEBAR ============
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function collapseSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('mainArea').classList.toggle('expanded');
+  const icon = document.getElementById('collapseIcon');
+  icon.textContent = document.getElementById('sidebar').classList.contains('collapsed') ? 'menu' : 'menu_open';
+}
+
+// ============ MODAL HELPERS ============
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', () => closeModal(m.id));
+});
+
+// ============ TOAST ============
+function showToast(message, type = 'success') {
+  const colors = { success: '#16A34A', error: '#DC2626', info: '#2D82FF', warning: '#D97706' };
+  const icons = { success: 'check_circle', error: 'error', info: 'info', warning: 'warning' };
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = colors[type];
+  toast.innerHTML = `<span class="material-icons text-[20px]">${icons[type]}</span> ${message}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ============ RENDER ATTRIBUTES ============
+function renderAttributes() {
+  const container = document.getElementById('attributesContainer');
+  if (attributes.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8">
+        <span class="material-icons text-slate-300 text-[48px]">tune</span>
+        <p class="text-slate-500 mt-3 font-medium">No attributes defined yet</p>
+        <p class="text-xs text-slate-400 mt-1">Add attributes like Color, Size, or Material to start creating variants</p>
+        <button class="btn-primary text-sm mt-4" onclick="openAddAttributeModal()"><span class="material-icons text-[18px]">add</span> Add First Attribute</button>
+      </div>`;
+    return;
+  }
+  let html = '<div class="space-y-4">';
+  attributes.forEach(attr => {
+    html += `
+      <div class="border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-cc-purple/10 flex items-center justify-center">
+              <span class="material-icons text-cc-purple text-[18px]">label</span>
+            </div>
+            <div>
+              <p class="font-semibold text-slate-800 text-sm">${attr.name}</p>
+              <p class="text-[11px] text-slate-400 mono">product_attributes.id: ${attr.id}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" style="width:30px;height:30px" onclick="editAttribute(${attr.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+            <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteAttribute(${attr.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          ${attr.values.map(v => `<span class="attr-chip"><span class="w-2.5 h-2.5 rounded-full bg-cc-purple/40"></span>${v}</span>`).join('')}
+          <button class="attr-chip border-dashed border-cc-blue text-cc-blue hover:bg-cc-blue/5" onclick="addValueToAttribute(${attr.id})">
+            <span class="material-icons text-[14px]">add</span> Add
+          </button>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function addValueToAttribute(attrId) {
+  const val = prompt_inline(attrId);
+}
+
+// Inline "Add Value" using a small toast-like input
+function prompt_inline(attrId) {
+  const attr = attributes.find(a => a.id === attrId);
+  if (!attr) return;
+  // Create inline input
+  const container = document.getElementById('attributesContainer');
+  const existing = container.querySelector('.inline-add-input');
+  if (existing) existing.remove();
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'inline-add-input flex items-center gap-2 mt-2';
+  wrapper.innerHTML = `
+    <input type="text" class="input-field text-sm" style="width:200px" placeholder="New value..." id="inlineAttrValue" autofocus>
+    <button class="btn-primary text-xs" style="padding:8px 14px" onclick="saveInlineValue(${attrId})"><span class="material-icons text-[16px]">check</span></button>
+    <button class="btn-icon" style="width:32px;height:32px" onclick="this.parentElement.remove()"><span class="material-icons text-[16px]">close</span></button>
+  `;
+  // Find the right attribute card and append
+  const cards = container.querySelectorAll('.border.border-slate-200');
+  const idx = attributes.findIndex(a => a.id === attrId);
+  if (cards[idx]) {
+    const chipContainer = cards[idx].querySelector('.flex.flex-wrap');
+    chipContainer.after(wrapper);
+    document.getElementById('inlineAttrValue').focus();
+    document.getElementById('inlineAttrValue').addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveInlineValue(attrId);
+      if (e.key === 'Escape') wrapper.remove();
+    });
+  }
+}
+
+function saveInlineValue(attrId) {
+  const input = document.getElementById('inlineAttrValue');
+  const val = input.value.trim();
+  if (!val) return;
+  const attr = attributes.find(a => a.id === attrId);
+  if (attr.values.includes(val)) {
+    showToast('Value already exists', 'warning');
+    return;
+  }
+  attr.values.push(val);
+  renderAttributes();
+  renderVariantsTable();
+  renderMatrix();
+  showToast(`Added "${val}" to ${attr.name}`, 'success');
+}
+
+// ============ RENDER VARIANTS TABLE ============
+function renderVariantsTable() {
+  const tbody = document.getElementById('variantsTableBody');
+  let filtered = [...variants];
+
+  if (currentFilter === 'active') filtered = filtered.filter(v => v.is_active);
+  else if (currentFilter === 'inactive') filtered = filtered.filter(v => !v.is_active);
+  else if (currentFilter === 'oos') filtered = filtered.filter(v => v.stock_quantity === 0);
+
+  // Global search
+  const search = (document.getElementById('globalSearch')?.value || '').toLowerCase();
+  if (search) {
+    filtered = filtered.filter(v =>
+      v.sku.toLowerCase().includes(search) ||
+      Object.values(v.attrValues).some(av => av.toLowerCase().includes(search))
+    );
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr><td colspan="9" class="text-center py-10">
+        <span class="material-icons text-slate-300 text-[40px]">widgets</span>
+        <p class="text-slate-500 mt-2 font-medium">No variants found</p>
+        <p class="text-xs text-slate-400 mt-1">Try adjusting filters or add a new variant</p>
+      </td></tr>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(v => {
+    const effectivePrice = v.price_override != null ? basePrice + v.price_override : basePrice;
+    const stockPercent = Math.min((v.stock_quantity / 120) * 100, 100);
+    const stockColor = v.stock_quantity === 0 ? '#EF4444' : v.stock_quantity < 20 ? '#F59E0B' : '#22C55E';
+    const isSelected = selectedVariantIds.has(v.id);
+
+    html += `
+      <tr class="variant-row-enter ${isSelected ? 'bg-cc-blue/[.03]' : ''}">
+        <td>
+          <div class="flex items-center gap-3">
+            <label class="flex items-center">
+              <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-cc-blue focus:ring-cc-blue/20 cursor-pointer" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${v.id})">
+            </label>
+            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-bold mono">#${v.id}</div>
+          </div>
+        </td>
+        <td class="mono text-xs font-semibold text-slate-800">${v.sku}</td>
+        <td>
+          <div class="flex flex-wrap gap-1.5">
+            ${Object.entries(v.attrValues).map(([attrId, val]) => {
+              const attr = attributes.find(a => a.id === parseInt(attrId));
+              return `<span class="badge badge-slate text-[11px]">${attr ? attr.name + ': ' : ''}${val}</span>`;
+            }).join('')}
+          </div>
+        </td>
+        <td>
+          ${v.price_override != null
+            ? `<span class="font-semibold text-cc-orange">₹${effectivePrice.toLocaleString('en-IN')}</span>
+               <p class="text-[10px] text-slate-400">+₹${v.price_override} override</p>`
+            : `<span class="font-semibold text-slate-800">₹${effectivePrice.toLocaleString('en-IN')}</span>
+               <p class="text-[10px] text-slate-400">base price</p>`
+          }
+        </td>
+        <td class="mono text-sm text-slate-600">₹${v.cost_price.toLocaleString('en-IN')}</td>
+        <td>
+          <div class="min-w-[100px]">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-semibold ${v.stock_quantity === 0 ? 'text-red-500' : 'text-slate-800'}">${v.stock_quantity}</span>
+              <span class="text-[10px] text-slate-400 mono">stock_quantity</span>
+            </div>
+            <div class="stock-bar"><div class="fill" style="width:${stockPercent}%;background:${stockColor}"></div></div>
+          </div>
+        </td>
+        <td class="mono text-sm text-slate-600">${v.weight}g</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <label class="toggle-switch" style="transform:scale(.8)">
+              <input type="checkbox" ${v.is_active ? 'checked' : ''} onchange="toggleVariantActive(${v.id})">
+              <span class="slider"></span>
+            </label>
+            <span class="text-xs font-medium ${v.is_active ? 'text-green-600' : 'text-slate-400'}">${v.is_active ? 'Active' : 'Inactive'}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" style="width:30px;height:30px" onclick="editVariant(${v.id})" title="Edit"><span class="material-icons text-[16px]">edit</span></button>
+            <button class="btn-icon" style="width:30px;height:30px" onclick="duplicateVariant(${v.id})" title="Duplicate"><span class="material-icons text-[16px]">content_copy</span></button>
+            <button class="btn-icon danger" style="width:30px;height:30px" onclick="deleteVariant(${v.id})" title="Delete"><span class="material-icons text-[16px]">delete</span></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+  updateStats();
+}
+
+// ============ RENDER MATRIX ============
+function renderMatrix() {
+  const container = document.getElementById('matrixContainer');
+  if (attributes.length < 2) {
+    container.innerHTML = `
+      <div class="text-center py-10">
+        <span class="material-icons text-slate-300 text-[40px]">grid_on</span>
+        <p class="text-slate-500 mt-2 font-medium">Matrix view requires at least 2 attributes</p>
+        <p class="text-xs text-slate-400 mt-1">Add another attribute to enable the variant matrix</p>
+      </div>`;
+    return;
+  }
+
+  const rowAttr = attributes[0];
+  const colAttr = attributes[1];
+
+  let html = '<table class="w-full border-collapse"><thead><tr><th class="matrix-cell header" style="min-width:120px"></th>';
+  colAttr.values.forEach(cv => {
+    html += `<th class="matrix-cell header">${cv}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  rowAttr.values.forEach(rv => {
+    html += `<tr><td class="matrix-cell row-header">${rv}</td>`;
+    colAttr.values.forEach(cv => {
+      const found = variants.find(v => v.attrValues[rowAttr.id] === rv && v.attrValues[colAttr.id] === cv);
+      if (found) {
+        const price = found.price_override != null ? basePrice + found.price_override : basePrice;
+        html += `<td class="matrix-cell has-variant" onclick="editVariant(${found.id})" title="SKU: ${found.sku}\nPrice: ₹${price}\nStock: ${found.stock_quantity}">
+          <div class="text-xs font-bold text-green-700">₹${price.toLocaleString('en-IN')}</div>
+          <div class="text-[10px] text-green-600 mt-0.5">${found.stock_quantity} units</div>
+          <div class="text-[10px] text-green-500 mono mt-0.5">${found.sku.split('-').slice(-2).join('-')}</div>
+        </td>`;
+      } else {
+        html += `<td class="matrix-cell no-variant" onclick="createVariantFromMatrix('${rv}','${cv}')" title="Click to create variant">
+          <span class="material-icons text-[16px]">add</span>
+        </td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function createVariantFromMatrix(rowVal, colVal) {
+  openAddVariantModal();
+  // Pre-fill attributes
+  setTimeout(() => {
+    const selects = document.querySelectorAll('#attributeSelectsContainer select');
+    if (selects.length >= 2) {
+      selects[0].value = rowVal;
+      selects[1].value = colVal;
+    }
+    // Auto-generate SKU
+    const rowAbbr = rowVal.substring(0, 3).toUpperCase();
+    const colAbbr = colVal.substring(0, 3).toUpperCase();
+    document.getElementById('variantSku').value = `CC-EAR-001-${rowAbbr}-${colAbbr}`;
+  }, 50);
+}
+
+// ============ STATS ============
+function updateStats() {
+  const total = variants.length;
+  const active = variants.filter(v => v.is_active).length;
+  const oos = variants.filter(v => v.stock_quantity === 0).length;
+  const totalStock = variants.reduce((sum, v) => sum + v.stock_quantity, 0);
+  document.getElementById('totalVariantCount').textContent = total;
+  document.getElementById('activeVariantCount').textContent = active;
+  document.getElementById('outOfStockCount').textContent = oos;
+  document.getElementById('totalStockCount').textContent = totalStock;
+}
+
+// ============ TABS ============
+function switchTab(tab) {
+  document.getElementById('tabTable').classList.toggle('active', tab === 'table');
+  document.getElementById('tabMatrix').classList.toggle('active', tab === 'matrix');
+  document.getElementById('variantTableSection').classList.toggle('hidden', tab !== 'table');
+  document.getElementById('variantMatrixSection').classList.toggle('hidden', tab !== 'matrix');
+}
+
+// ============ FILTER ============
+function filterByStatus(status) {
+  currentFilter = status;
+  // Update button styles
+  const btns = document.querySelectorAll('#variantTableSection .border-b .flex.items-center.gap-2 button');
+  btns.forEach(btn => {
+    btn.className = 'text-xs bg-slate-100 text-slate-500 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-200 transition';
+  });
+  event.target.className = 'text-xs bg-cc-blue/10 text-cc-blue font-semibold px-3 py-1.5 rounded-lg';
+  renderVariantsTable();
+}
+
+function filterVariants() {
+  renderVariantsTable();
+}
+
+// ============ SELECTION ============
+function toggleSelect(id) {
+  if (selectedVariantIds.has(id)) selectedVariantIds.delete(id);
+  else selectedVariantIds.add(id);
+  renderVariantsTable();
+}
+
+function toggleVariantActive(id) {
+  const v = variants.find(v => v.id === id);
+  if (v) {
+    v.is_active = !v.is_active;
+    showToast(`Variant #${id} ${v.is_active ? 'activated' : 'deactivated'}`, 'info');
+    renderVariantsTable();
+    renderMatrix();
+  }
+}
+
+// ============ ADD/EDIT VARIANT MODAL ============
+function openAddVariantModal() {
+  document.getElementById('variantModalTitle').textContent = 'Add Variant';
+  document.getElementById('saveVariantBtn').textContent = 'Save Variant';
+  document.getElementById('editVariantId').value = '';
+  document.getElementById('variantSku').value = '';
+  document.getElementById('variantPrice').value = '';
+  document.getElementById('variantCost').value = '';
+  document.getElementById('variantStock').value = '0';
+  document.getElementById('variantWeight').value = '';
+  document.getElementById('variantActive').checked = true;
+
+  // Build attribute selects
+  let html = '';
+  attributes.forEach(attr => {
+    html += `
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">${attr.name} <span class="text-slate-400 font-normal mono text-xs">(attribute_id: ${attr.id})</span></label>
+        <select class="input-field" id="attrSelect_${attr.id}">
+          <option value="">Select ${attr.name}...</option>
+          ${attr.values.map(v => `<option value="${v}">${v}</option>`).join('')}
+        </select>
+      </div>`;
+  });
+  document.getElementById('attributeSelectsContainer').innerHTML = html;
+  openModal('variantModal');
+}
+
+function editVariant(id) {
+  const v = variants.find(v => v.id === id);
+  if (!v) return;
+
+  document.getElementById('variantModalTitle').textContent = 'Edit Variant';
+  document.getElementById('saveVariantBtn').textContent = 'Update Variant';
+  document.getElementById('editVariantId').value = v.id;
+  document.getElementById('variantSku').value = v.sku;
+  document.getElementById('variantPrice').value = v.price_override != null ? v.price_override : '';
+  document.getElementById('variantCost').value = v.cost_price;
+  document.getElementById('variantStock').value = v.stock_quantity;
+  document.getElementById('variantWeight').value = v.weight;
+  document.getElementById('variantActive').checked = v.is_active;
+
+  let html = '';
+  attributes.forEach(attr => {
+    html += `
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">${attr.name} <span class="text-slate-400 font-normal mono text-xs">(attribute_id: ${attr.id})</span></label>
+        <select class="input-field" id="attrSelect_${attr.id}">
+          <option value="">Select ${attr.name}...</option>
+          ${attr.values.map(val => `<option value="${val}" ${v.attrValues[attr.id] === val ? 'selected' : ''}>${val}</option>`).join('')}
+        </select>
+      </div>`;
+  });
+  document.getElementById('attributeSelectsContainer').innerHTML = html;
+  openModal('variantModal');
+}
+
+function saveVariant() {
+  const editId = document.getElementById('editVariantId').value;
+  const sku = document.getElementById('variantSku').value.trim();
+  const priceVal = document.getElementById('variantPrice').value;
+  const costPrice = parseFloat(document.getElementById('variantCost').value) || 0;
+  const stock = parseInt(document.getElementById('variantStock').value) || 0;
+  const weight = parseFloat(document.getElementById('variantWeight').value) || 0;
+  const isActive = document.getElementById('variantActive').checked;
+
+  if (!sku) { showToast('SKU is required', 'error'); return; }
+
+  // Check duplicate SKU
+  const duplicate = variants.find(v => v.sku === sku && v.id !== parseInt(editId));
+  if (duplicate) { showToast('SKU already exists', 'error'); return; }
+
+  // Collect attribute values
+  const attrValues = {};
+  let allAttrsSelected = true;
+  attributes.forEach(attr => {
+    const sel = document.getElementById(`attrSelect_${attr.id}`);
+    if (sel && sel.value) {
+      attrValues[attr.id] = sel.value;
+    } else {
+      allAttrsSelected = false;
+    }
+  });
+
+  if (attributes.length > 0 && !allAttrsSelected) {
+    showToast('Please select all attribute values', 'error');
+    return;
+  }
+
+  const priceOverride = priceVal !== '' ? parseFloat(priceVal) : null;
+
+  if (editId) {
+    // Update
+    const v = variants.find(v => v.id === parseInt(editId));
+    if (v) {
+      v.sku = sku;
+      v.price_override = priceOverride;
+      v.cost_price = costPrice;
+      v.stock_quantity = stock;
+      v.weight = weight;
+      v.is_active = isActive;
+      v.attrValues = attrValues;
+      showToast(`Variant ${sku} updated`, 'success');
+    }
+  } else {
+    // Create
+    variants.push({
+      id: nextVariantId++,
+      product_id: productId,
+      sku, price_override: priceOverride,
+      cost_price: costPrice,
+      stock_quantity: stock,
+      weight, is_active: isActive,
+      attrValues
+    });
+    showToast(`Variant ${sku} created`, 'success');
+  }
+
+  closeModal('variantModal');
+  renderVariantsTable();
+  renderMatrix();
+}
+
+// ============ DUPLICATE ============
+function duplicateVariant(id) {
+  const v = variants.find(v => v.id === id);
+  if (!v) return;
+  const newSku = v.sku + '-COPY';
+  variants.push({
+    ...v,
+    id: nextVariantId++,
+    sku: newSku,
+    attrValues: { ...v.attrValues }
+  });
+  showToast(`Duplicated as ${newSku}`, 'success');
+  renderVariantsTable();
+  renderMatrix();
+}
+
+// ============ DELETE ============
+function deleteVariant(id) {
+  const v = variants.find(v => v.id === id);
+  if (!v) return;
+  deleteTargetId = id;
+  document.getElementById('deleteMessage').textContent = `Delete variant "${v.sku}"? This will also remove all associated variant_attribute_values rows.`;
+  openModal('deleteModal');
+}
+
+function confirmDelete() {
+  if (deleteTargetId != null) {
+    variants = variants.filter(v => v.id !== deleteTargetId);
+    selectedVariantIds.delete(deleteTargetId);
+    showToast('Variant deleted', 'success');
+    deleteTargetId = null;
+  }
+  closeModal('deleteModal');
+  renderVariantsTable();
+  renderMatrix();
+}
+
+// ============ ATTRIBUTE MODAL ============
+function openAddAttributeModal() {
+  document.getElementById('attributeModalTitle').textContent = 'Add Attribute';
+  document.getElementById('editAttributeId').value = '';
+  document.getElementById('attributeName').value = '';
+  document.getElementById('attributeValues').value = '';
+  openModal('attributeModal');
+}
+
+function editAttribute(id) {
+  const attr = attributes.find(a => a.id === id);
+  if (!attr) return;
+  document.getElementById('attributeModalTitle').textContent = 'Edit Attribute';
+  document.getElementById('editAttributeId').value = attr.id;
+  document.getElementById('attributeName').value = attr.name;
+  document.getElementById('attributeValues').value = attr.values.join(', ');
+  openModal('attributeModal');
+}
+
+function saveAttribute() {
+  const editId = document.getElementById('editAttributeId').value;
+  const name = document.getElementById('attributeName').value.trim();
+  const valuesStr = document.getElementById('attributeValues').value.trim();
+
+  if (!name) { showToast('Attribute name is required', 'error'); return; }
+  if (!valuesStr) { showToast('At least one value is required', 'error'); return; }
+
+  const values = valuesStr.split(',').map(v => v.trim()).filter(v => v);
+
+  if (editId) {
+    const attr = attributes.find(a => a.id === parseInt(editId));
+    if (attr) {
+      attr.name = name;
+      attr.values = values;
+      showToast(`Attribute "${name}" updated`, 'success');
+    }
+  } else {
+    attributes.push({
+      id: nextAttributeId++,
+      product_id: productId,
+      name, values
+    });
+    showToast(`Attribute "${name}" created`, 'success');
+  }
+
+  closeModal('attributeModal');
+  renderAttributes();
+  renderVariantsTable();
+  renderMatrix();
+}
+
+function deleteAttribute(id) {
+  const attr = attributes.find(a => a.id === id);
+  if (!attr) return;
+  // Check if any variant uses this attribute
+  const used = variants.filter(v => v.attrValues[id]);
+  if (used.length > 0) {
+    showToast(`Cannot delete: ${used.length} variants use "${attr.name}"`, 'error');
+    return;
+  }
+  attributes = attributes.filter(a => a.id !== id);
+  showToast(`Attribute "${attr.name}" deleted`, 'success');
+  renderAttributes();
+  renderMatrix();
+}
+
+// ============ BULK EDIT ============
+function openBulkEditModal() {
+  document.getElementById('selectedCount').textContent = selectedVariantIds.size;
+  document.getElementById('bulkOperation').value = '';
+  document.getElementById('bulkValueContainer').classList.add('hidden');
+  openModal('bulkEditModal');
+}
+
+document.getElementById('bulkOperation').addEventListener('change', function() {
+  const container = document.getElementById('bulkValueContainer');
+  const label = document.getElementById('bulkValueLabel');
+  const input = document.getElementById('bulkValue');
+
+  if (!this.value) { container.classList.add('hidden'); return; }
+
+  container.classList.remove('hidden');
+  switch(this.value) {
+    case 'set_price':
+      label.textContent = 'Price Override (₹)'; input.type = 'number'; input.placeholder = 'e.g. 100'; break;
+    case 'adjust_price':
+      label.textContent = 'Adjust Amount (₹, use negative for decrease)'; input.type = 'number'; input.placeholder = 'e.g. -50'; break;
+    case 'set_stock':
+      label.textContent = 'Stock Quantity'; input.type = 'number'; input.placeholder = 'e.g. 100'; break;
+    case 'add_stock':
+      label.textContent = 'Add Stock (use negative for decrease)'; input.type = 'number'; input.placeholder = 'e.g. 50'; break;
+    case 'set_active':
+      label.textContent = 'true or false'; input.type = 'text'; input.placeholder = 'true'; break;
+    case 'delete':
+      container.classList.add('hidden'); break;
+  }
+});
+
+function applyBulkEdit() {
+  const op = document.getElementById('bulkOperation').value;
+  const val = document.getElementById('bulkValue').value;
+  const count = selectedVariantIds.size;
+
+  if (count === 0) { showToast('No variants selected', 'error'); return; }
+  if (!op) { showToast('Select an operation', 'error'); return; }
+
+  if (op === 'delete') {
+    variants = variants.filter(v => !selectedVariantIds.has(v.id));
+    selectedVariantIds.clear();
+    showToast(`Deleted ${count} variants`, 'success');
+    closeModal('bulkEditModal');
+    renderVariantsTable();
+    renderMatrix();
+    return;
+  }
+
+  selectedVariantIds.forEach(id => {
+    const v = variants.find(v => v.id === id);
+    if (!v) return;
+    switch(op) {
+      case 'set_price': v.price_override = parseFloat(val) || null; break;
+      case 'adjust_price': v.price_override = (v.price_override || 0) + parseFloat(val || 0); break;
+      case 'set_stock': v.stock_quantity = parseInt(val) || 0; break;
+      case 'add_stock': v.stock_quantity = Math.max(0, v.stock_quantity + parseInt(val || 0)); break;
+      case 'set_active': v.is_active = val.toLowerCase() === 'true'; break;
+    }
+  });
+
+  showToast(`Updated ${count} variants`, 'success');
+  closeModal('bulkEditModal');
+  renderVariantsTable();
+  renderMatrix();
+}
+
+// ============ INIT ============
+function init() {
+  renderAttributes();
+  renderVariantsTable();
+  renderMatrix();
+}
+
+init();
+</script>
+</body>
+</html>

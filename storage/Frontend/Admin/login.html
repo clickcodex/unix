@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  input:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+
+  /* Animated gradient background */
+  .bg-mesh {
+    background: #0F172A;
+    position: relative;
+    overflow: hidden;
+  }
+  .bg-mesh::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+      radial-gradient(ellipse 600px 600px at 20% 30%, rgba(45, 130, 255, 0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 80% 20%, rgba(140, 48, 245, 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 400px at 60% 80%, rgba(255, 81, 0, 0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 350px 350px at 10% 90%, rgba(255, 0, 107, 0.08) 0%, transparent 70%);
+    animation: mesh-drift 20s ease-in-out infinite alternate;
+  }
+  @keyframes mesh-drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(30px, -20px) rotate(1deg); }
+    66% { transform: translate(-20px, 15px) rotate(-1deg); }
+    100% { transform: translate(10px, -10px) rotate(0.5deg); }
+  }
+
+  /* Floating orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.3;
+    animation: orb-float linear infinite;
+  }
+  .orb-1 { width: 300px; height: 300px; background: #2D82FF; top: 10%; left: 5%; animation-duration: 18s; }
+  .orb-2 { width: 250px; height: 250px; background: #8C30F5; top: 60%; right: 10%; animation-duration: 22s; animation-delay: -5s; }
+  .orb-3 { width: 200px; height: 200px; background: #FF5100; bottom: 15%; left: 40%; animation-duration: 15s; animation-delay: -10s; }
+  @keyframes orb-float {
+    0%, 100% { transform: translateY(0) translateX(0); }
+    25% { transform: translateY(-30px) translateX(15px); }
+    50% { transform: translateY(10px) translateX(-20px); }
+    75% { transform: translateY(-15px) translateX(10px); }
+  }
+
+  /* Grid pattern overlay */
+  .grid-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* Glass card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Input styling */
+  .form-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    font-size: 0.9375rem;
+  }
+  .form-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  .form-input:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .form-input:focus {
+    border-color: #2D82FF;
+    background: rgba(45, 130, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(45, 130, 255, 0.15);
+  }
+  .form-input.error {
+    border-color: #FF006B;
+    box-shadow: 0 0 0 3px rgba(255, 0, 107, 0.15);
+  }
+  .form-input.success {
+    border-color: #22C55E;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+  }
+
+  /* Submit button */
+  .btn-submit {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+  }
+  .btn-submit:hover::before {
+    left: 100%;
+  }
+  .btn-submit:active {
+    transform: scale(0.98);
+  }
+  .btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-submit:disabled::before {
+    display: none;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .btn-submit.loading .spinner { display: block; }
+  .btn-submit.loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Password strength bar */
+  .strength-bar {
+    height: 3px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.1);
+  }
+  .strength-bar .fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease, background 0.3s ease;
+    width: 0%;
+  }
+
+  /* Toggle switch */
+  .toggle-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+  .toggle-track.active {
+    background: #2D82FF;
+    border-color: #2D82FF;
+  }
+  .toggle-track .toggle-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle-track.active .toggle-thumb {
+    transform: translateX(18px);
+  }
+
+  /* Feature card hover */
+  .feature-item {
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .feature-item:hover {
+    background: rgba(255,255,255,0.06);
+    transform: translateX(4px);
+  }
+
+  /* Toast */
+  .toast {
+    animation: toast-in 0.4s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  .toast.removing {
+    animation: toast-out 0.3s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes toast-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes toast-out {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
+  /* Logo pulse */
+  .logo-ring {
+    animation: logo-pulse 3s ease-in-out infinite;
+  }
+  @keyframes logo-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(45, 130, 255, 0.3); }
+    50% { box-shadow: 0 0 0 12px rgba(45, 130, 255, 0); }
+  }
+
+  /* Typing cursor */
+  .cursor-blink {
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Particle canvas */
+  #particle-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Error message animation */
+  .error-msg {
+    animation: shake-in 0.35s ease;
+  }
+  @keyframes shake-in {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* Checkbox */
+  .custom-check {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 5px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .custom-check.checked {
+    background: #2D82FF;
+    border-color: #2D82FF;
+  }
+  .custom-check .check-icon {
+    color: white;
+    font-size: 14px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+  }
+  .custom-check.checked .check-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Security badge glow */
+  .security-glow {
+    animation: sec-glow 2.5s ease-in-out infinite alternate;
+  }
+  @keyframes sec-glow {
+    from { text-shadow: 0 0 4px rgba(34,197,94,0.3); }
+    to { text-shadow: 0 0 12px rgba(34,197,94,0.6); }
+  }
+</style>
+</head>
+<body class="bg-[#0F172A] min-h-screen flex items-center justify-center p-4 sm:p-6 antialiased relative">
+
+<!-- ================= FIXED BACKGROUND CONTAINER ================= -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+  <div class="bg-mesh absolute inset-0"></div>
+  <!-- Particle Canvas -->
+  <canvas id="particle-canvas" class="absolute inset-0"></canvas>
+  <!-- Floating Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <!-- Grid Overlay -->
+  <div class="grid-pattern"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+<!-- ================= MAIN LAYOUT ================= -->
+<div class="relative z-10 w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0 items-center">
+
+  <!-- ===== LEFT PANEL — Branding & Features ===== -->
+  <div class="hidden lg:flex flex-col justify-center px-10 xl:px-14 py-12">
+    
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-12 h-12 rounded-2xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center logo-ring">
+        <svg width="30" height="30" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-2xl text-white">Click<span class="text-cc-yellow">Codex</span></span>
+    </div>
+
+    <!-- Heading -->
+    <h1 class="font-heading text-3xl xl:text-4xl font-extrabold text-white leading-tight mb-3">
+      Admin<br>Control Center
+    </h1>
+    <p class="text-white/40 text-sm leading-relaxed mb-10 max-w-sm">
+      Manage products, track orders, analyze performance, and control every aspect of your marketplace from one powerful dashboard.
+    </p>
+
+    <!-- Feature List -->
+    <div class="space-y-1">
+      <div class="feature-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-cc-blue/15 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-blue text-[20px]">inventory_2</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold">Product Management</p>
+          <p class="text-white/35 text-xs mt-0.5">Add, edit, categorize & bulk upload</p>
+        </div>
+      </div>
+      <div class="feature-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-cc-orange/15 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-orange text-[20px]">local_shipping</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold">Order Fulfillment</p>
+          <p class="text-white/35 text-xs mt-0.5">Track, process & manage shipments</p>
+        </div>
+      </div>
+      <div class="feature-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-cc-purple/15 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-purple text-[20px]">bar_chart</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold">Analytics & Reports</p>
+          <p class="text-white/35 text-xs mt-0.5">Revenue, traffic & conversion insights</p>
+        </div>
+      </div>
+      <div class="feature-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-cc-pink/15 flex items-center justify-center shrink-0">
+          <span class="material-icons text-cc-pink text-[20px]">group</span>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold">User Management</p>
+          <p class="text-white/35 text-xs mt-0.5">Customers, sellers & role permissions</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="flex gap-6 mt-10 pt-8 border-t border-white/5">
+      <div>
+        <p class="font-heading font-extrabold text-2xl text-white" id="stat-products">0</p>
+        <p class="text-white/30 text-xs mt-0.5">Products Listed</p>
+      </div>
+      <div>
+        <p class="font-heading font-extrabold text-2xl text-white" id="stat-orders">0</p>
+        <p class="text-white/30 text-xs mt-0.5">Orders Today</p>
+      </div>
+      <div>
+        <p class="font-heading font-extrabold text-2xl text-white" id="stat-revenue">0</p>
+        <p class="text-white/30 text-xs mt-0.5">Revenue (Lakh)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RIGHT PANEL — Login Form ===== -->
+  <div class="w-full max-w-md mx-auto lg:mx-0 lg:ml-auto lg:mr-10 xl:mr-14">
+    <div class="glass-card rounded-3xl p-7 sm:p-9">
+
+      <!-- Mobile-only logo -->
+      <div class="flex lg:hidden items-center justify-center gap-2.5 mb-7">
+        <div class="w-10 h-10 rounded-xl bg-cc-blue/20 border border-cc-blue/30 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 100 100">
+            <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+            <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <span class="font-heading font-extrabold text-xl text-white">Click<span class="text-cc-yellow">Codex</span></span>
+        <span class="text-[10px] bg-cc-orange text-white font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ml-1">Admin</span>
+      </div>
+
+      <!-- Header -->
+      <div class="text-center mb-7">
+        <div class="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white/50 font-medium mb-4">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          Secure Access Portal
+        </div>
+        <h2 class="font-heading text-2xl font-bold text-white">Welcome Back</h2>
+        <p class="text-white/40 text-sm mt-1.5" id="typed-text"></p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLogin(event)" novalidate autocomplete="off">
+
+        <!-- Role Selector -->
+        <div class="mb-5">
+          <label class="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Access Role</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selectRole('admin', this)" class="role-btn active-role flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition border border-cc-blue bg-cc-blue/15 text-white">
+              <span class="material-icons text-[18px]">admin_panel_settings</span>
+              Super Admin
+            </button>
+            <button type="button" onclick="selectRole('manager', this)" class="role-btn flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition border border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70">
+              <span class="material-icons text-[18px]">manage_accounts</span>
+              Manager
+            </button>
+          </div>
+          <input type="hidden" id="selected-role" value="admin">
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="admin-email" class="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Email Address</label>
+          <div class="relative">
+            <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 text-[20px]">mail</span>
+            <input 
+              type="email" 
+              id="admin-email" 
+              placeholder="admin@clickcodex.in"
+              class="form-input w-full pl-11 pr-10 py-3.5 rounded-xl"
+              oninput="validateField('email')"
+              onfocus="clearFieldError('email')"
+            />
+            <span id="email-status-icon" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[20px] hidden">
+              <span class="material-icons"></span>
+            </span>
+          </div>
+          <p id="email-error" class="text-cc-pink text-xs mt-1.5 hidden error-msg flex items-center gap-1">
+            <span class="material-icons text-[14px]">error</span>
+            <span></span>
+          </p>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label for="admin-password" class="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Password</label>
+          <div class="relative">
+            <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 text-[20px]">lock</span>
+            <input 
+              type="password" 
+              id="admin-password" 
+              placeholder="Enter your password"
+              class="form-input w-full pl-11 pr-20 py-3.5 rounded-xl"
+              oninput="validateField('password')"
+              onfocus="clearFieldError('password')"
+            />
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition p-0.5 rounded-lg" aria-label="Toggle password visibility">
+              <span id="pw-toggle-icon" class="material-icons text-[20px]">visibility_off</span>
+            </button>
+          </div>
+          <!-- Password Strength -->
+          <div class="mt-2" id="pw-strength-wrapper" style="display:none;">
+            <div class="strength-bar">
+              <div class="fill" id="pw-strength-fill"></div>
+            </div>
+            <p id="pw-strength-text" class="text-[11px] mt-1 text-white/30"></p>
+          </div>
+          <p id="password-error" class="text-cc-pink text-xs mt-1.5 hidden error-msg flex items-center gap-1">
+            <span class="material-icons text-[14px]">error</span>
+            <span></span>
+          </p>
+        </div>
+
+        <!-- Remember & Forgot -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="toggleRemember()">
+            <div class="custom-check" id="remember-check">
+              <span class="material-icons check-icon">check</span>
+            </div>
+            <span class="text-sm text-white/50">Remember me</span>
+          </div>
+          <button type="button" onclick="showForgotPassword()" class="text-sm text-cc-blue hover:text-blue-400 font-medium transition">Forgot password?</button>
+        </div>
+
+        <!-- 2FA Toggle -->
+        <div class="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 mb-6">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-cc-yellow text-[20px]">shield</span>
+            <div>
+              <p class="text-sm text-white/70 font-medium">Two-Factor Auth</p>
+              <p class="text-[11px] text-white/30">Extra security for your account</p>
+            </div>
+          </div>
+          <div class="toggle-track" id="tfa-toggle" onclick="toggle2FA()">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="btn-submit w-full bg-cc-blue hover:bg-blue-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-base shadow-lg shadow-cc-blue/20">
+          <span class="btn-text flex items-center gap-2">
+            <span class="material-icons text-[20px]">login</span>
+            Sign In to Dashboard
+          </span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-4 my-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <span class="text-xs text-white/25 uppercase tracking-widest">or continue with</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <!-- Social Login -->
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="socialLogin('Google')" class="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition text-sm font-medium">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button onclick="socialLogin('Microsoft')" class="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition text-sm font-medium">
+          <svg class="w-5 h-5" viewBox="0 0 23 23"><rect fill="#F25022" x="1" y="1" width="10" height="10"/><rect fill="#7FBA00" x="12" y="1" width="10" height="10"/><rect fill="#00A4EF" x="1" y="12" width="10" height="10"/><rect fill="#FFB900" x="12" y="12" width="10" height="10"/></svg>
+          Microsoft
+        </button>
+      </div>
+
+      <!-- Security Footer -->
+      <div class="flex items-center justify-center gap-4 mt-7 pt-6 border-t border-white/5">
+        <div class="flex items-center gap-1.5 text-green-400/70 security-glow">
+          <span class="material-icons text-[14px]">verified_user</span>
+          <span class="text-[11px] font-medium">256-bit SSL</span>
+        </div>
+        <div class="w-px h-3 bg-white/10"></div>
+        <div class="flex items-center gap-1.5 text-white/30">
+          <span class="material-icons text-[14px]">fingerprint</span>
+          <span class="text-[11px] font-medium">SOC 2 Compliant</span>
+        </div>
+        <div class="w-px h-3 bg-white/10"></div>
+        <div class="flex items-center gap-1.5 text-white/30">
+          <span class="material-icons text-[14px]">lock_clock</span>
+          <span class="text-[11px] font-medium">Session Timeout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to store link -->
+    <p class="text-center mt-5">
+      <a href="#" class="text-white/30 hover:text-white/60 text-xs transition flex items-center justify-center gap-1.5">
+        <span class="material-icons text-[16px]">arrow_back</span>
+        Back to ClickCodex Store
+      </a>
+    </p>
+  </div>
+</div>
+
+<!-- ================= FORGOT PASSWORD MODAL ================= -->
+<div id="forgot-modal" class="fixed inset-0 z-[150] flex items-center justify-center p-4 hidden">
+  <div onclick="closeForgotModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"></div>
+  <div class="glass-card rounded-2xl max-w-sm w-full p-7 relative z-10">
+    <button onclick="closeForgotModal()" class="absolute top-4 right-4 text-white/40 hover:text-white/70 transition">
+      <span class="material-icons">close</span>
+    </button>
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 rounded-2xl bg-cc-orange/15 flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons text-cc-orange text-3xl">key</span>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-white">Reset Password</h3>
+      <p class="text-white/40 text-sm mt-1.5">Enter your admin email to receive a reset link</p>
+    </div>
+    <form onsubmit="handleForgotPassword(event)" novalidate>
+      <div class="mb-4">
+        <input type="email" id="forgot-email" placeholder="admin@clickcodex.in" required
+          class="form-input w-full px-4 py-3.5 rounded-xl" />
+      </div>
+      <button type="submit" class="btn-submit w-full bg-cc-orange hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+        <span class="btn-text flex items-center gap-2">
+          <span class="material-icons text-[18px]">send</span>
+          Send Reset Link
+        </span>
+        <div class="spinner"></div>
+      </button>
+    </form>
+    <p class="text-center text-white/25 text-xs mt-4">A secure link will be sent to your registered email. Valid for 15 minutes.</p>
+  </div>
+</div>
+
+<!-- ================= 2FA VERIFICATION MODAL ================= -->
+<div id="tfa-modal" class="fixed inset-0 z-[150] flex items-center justify-center p-4 hidden">
+  <div onclick="closeTFAModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"></div>
+  <div class="glass-card rounded-2xl max-w-sm w-full p-7 relative z-10 text-center">
+    <button onclick="closeTFAModal()" class="absolute top-4 right-4 text-white/40 hover:text-white/70 transition">
+      <span class="material-icons">close</span>
+    </button>
+    <div class="w-16 h-16 rounded-2xl bg-cc-yellow/15 flex items-center justify-center mx-auto mb-5">
+      <span class="material-icons text-cc-yellow text-4xl">shield</span>
+    </div>
+    <h3 class="font-heading text-xl font-bold text-white">Two-Factor Verification</h3>
+    <p class="text-white/40 text-sm mt-2 mb-6">Enter the 6-digit code from your authenticator app</p>
+    
+    <div class="flex justify-center gap-2.5 mb-4" id="otp-inputs">
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 0)" onkeydown="handleOTPKeydown(event, 0)">
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 1)" onkeydown="handleOTPKeydown(event, 1)">
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 2)" onkeydown="handleOTPKeydown(event, 2)">
+      <div class="flex items-center"><span class="text-white/20 text-xl">-</span></div>
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 3)" onkeydown="handleOTPKeydown(event, 3)">
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 4)" onkeydown="handleOTPKeydown(event, 4)">
+      <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/15 rounded-xl focus:border-cc-blue focus:ring-2 focus:ring-cc-blue/30 transition" oninput="handleOTPInput(this, 5)" onkeydown="handleOTPKeydown(event, 5)">
+    </div>
+
+    <p id="otp-error" class="text-cc-pink text-xs mb-4 hidden error-msg"></p>
+    <p id="otp-timer" class="text-white/30 text-xs mb-5"></p>
+
+    <button onclick="verifyOTP()" id="verify-otp-btn" class="btn-submit w-full bg-cc-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+      <span class="btn-text flex items-center gap-2">
+        <span class="material-icons text-[18px]">verified</span>
+        Verify & Continue
+      </span>
+      <div class="spinner"></div>
+    </button>
+
+    <button onclick="resendOTP()" id="resend-btn" class="mt-3 text-sm text-cc-blue hover:text-blue-400 font-medium transition hidden">
+      Resend Code
+    </button>
+  </div>
+</div>
+
+<script>
+  // ==================== STATE ====================
+  let selectedRole = 'admin';
+  let is2FAEnabled = false;
+  let isRemembered = false;
+  let loginAttempts = 0;
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_TIME = 300; // 5 minutes in seconds
+  let lockoutRemaining = 0;
+  let lockoutInterval = null;
+
+  // ==================== TYPED TEXT EFFECT ====================
+  const typedEl = document.getElementById('typed-text');
+  const phrases = [
+    'Enter your credentials to continue',
+    'Managing 12,000+ products daily',
+    'Your marketplace command center'
+  ];
+  let phraseIdx = 0, charIdx = 0, isDeleting = false;
+
+  function typeLoop() {
+    const current = phrases[phraseIdx];
+    if (!isDeleting) {
+      typedEl.textContent = current.substring(0, charIdx + 1);
+      charIdx++;
+      if (charIdx === current.length) {
+        setTimeout(() => { isDeleting = true; typeLoop(); }, 2200);
+        return;
+      }
+    } else {
+      typedEl.textContent = current.substring(0, charIdx - 1);
+      charIdx--;
+      if (charIdx === 0) {
+        isDeleting = false;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
+      }
+    }
+    typedEl.innerHTML += '<span class="cursor-blink">|</span>';
+    setTimeout(typeLoop, isDeleting ? 35 : 60);
+  }
+  typeLoop();
+
+  // ==================== ANIMATED COUNTERS ====================
+  function animateCounter(id, target, suffix = '') {
+    const el = document.getElementById(id);
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 60));
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      el.textContent = current.toLocaleString('en-IN') + suffix;
+    }, 25);
+  }
+  setTimeout(() => animateCounter('stat-products', 12847, '+'), 300);
+  setTimeout(() => animateCounter('stat-orders', 3256), 500);
+  setTimeout(() => {
+    const el = document.getElementById('stat-revenue');
+    let current = 0;
+    const target = 47;
+    const interval = setInterval(() => {
+      current += 1;
+      if (current >= target) { current = target; clearInterval(interval); }
+      el.textContent = current + '.8';
+    }, 40);
+  }, 700);
+
+  // ==================== PARTICLE CANVAS ====================
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let mouseX = -1000, mouseY = -1000;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3;
+      this.opacity = Math.random() * 0.4 + 0.1;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      // Mouse repel
+      const dx = this.x - mouseX;
+      const dy = this.y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        const force = (120 - dist) / 120 * 0.8;
+        this.x += (dx / dist) * force;
+        this.y += (dy / dist) * force;
+      }
+      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(45, 130, 255, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  // Scale particle count with screen size
+  const particleCount = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000));
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  function drawConnections() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(45, 130, 255, ${0.06 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    drawConnections();
+    requestAnimationFrame(animateParticles);
+  }
+
+  // Respect reduced motion
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animateParticles();
+  }
+
+  // ==================== ROLE SELECTOR ====================
+  function selectRole(role, btn) {
+    selectedRole = role;
+    document.getElementById('selected-role').value = role;
+    document.querySelectorAll('.role-btn').forEach(b => {
+      b.classList.remove('active-role');
+      b.classList.remove('border-cc-blue', 'bg-cc-blue/15', 'text-white');
+      b.classList.add('border-white/10', 'bg-white/5', 'text-white/50');
+    });
+    btn.classList.add('active-role', 'border-cc-blue', 'bg-cc-blue/15', 'text-white');
+    btn.classList.remove('border-white/10', 'bg-white/5', 'text-white/50');
+  }
+
+  // ==================== PASSWORD TOGGLE ====================
+  function togglePassword() {
+    const input = document.getElementById('admin-password');
+    const icon = document.getElementById('pw-toggle-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = 'visibility';
+    } else {
+      input.type = 'password';
+      icon.textContent = 'visibility_off';
+    }
+  }
+
+  // ==================== REMEMBER ME ====================
+  function toggleRemember() {
+    isRemembered = !isRemembered;
+    document.getElementById('remember-check').classList.toggle('checked', isRemembered);
+  }
+
+  // ==================== 2FA TOGGLE ====================
+  function toggle2FA() {
+    is2FAEnabled = !is2FAEnabled;
+    document.getElementById('tfa-toggle').classList.toggle('active', is2FAEnabled);
+  }
+
+  // ==================== FIELD VALIDATION ====================
+  function validateField(field) {
+    if (field === 'email') {
+      const input = document.getElementById('admin-email');
+      const val = input.value.trim();
+      const icon = document.getElementById('email-status-icon');
+      
+      if (val === '') {
+        input.classList.remove('success', 'error');
+        icon.classList.add('hidden');
+        return false;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(val)) {
+        input.classList.remove('error');
+        input.classList.add('success');
+        icon.classList.remove('hidden');
+        icon.querySelector('.material-icons').textContent = 'check_circle';
+        icon.querySelector('.material-icons').style.color = '#22C55E';
+        return true;
+      } else {
+        input.classList.remove('success');
+        input.classList.add('error');
+        icon.classList.remove('hidden');
+        icon.querySelector('.material-icons').textContent = 'error';
+        icon.querySelector('.material-icons').style.color = '#FF006B';
+        return false;
+      }
+    }
+    
+    if (field === 'password') {
+      const input = document.getElementById('admin-password');
+      const val = input.value;
+      const wrapper = document.getElementById('pw-strength-wrapper');
+      const fill = document.getElementById('pw-strength-fill');
+      const text = document.getElementById('pw-strength-text');
+      
+      if (val === '') {
+        wrapper.style.display = 'none';
+        input.classList.remove('success', 'error');
+        return false;
+      }
+      
+      wrapper.style.display = 'block';
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      
+      const levels = [
+        { width: '10%', color: '#FF006B', label: 'Very Weak' },
+        { width: '25%', color: '#FF5100', label: 'Weak' },
+        { width: '50%', color: '#FFB800', label: 'Fair' },
+        { width: '75%', color: '#2D82FF', label: 'Strong' },
+        { width: '100%', color: '#22C55E', label: 'Very Strong' }
+      ];
+      
+      const level = levels[Math.min(score, 4)];
+      fill.style.width = level.width;
+      fill.style.background = level.color;
+      text.textContent = level.label;
+      text.style.color = level.color;
+      
+      input.classList.remove('success', 'error');
+      if (score >= 3) {
+        input.classList.add('success');
+        return true;
+      } else if (score > 0) {
+        input.classList.add('error');
+        return false;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  function clearFieldError(field) {
+    const errorEl = document.getElementById(field + '-error');
+    if (errorEl) {
+      errorEl.classList.add('hidden');
+    }
+  }
+
+  // ==================== LOGIN HANDLER ====================
+  function handleLogin(e) {
+    e.preventDefault();
+    
+    // Check lockout
+    if (lockoutRemaining > 0) {
+      showToast('error', `Account locked. Try again in ${Math.ceil(lockoutRemaining / 60)} minute(s).`);
+      return;
+    }
+    
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    
+    let hasError = false;
+    
+    if (!email) {
+      showFieldError('email', 'Email address is required');
+      hasError = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showFieldError('email', 'Please enter a valid email address');
+      hasError = true;
+    }
+    
+    if (!password) {
+      showFieldError('password', 'Password is required');
+      hasError = true;
+    } else if (password.length < 6) {
+      showFieldError('password', 'Password must be at least 6 characters');
+      hasError = true;
+    }
+    
+    if (hasError) return;
+    
+    // Show loading
+    const btn = document.getElementById('submit-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    // Simulate authentication
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      
+      // Demo: accept specific credentials
+      if (email === 'admin@clickcodex.in' && password === 'Admin@123') {
+        if (is2FAEnabled) {
+          showTFAModal();
+        } else {
+          showToast('success', 'Authentication successful! Redirecting to dashboard...');
+          // Simulate redirect
+          setTimeout(() => {
+            showToast('info', 'Demo mode — redirect would go to /admin/dashboard');
+          }, 1500);
+        }
+        loginAttempts = 0;
+      } else {
+        loginAttempts++;
+        const remaining = MAX_ATTEMPTS - loginAttempts;
+        
+        if (remaining <= 0) {
+          lockoutRemaining = LOCKOUT_TIME;
+          showToast('error', `Too many failed attempts. Account locked for ${LOCKOUT_TIME / 60} minutes.`);
+          startLockoutTimer();
+        } else {
+          showToast('error', `Invalid credentials. ${remaining} attempt(s) remaining.`);
+          showFieldError('password', 'Email or password is incorrect');
+          // Shake the form
+          const form = document.getElementById('login-form');
+          form.style.animation = 'none';
+          form.offsetHeight;
+          form.style.animation = 'shake-in 0.35s ease';
+        }
+      }
+    }, 1800);
+  }
+
+  function showFieldError(field, message) {
+    const input = document.getElementById('admin-' + field);
+    const errorEl = document.getElementById(field + '-error');
+    input.classList.add('error');
+    input.classList.remove('success');
+    errorEl.classList.remove('hidden');
+    errorEl.querySelector('span:last-child').textContent = message;
+    // Re-trigger shake
+    errorEl.style.animation = 'none';
+    errorEl.offsetHeight; // reflow
+    errorEl.style.animation = '';
+  }
+
+  // ==================== LOCKOUT TIMER ====================
+  function startLockoutTimer() {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.querySelector('.btn-text').innerHTML = `
+      <span class="material-icons text-[20px]">lock_clock</span>
+      Locked (<span id="lockout-display">${Math.ceil(lockoutRemaining / 60)}:00</span>)
+    `;
+    
+    lockoutInterval = setInterval(() => {
+      lockoutRemaining--;
+      if (lockoutRemaining <= 0) {
+        clearInterval(lockoutInterval);
+        loginAttempts = 0;
+        btn.disabled = false;
+        btn.querySelector('.btn-text').innerHTML = `
+          <span class="material-icons text-[20px]">login</span>
+          Sign In to Dashboard
+        `;
+        showToast('info', 'Account unlocked. You can try again.');
+      } else {
+        const m = Math.floor(lockoutRemaining / 60);
+        const s = lockoutRemaining % 60;
+        const display = document.getElementById('lockout-display');
+        if (display) display.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+
+  // ==================== FORGOT PASSWORD ====================
+  function showForgotPassword() {
+    document.getElementById('forgot-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('forgot-email').focus(), 100);
+  }
+  function closeForgotModal() {
+    document.getElementById('forgot-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showToast('error', 'Please enter a valid email address');
+      return;
+    }
+    const btn = e.target.querySelector('.btn-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      closeForgotModal();
+      showToast('success', `Reset link sent to ${email}. Check your inbox.`);
+    }, 1500);
+  }
+
+  // ==================== 2FA MODAL ====================
+  function showTFAModal() {
+    document.getElementById('tfa-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    const inputs = document.querySelectorAll('.otp-input');
+    inputs.forEach(i => i.value = '');
+    inputs[0].focus();
+    startOTPTimer();
+  }
+  function closeTFAModal() {
+    document.getElementById('tfa-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+    document.getElementById('otp-error').classList.add('hidden');
+  }
+
+  // ==================== OTP INPUTS ====================
+  function handleOTPInput(input, idx) {
+    const val = input.value.replace(/[^0-9]/g, '');
+    input.value = val;
+    if (val && idx < 5) {
+      const inputs = document.querySelectorAll('.otp-input');
+      // Skip the dash divider (index 3 is the divider, not an input)
+      const allInputs = Array.from(inputs);
+      const nextIdx = allInputs.indexOf(input) + 1;
+      if (nextIdx < allInputs.length) allInputs[nextIdx].focus();
+    }
+  }
+  function handleOTPKeydown(e, idx) {
+    if (e.key === 'Backspace' && !e.target.value) {
+      const inputs = document.querySelectorAll('.otp-input');
+      const allInputs = Array.from(inputs);
+      const prevIdx = allInputs.indexOf(e.target) - 1;
+      if (prevIdx >= 0) {
+        allInputs[prevIdx].focus();
+        allInputs[prevIdx].value = '';
+      }
+    }
+  }
+
+  let otpTimerInterval;
+  function startOTPTimer() {
+    let seconds = 120;
+    const timerEl = document.getElementById('otp-timer');
+    const resendBtn = document.getElementById('resend-btn');
+    resendBtn.classList.add('hidden');
+    
+    clearInterval(otpTimerInterval);
+    otpTimerInterval = setInterval(() => {
+      seconds--;
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      timerEl.textContent = `Code expires in ${m}:${s.toString().padStart(2, '0')}`;
+      
+      if (seconds <= 0) {
+        clearInterval(otpTimerInterval);
+        timerEl.textContent = 'Code expired';
+        timerEl.style.color = '#FF006B';
+        resendBtn.classList.remove('hidden');
+      }
+    }, 1000);
+    timerEl.style.color = '';
+  }
+
+  function resendOTP() {
+    showToast('info', 'New verification code sent to your device.');
+    startOTPTimer();
+    document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+    document.querySelectorAll('.otp-input')[0].focus();
+  }
+
+  function verifyOTP() {
+    const inputs = document.querySelectorAll('.otp-input');
+    const code = Array.from(inputs).map(i => i.value).join('');
+    const errorEl = document.getElementById('otp-error');
+    
+    if (code.length < 6) {
+      errorEl.textContent = 'Please enter the complete 6-digit code';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    
+    const btn = document.getElementById('verify-otp-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      
+      // Demo: accept 123456
+      if (code === '123456') {
+        closeTFAModal();
+        showToast('success', '2FA verified! Redirecting to dashboard...');
+        setTimeout(() => {
+          showToast('info', 'Demo mode — redirect would go to /admin/dashboard');
+        }, 1500);
+      } else {
+        errorEl.textContent = 'Invalid verification code. Please try again.';
+        errorEl.classList.remove('hidden');
+        showToast('error', 'Incorrect code. Hint: try 123456');
+        document.querySelectorAll('.otp-input').forEach(i => {
+          i.value = '';
+          i.style.borderColor = '#FF006B';
+        });
+        inputs[0].focus();
+        setTimeout(() => {
+          document.querySelectorAll('.otp-input').forEach(i => {
+            i.style.borderColor = '';
+          });
+        }, 1500);
+      }
+    }, 1500);
+  }
+
+  // ==================== SOCIAL LOGIN ====================
+  function socialLogin(provider) {
+    showToast('info', `${provider} SSO is configured for enterprise accounts only.`);
+  }
+
+  // ==================== TOAST SYSTEM ====================
+  function showToast(type, message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    
+    const icons = {
+      success: 'check_circle',
+      error: 'error',
+      info: 'info',
+      warning: 'warning'
+    };
+    const colors = {
+      success: 'border-green-500/30 bg-green-500/10',
+      error: 'border-cc-pink/30 bg-cc-pink/10',
+      info: 'border-cc-blue/30 bg-cc-blue/10',
+      warning: 'border-cc-yellow/30 bg-cc-yellow/10'
+    };
+    const iconColors = {
+      success: 'text-green-400',
+      error: 'text-cc-pink',
+      info: 'text-cc-blue',
+      warning: 'text-cc-yellow'
+    };
+    
+    toast.className = `toast pointer-events-auto flex items-start gap-3 px-4 py-3.5 rounded-xl border backdrop-blur-xl shadow-2xl max-w-sm ${colors[type]}`;
+    toast.innerHTML = `
+      <span class="material-icons ${iconColors[type]} text-[20px] mt-0.5 shrink-0">${icons[type]}</span>
+      <p class="text-sm text-white/90 leading-relaxed">${message}</p>
+      <button onclick="this.closest('.toast').classList.add('removing'); setTimeout(() => this.closest('.toast').remove(), 300)" class="text-white/30 hover:text-white/60 transition shrink-0 ml-2 mt-0.5">
+        <span class="material-icons text-[16px]">close</span>
+      </button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 5000);
+  }
+
+  // ==================== KEYBOARD SHORTCUTS ====================
+  document.addEventListener('keydown', (e) => {
+    // Escape to close modals
+    if (e.key === 'Escape') {
+      closeForgotModal();
+      closeTFAModal();
+    }
+    // Enter in forgot modal
+    if (e.key === 'Enter' && !document.getElementById('forgot-modal').classList.contains('hidden')) {
+      document.querySelector('#forgot-modal form').requestSubmit();
+    }
+  });
+
+  // ==================== PRE-FILL FROM LOCALSTORAGE ====================
+  (function loadSaved() {
+    const saved = localStorage.getItem('cc_admin_remember');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.email) document.getElementById('admin-email').value = data.email;
+        if (data.role) selectRole(data.role, document.querySelector(`.role-btn:nth-child(${data.role === 'manager' ? 2 : 1})`));
+        isRemembered = true;
+        document.getElementById('remember-check').classList.add('checked');
+      } catch(e) {}
+    }
+  })();
+
+  // Save on successful interaction (demo: save on form focus out)
+  document.getElementById('admin-email').addEventListener('blur', () => {
+    if (isRemembered) {
+      localStorage.setItem('cc_admin_remember', JSON.stringify({
+        email: document.getElementById('admin-email').value.trim(),
+        role: selectedRole
+      }));
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Policies — ClickCodex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cc: {
+            yellow: '#FFB800',
+            orange: '#FF5100',
+            pink: '#FF006B',
+            purple: '#8C30F5',
+            blue: '#2D82FF',
+            dark: '#0F172A',
+            light: '#F8FAFC',
+            ice: '#F1F5F9'
+          }
+        },
+        fontFamily: {
+          heading: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+  h1, h2, h3, h4, .font-heading { font-family: 'Poppins', sans-serif; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  input:focus { outline: none; }
+  ::selection { background: #FF5100; color: #fff; }
+
+  /* Policy TOC link */
+  .toc-link {
+    transition: all 0.2s cubic-bezier(.4,0,.2,1);
+    border-left: 3px solid transparent;
+    padding: 10px 14px;
+    display: block;
+    font-size: 0.875rem;
+    color: #64748B;
+    border-radius: 0 8px 8px 0;
+  }
+  .toc-link:hover {
+    background: #E8F0FE;
+    color: #2D82FF;
+    border-left-color: #2D82FF;
+    padding-left: 20px;
+  }
+  .toc-link.active {
+    background: #E8F0FE;
+    color: #2D82FF;
+    font-weight: 600;
+    border-left-color: #2D82FF;
+  }
+
+  /* Policy section card */
+  .policy-card {
+    background: white;
+    border-radius: 1rem;
+    border: 1.5px solid #E2E8F0;
+    transition: box-shadow 0.3s ease;
+  }
+  .policy-card:hover {
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Section heading accent */
+  .policy-section-title {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .policy-section-title .icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Policy list items */
+  .policy-list li {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: 10px;
+    line-height: 1.7;
+    color: #475569;
+  }
+  .policy-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2D82FF;
+    opacity: 0.5;
+  }
+
+  /* Numbered list */
+  .policy-ol {
+    counter-reset: policy-counter;
+    list-style: none;
+    padding-left: 0;
+  }
+  .policy-ol li {
+    counter-increment: policy-counter;
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 14px;
+    line-height: 1.7;
+    color: #475569;
+  }
+  .policy-ol li::before {
+    content: counter(policy-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #E8F0FE;
+    color: #2D82FF;
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  /* Back to top */
+  .back-to-top {
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+  .back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Sub-section heading */
+  .sub-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1E293B;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sub-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E2E8F0;
+  }
+
+  /* Last updated pill */
+  .updated-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F1F5F9;
+    color: #64748B;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* Marquee */
+  .marquee-track { animation: cc-marquee 35s linear infinite; }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes cc-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Cart badge */
+  @keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .cart-badge { animation: pulse-badge 2s ease-in-out infinite; }
+
+  /* Fade-in animation for sections */
+  .policy-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s cubic-bezier(.4,0,.2,1), transform 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .policy-section.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Accordion */
+  .accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(.4,0,.2,1), padding 0.3s ease;
+  }
+  .accordion-content.open {
+    max-height: 800px;
+  }
+  .accordion-trigger {
+    transition: all 0.2s ease;
+  }
+  .accordion-trigger:hover {
+    background: #F8FAFC;
+  }
+  .accordion-trigger .arrow {
+    transition: transform 0.3s ease;
+  }
+  .accordion-trigger.open .arrow {
+    transform: rotate(180deg);
+  }
+</style>
+</head>
+<body class="text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- ================= TOP UTILITY BAR ================= -->
+<div class="bg-cc-dark text-white text-xs relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between relative">
+    <p class="hidden sm:block text-white/80">Welcome to ClickCodex — India's fastest growing marketplace</p>
+    <div class="flex items-center gap-4 mx-auto sm:mx-0 text-white/70">
+      <a href="#" class="hover:text-white transition">Sell on ClickCodex</a>
+      <a href="#" class="hover:text-white transition hidden md:inline">Customer Care</a>
+      <span class="hover:text-white cursor-pointer transition flex items-center gap-1">
+        <span class="material-icons text-xs">location_on</span> Track Order
+      </span>
+      <a href="#" class="hover:text-white transition">Download App</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN HEADER ================= -->
+<header class="bg-cc-blue sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <button onclick="toggleMobileSidebar(true)" class="lg:hidden text-white hover:text-cc-yellow focus:outline-none" aria-label="Open Menu">
+      <span class="material-icons text-3xl">menu</span>
+    </button>
+    <a href="#" class="flex items-center gap-2 shrink-0 group">
+      <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition">
+        <svg width="24" height="24" viewBox="0 0 100 100">
+          <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+          <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-none">Click<span class="text-cc-yellow">Codex</span></span>
+    </a>
+    <div class="flex-1 flex rounded-xl overflow-hidden shadow-md">
+      <input type="text" placeholder="Search for products, brands and more..."
+        class="w-full px-4 py-2.5 text-sm text-slate-700 bg-white rounded-l-xl" />
+      <button class="bg-cc-orange hover:bg-orange-600 px-4 sm:px-5 flex items-center justify-center transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-5 text-white shrink-0">
+      <a href="#" class="hidden md:flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span class="mt-0.5">Login</span>
+      </a>
+      <a href="#" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <span class="mt-0.5 hidden md:inline">Wishlist</span>
+      </a>
+      <a href="#" class="relative flex flex-col items-center text-xs leading-tight hover:text-cc-yellow transition px-2 py-1 rounded-lg hover:bg-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.435M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.913-4.223 2.24-5.5H5.106M7.5 14.25L5.106 5.272M7.5 14.25L6.75 17.25m9.75-3h-9.75" /></svg>
+        <span class="mt-0.5 hidden md:inline">Cart</span>
+        <span class="cart-badge absolute -top-1 -right-0.5 bg-cc-orange text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">0</span>
+      </a>
+    </div>
+  </div>
+  <nav class="border-t border-white/10 bg-black/10">
+    <ul class="max-w-7xl mx-auto px-4 flex items-center gap-5 overflow-x-auto scrollbar-none text-white text-sm py-2.5 whitespace-nowrap">
+      <li><a href="#" class="flex items-center gap-1.5 font-semibold hover:text-cc-yellow transition bg-white/10 px-3 py-1 rounded-lg">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        All
+      </a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Mobiles</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Electronics</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Fashion</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Home & Furniture</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Appliances</a></li>
+      <li><a href="#" class="hover:text-cc-yellow transition">Beauty & Toys</a></li>
+      <li><a href="#" class="bg-cc-yellow text-cc-dark font-semibold px-3 py-1 rounded-lg hover:bg-yellow-400 transition text-xs uppercase tracking-wide">Policies</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ================= ANNOUNCEMENT MARQUEE ================= -->
+<div class="bg-cc-orange text-white text-xs sm:text-sm py-2 overflow-hidden font-medium">
+  <div class="flex marquee-track whitespace-nowrap">
+    <div class="flex gap-12 pr-12">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+    </div>
+    <div class="flex gap-12 pr-12" aria-hidden="true">
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">local_shipping</span>Free delivery on orders above ₹999</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">credit_card</span>Extra 10% off on UPI payments</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">autorenew</span>7-day easy returns on all products</span>
+      <span class="flex items-center gap-1.5"><span class="material-icons text-[18px]">celebration</span>Mega Sale is Live!</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PAGE HERO ================= -->
+<section class="bg-gradient-to-br from-cc-dark via-slate-800 to-cc-purple text-white relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-10 left-10 w-72 h-72 bg-cc-blue rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-cc-purple rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cc-orange rounded-full blur-3xl"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-4 py-14 sm:py-20 relative z-10">
+    <div class="flex items-center gap-3 text-sm text-white/60 mb-5">
+      <a href="#" class="hover:text-cc-yellow transition">Home</a>
+      <span class="material-icons text-[16px]">chevron_right</span>
+      <span class="text-white font-medium">Policies</span>
+    </div>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+          <span class="material-icons text-cc-yellow text-[18px]">gavel</span>
+          Legal & Compliance
+        </div>
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-white">Our Policies</h1>
+        <p class="mt-4 text-white/70 max-w-xl text-base sm:text-lg leading-relaxed">Transparency is at the heart of everything we do. Read through our policies to understand how we protect your rights, data, and shopping experience.</p>
+      </div>
+      <div class="flex flex-wrap gap-3 shrink-0">
+        <a href="#return-policy" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2 border border-white/10">
+          <span class="material-icons text-[18px]">autorenew</span> Returns
+        </a>
+        <a href="#privacy-policy" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2 border border-white/10">
+          <span class="material-icons text-[18px]">lock</span> Privacy
+        </a>
+        <a href="#terms-of-use" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2 border border-white/10">
+          <span class="material-icons text-[18px]">description</span> Terms
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- ================= STICKY SIDEBAR TOC ================= -->
+    <aside class="lg:w-72 shrink-0">
+      <div class="lg:sticky lg:top-[140px]">
+        <!-- Desktop TOC -->
+        <div class="hidden lg:block bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-3">On This Page</p>
+          <nav class="space-y-0.5" id="toc-nav">
+            <a href="#return-policy" class="toc-link active" data-section="return-policy">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-cc-orange">autorenew</span>
+                Return Policy
+              </span>
+            </a>
+            <a href="#shipping-policy" class="toc-link" data-section="shipping-policy">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-cc-blue">local_shipping</span>
+                Shipping Policy
+              </span>
+            </a>
+            <a href="#cancellation-policy" class="toc-link" data-section="cancellation-policy">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-cc-pink">cancel</span>
+                Cancellation Policy
+              </span>
+            </a>
+            <a href="#privacy-policy" class="toc-link" data-section="privacy-policy">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-cc-purple">lock</span>
+                Privacy Policy
+              </span>
+            </a>
+            <a href="#terms-of-use" class="toc-link" data-section="terms-of-use">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-slate-500">description</span>
+                Terms of Use
+              </span>
+            </a>
+            <a href="#refund-policy" class="toc-link" data-section="refund-policy">
+              <span class="flex items-center gap-2.5">
+                <span class="material-icons text-[18px] text-cc-yellow">payments</span>
+                Refund Policy
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Quick Help Card -->
+        <div class="hidden lg:block bg-gradient-to-br from-cc-blue to-blue-700 rounded-2xl p-5 mt-4 text-white shadow-md">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="material-icons text-cc-yellow">support_agent</span>
+            <p class="font-heading font-bold text-base">Need Help?</p>
+          </div>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">Can't find what you're looking for? Our support team is available 24/7.</p>
+          <a href="#" class="inline-flex items-center gap-2 bg-white text-cc-blue font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-cc-yellow hover:text-cc-dark transition">
+            <span class="material-icons text-[18px]">chat</span> Live Chat
+          </a>
+          <div class="mt-4 pt-4 border-t border-white/20 space-y-2">
+            <p class="text-xs text-white/60">Or reach us at:</p>
+            <p class="text-sm text-white/90 flex items-center gap-2">
+              <span class="material-icons text-[16px]">phone</span> 1800-233-4555
+            </p>
+            <p class="text-sm text-white/90 flex items-center gap-2">
+              <span class="material-icons text-[16px]">email</span> support@clickcodex.in
+            </p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="flex-1 min-w-0 space-y-8">
+
+      <!-- ===== 1. RETURN POLICY ===== -->
+      <section id="return-policy" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-cc-orange/10">
+              <span class="material-icons text-cc-orange">autorenew</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Return Policy</h2>
+              <p class="text-sm text-slate-500 mt-0.5">How to return products you're not satisfied with</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 15 Jan 2026
+          </span>
+        </div>
+
+        <div class="highlight-box bg-cc-orange/5 border border-cc-orange/20 text-slate-700 mb-6">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-orange text-[20px] mt-0.5 shrink-0">info</span>
+            <span><strong>7-Day Return Window:</strong> At ClickCodex, you can return most products within 7 days of delivery. We want you to be completely satisfied with every purchase.</span>
+          </p>
+        </div>
+
+        <h3 class="sub-heading">Eligible Products for Return</h3>
+        <ul class="policy-list mb-6">
+          <li>All electronics and mobile accessories in original, unopened packaging with all seals, tags, and accessories intact.</li>
+          <li>Fashion apparel and footwear that are unworn, unwashed, and have all original tags attached. Undergarments and swimwear are non-returnable for hygiene reasons.</li>
+          <li>Home and kitchen products in original condition with all packaging materials, manuals, and warranty cards.</li>
+          <li>Beauty and personal care products only if the seal is unbroken and the product is unused.</li>
+          <li>Books, if received in damaged condition or with missing pages.</li>
+        </ul>
+
+        <h3 class="sub-heading">Non-Returnable Items</h3>
+        <ul class="policy-list mb-6">
+          <li>Downloadable software, digital gift cards, and prepaid recharge vouchers.</li>
+          <li>Customized or personalized products (e.g., engraved items, custom-printed apparel).</li>
+          <li>Perishable goods including groceries, flowers, and food items.</li>
+          <li>Products with tampered or broken seals on beauty, health, and personal care items.</li>
+          <li>Innerwear, socks, and swimwear due to hygiene considerations.</li>
+        </ul>
+
+        <h3 class="sub-heading">How to Initiate a Return</h3>
+        <ol class="policy-ol mb-6">
+          <li>Go to <strong>My Orders</strong> in your ClickCodex account and select the order you wish to return.</li>
+          <li>Click on <strong>"Return"</strong> and select the reason for return from the dropdown menu.</li>
+          <li>Choose your preferred return method: <strong>Self-Ship</strong> or <strong>Schedule a Pickup</strong> (available in select pin codes).</li>
+          <li>Pack the product securely in its original packaging. Affix the return shipping label if self-shipping.</li>
+          <li>Once the returned product is received and inspected at our warehouse, you will be notified within 48 hours.</li>
+        </ol>
+
+        <div class="highlight-box bg-cc-blue/5 border border-cc-blue/20 text-slate-700">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-blue text-[20px] mt-0.5 shrink-0">lightbulb</span>
+            <span><strong>Tip:</strong> Keep the original packaging until you're sure you want to keep the product. This makes returns faster and hassle-free. Take photos or a video while unpacking — this helps in case of damage claims.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== 2. SHIPPING POLICY ===== -->
+      <section id="shipping-policy" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-cc-blue/10">
+              <span class="material-icons text-cc-blue">local_shipping</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Shipping Policy</h2>
+              <p class="text-sm text-slate-500 mt-0.5">Delivery timelines, charges, and coverage areas</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 10 Jan 2026
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-cc-blue/5 rounded-xl p-4 text-center border border-cc-blue/10">
+            <span class="material-icons text-cc-blue text-3xl">bolt</span>
+            <p class="font-heading font-bold text-slate-800 mt-2">Express Delivery</p>
+            <p class="text-sm text-slate-500 mt-1">1–2 business days</p>
+            <p class="text-xs text-cc-orange font-semibold mt-2">₹99</p>
+          </div>
+          <div class="bg-cc-purple/5 rounded-xl p-4 text-center border border-cc-purple/10">
+            <span class="material-icons text-cc-purple text-3xl">today</span>
+            <p class="font-heading font-bold text-slate-800 mt-2">Standard Delivery</p>
+            <p class="text-sm text-slate-500 mt-1">3–5 business days</p>
+            <p class="text-xs text-green-600 font-semibold mt-2">FREE above ₹999</p>
+          </div>
+          <div class="bg-cc-orange/5 rounded-xl p-4 text-center border border-cc-orange/10">
+            <span class="material-icons text-cc-orange text-3xl">calendar_month</span>
+            <p class="font-heading font-bold text-slate-800 mt-2">Economy Delivery</p>
+            <p class="text-sm text-slate-500 mt-1">5–8 business days</p>
+            <p class="text-xs text-green-600 font-semibold mt-2">FREE above ₹499</p>
+          </div>
+        </div>
+
+        <h3 class="sub-heading">Shipping Coverage</h3>
+        <ul class="policy-list mb-6">
+          <li>ClickCodex delivers to <strong>19,000+ pin codes</strong> across India, covering all major metros, Tier-1, Tier-2, and most Tier-3 cities.</li>
+          <li>Delivery to remote locations, islands, and certain North-Eastern states may take 2–3 additional business days.</li>
+          <li>Orders placed before 2:00 PM IST on working days are typically dispatched the same day.</li>
+          <li>During sale events (Big Billion Days, Mega Sale), dispatch may take 1–2 extra days due to high volume.</li>
+        </ul>
+
+        <h3 class="sub-heading">Shipping Charges</h3>
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-50">
+                <th class="text-left px-4 py-3 font-semibold text-slate-700 rounded-tl-lg">Order Value</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-700">Standard</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-700 rounded-tr-lg">Express</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-600">
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">Below ₹499</td>
+                <td class="px-4 py-3">₹49</td>
+                <td class="px-4 py-3">₹99</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">₹499 – ₹999</td>
+                <td class="px-4 py-3">₹29</td>
+                <td class="px-4 py-3">₹99</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 font-medium">₹999 and above</td>
+                <td class="px-4 py-3 text-green-600 font-semibold">FREE</td>
+                <td class="px-4 py-3">₹99</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="sub-heading">Tracking Your Order</h3>
+        <ul class="policy-list mb-4">
+          <li>Once your order is dispatched, you will receive an SMS and email with a tracking link and AWB number.</li>
+          <li>You can also track your order from <strong>My Orders</strong> section in your account dashboard.</li>
+          <li>Real-time tracking is available for all courier-partnered shipments. For self-delivery (ClickCodex Direct), updates are provided at each milestone.</li>
+        </ul>
+
+        <div class="highlight-box bg-yellow-50 border border-yellow-200 text-slate-700">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-yellow text-[20px] mt-0.5 shrink-0">warning</span>
+            <span><strong>Important:</strong> ClickCodex is not liable for delays caused by natural calamities, strikes, government restrictions, or situations beyond our reasonable control. In such cases, we will proactively communicate the expected revised delivery date.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== 3. CANCELLATION POLICY ===== -->
+      <section id="cancellation-policy" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-cc-pink/10">
+              <span class="material-icons text-cc-pink">cancel</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Cancellation Policy</h2>
+              <p class="text-sm text-slate-500 mt-0.5">When and how you can cancel your orders</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 08 Jan 2026
+          </span>
+        </div>
+
+        <h3 class="sub-heading">Cancellation Timeframes</h3>
+        <ul class="policy-list mb-6">
+          <li><strong>Before Dispatch:</strong> Orders can be cancelled free of charge at any time before the product is dispatched from our warehouse. Go to My Orders → select the order → tap Cancel.</li>
+          <li><strong>After Dispatch but Before Delivery:</strong> Cancellation may be possible but is not guaranteed. Contact our support team immediately. If the shipment is intercepted in transit, a cancellation fee of ₹50 may apply to cover reverse logistics.</li>
+          <li><strong>After Delivery:</strong> Orders that have been delivered cannot be cancelled. Instead, please use the <strong>Return</strong> process as outlined in our Return Policy.</li>
+        </ul>
+
+        <h3 class="sub-heading">Non-Cancellable Orders</h3>
+        <ul class="policy-list mb-6">
+          <li>Personalized or custom-made products once production has begun.</li>
+          <li>Digital products including gift cards, software licenses, and subscriptions.</li>
+          <li>Pre-orders that have entered the shipping preparation phase.</li>
+          <li>Orders placed during flash sales or limited-time deals where cancellation was explicitly disabled at the time of purchase.</li>
+        </ul>
+
+        <h3 class="sub-heading">Partial Cancellation</h3>
+        <p class="text-slate-600 leading-relaxed mb-4">For orders with multiple items, you can cancel individual items while keeping others. The refund for the cancelled item(s) will be processed independently, and delivery of the remaining items will continue as scheduled.</p>
+
+        <div class="highlight-box bg-cc-pink/5 border border-cc-pink/20 text-slate-700">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-pink text-[20px] mt-0.5 shrink-0">schedule</span>
+            <span><strong>Auto-Cancellation:</strong> If an order remains unpaid for more than 30 minutes (for certain payment methods like net banking) or if payment fails after multiple attempts, the order will be auto-cancelled and you'll be notified via SMS and email.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== 4. PRIVACY POLICY ===== -->
+      <section id="privacy-policy" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-cc-purple/10">
+              <span class="material-icons text-cc-purple">lock</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Privacy Policy</h2>
+              <p class="text-sm text-slate-500 mt-0.5">How we collect, use, and protect your personal data</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 01 Feb 2026
+          </span>
+        </div>
+
+        <div class="highlight-box bg-cc-purple/5 border border-cc-purple/20 text-slate-700 mb-6">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-purple text-[20px] mt-0.5 shrink-0">shield</span>
+            <span>ClickCodex Retail Pvt. Ltd. ("we", "us", "our") is committed to protecting your privacy. This policy explains how we handle your personal information in compliance with the <strong>Digital Personal Data Protection Act, 2023 (DPDPA)</strong> of India.</span>
+          </p>
+        </div>
+
+        <!-- Accordion for Privacy sections -->
+        <div class="space-y-2" id="privacy-accordion">
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion(this)" class="accordion-trigger w-full flex items-center justify-between px-5 py-4 text-left">
+              <span class="font-semibold text-slate-800 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-cc-blue/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-blue text-[18px]">database</span></span>
+                Information We Collect
+              </span>
+              <span class="material-icons arrow text-slate-400">expand_more</span>
+            </button>
+            <div class="accordion-content px-5 pb-4">
+              <ul class="policy-list">
+                <li><strong>Identity Data:</strong> Name, date of birth, gender, and profile photo provided during registration.</li>
+                <li><strong>Contact Data:</strong> Email address, phone number, and delivery addresses.</li>
+                <li><strong>Transaction Data:</strong> Order history, payment details (stored in tokenized form — we never see your full card number), billing information.</li>
+                <li><strong>Technical Data:</strong> IP address, browser type, device information, operating system, and cookies for analytics and personalization.</li>
+                <li><strong>Behavioral Data:</strong> Pages visited, search queries, products viewed, time spent, and click patterns to improve your shopping experience.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion(this)" class="accordion-trigger w-full flex items-center justify-between px-5 py-4 text-left">
+              <span class="font-semibold text-slate-800 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-cc-orange/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-orange text-[18px]">share</span></span>
+                How We Use Your Data
+              </span>
+              <span class="material-icons arrow text-slate-400">expand_more</span>
+            </button>
+            <div class="accordion-content px-5 pb-4">
+              <ul class="policy-list">
+                <li>Processing and fulfilling your orders, including delivery coordination and tracking.</li>
+                <li>Communicating order updates, promotional offers, and account-related notifications via SMS, email, and push notifications (with your consent).</li>
+                <li>Personalizing your shopping experience — product recommendations, deal alerts, and customized homepage feeds.</li>
+                <li>Detecting and preventing fraud, unauthorized transactions, and abuse of our platform.</li>
+                <li>Complying with legal obligations, responding to lawful requests from government authorities.</li>
+                <li>Aggregated and anonymized data analysis to improve our services, UX design, and business strategy.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion(this)" class="accordion-trigger w-full flex items-center justify-between px-5 py-4 text-left">
+              <span class="font-semibold text-slate-800 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-cc-pink/10 flex items-center justify-center shrink-0"><span class="material-icons text-cc-pink text-[18px]">group</span></span>
+                Data Sharing & Third Parties
+              </span>
+              <span class="material-icons arrow text-slate-400">expand_more</span>
+            </button>
+            <div class="accordion-content px-5 pb-4">
+              <ul class="policy-list">
+                <li><strong>Sellers & Logistics Partners:</strong> We share necessary order details (name, address, phone) with sellers and delivery partners solely to fulfill your order.</li>
+                <li><<think>>Payment Processors:</strong> Payment data is processed through PCI-DSS certified partners (Razorpay, PayU, etc.). We do not store full card details.</li>
+                <li><strong>Analytics Providers:</strong> We use Google Analytics and similar tools with anonymized data to understand traffic patterns.</li>
+                <li>We <strong>never sell</strong> your personal data to third parties for marketing purposes.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion(this)" class="accordion-trigger w-full flex items-center justify-between px-5 py-4 text-left">
+              <span class="font-semibold text-slate-800 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0"><span class="material-icons text-green-600 text-[18px]">security</span></span>
+                Data Security Measures
+              </span>
+              <span class="material-icons arrow text-slate-400">expand_more</span>
+            </button>
+            <div class="accordion-content px-5 pb-4">
+              <ul class="policy-list">
+                <li>All data in transit is encrypted using <strong>TLS 1.3</strong> protocol.</li>
+                <li>Sensitive data at rest is encrypted using <strong>AES-256</strong> encryption.</li>
+                <li>Regular penetration testing and vulnerability assessments by independent security firms.</li>
+                <li>Strict access controls — only authorized personnel with a legitimate business need can access personal data.</li>
+                <li>Two-factor authentication (2FA) available for all customer accounts.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion(this)" class="accordion-trigger w-full flex items-center justify-between px-5 py-4 text-left">
+              <span class="font-semibold text-slate-800 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-cc-yellow/20 flex items-center justify-center shrink-0"><span class="material-icons text-cc-yellow text-[18px]">rights</span></span>
+                Your Rights (DPDPA 2023)
+              </span>
+              <span class="material-icons arrow text-slate-400">expand_more</span>
+            </button>
+            <div class="accordion-content px-5 pb-4">
+              <ul class="policy-list">
+                <li><strong>Right to Access:</strong> Request a copy of all personal data we hold about you.</li>
+                <li><strong>Right to Correction:</strong> Update or correct inaccurate personal information.</li>
+                <li><strong>Right to Erasure:</strong> Request deletion of your personal data, subject to legal retention requirements.</li>
+                <li><strong>Right to Withdraw Consent:</strong> Opt out of marketing communications at any time via the unsubscribe link or account settings.</li>
+                <li><strong>Right to Grievance Redressal:</strong> File a complaint with our Data Protection Officer at <strong>dpo@clickcodex.in</strong> or report to the Data Protection Board of India.</li>
+              </ul>
+              <p class="text-sm text-slate-500 mt-3 pl-6">To exercise any of these rights, email us at <strong>privacy@clickcodex.in</strong> or write to: ClickCodex Retail Pvt. Ltd., Privacy Team, Ratlam, Madhya Pradesh – 457001.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="sub-heading mt-8">Cookie Policy</h3>
+        <p class="text-slate-600 leading-relaxed mb-4">We use cookies and similar tracking technologies to enhance your experience. You can manage cookie preferences through your browser settings. Essential cookies (required for site functionality) cannot be disabled. Non-essential cookies — including analytics and advertising cookies — can be opted out of through our <a href="#" class="text-cc-blue font-semibold hover:underline">Cookie Consent Banner</a>.</p>
+
+        <h3 class="sub-heading">Data Retention</h3>
+        <p class="text-slate-600 leading-relaxed">We retain your personal data for as long as your account is active or as needed to provide services. Transaction records are retained for <strong>7 years</strong> as required under Indian tax and accounting laws. You may request early deletion subject to legal constraints.</p>
+      </section>
+
+      <!-- ===== 5. TERMS OF USE ===== -->
+      <section id="terms-of-use" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-slate-100">
+              <span class="material-icons text-slate-600">description</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Terms of Use</h2>
+              <p class="text-sm text-slate-500 mt-0.5">Rules and guidelines for using ClickCodex</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 01 Feb 2026
+          </span>
+        </div>
+
+        <div class="highlight-box bg-slate-50 border border-slate-200 text-slate-700 mb-6">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-slate-500 text-[20px] mt-0.5 shrink-0">article</span>
+            <span>By accessing or using ClickCodex (website, mobile app, or any associated platform), you agree to be bound by these Terms of Use. If you do not agree, please discontinue use of the platform immediately. These terms constitute a legally binding agreement between you and ClickCodex Retail Pvt. Ltd.</span>
+          </p>
+        </div>
+
+        <h3 class="sub-heading">Account Registration</h3>
+        <ul class="policy-list mb-6">
+          <li>You must be at least <strong>18 years old</strong> to create an account and make purchases on ClickCodex.</li>
+          <li>You are responsible for maintaining the confidentiality of your login credentials and for all activities under your account.</li>
+          <li>Providing false, inaccurate, or misleading information during registration may result in immediate account suspension.</li>
+          <li>Each individual is permitted to maintain only <strong>one active account</strong>. Duplicate accounts may be suspended without notice.</li>
+        </ul>
+
+        <h3 class="sub-heading">Acceptable Use</h3>
+        <p class="text-slate-600 leading-relaxed mb-3">You agree <strong>not to</strong>:</p>
+        <ul class="policy-list mb-6">
+          <li>Use the platform for any unlawful purpose or in violation of any applicable Indian or international laws.</li>
+          <li>Attempt to gain unauthorized access to any part of the platform, other user accounts, or our systems.</li>
+          <li>Post, upload, or transmit any malicious code, viruses, worms, or any content that may harm the platform.</li>
+          <li>Scrape, crawl, or extract data from the platform through automated means without prior written consent.</li>
+          <li>Post fake reviews, manipulate ratings, or engage in any form of review fraud.</li>
+          <li>Resell products purchased from ClickCodex on the same platform without authorization.</li>
+          <li>Use the platform to harass, abuse, or threaten other users or our staff.</li>
+        </ul>
+
+        <h3 class="sub-heading">Product Listings & Pricing</h3>
+        <ul class="policy-list mb-6">
+          <li>Product images are for illustrative purposes. Actual products may vary slightly in color and appearance due to screen settings and manufacturing variations.</li>
+          <li>Prices are subject to change without prior notice. The price applicable is the price at the time of order placement.</li>
+          <li>In case of a pricing error, ClickCodex reserves the right to cancel the affected orders and issue a full refund.</li>
+          <li>Product availability is subject to stock. "Out of Stock" items cannot be ordered.</li>
+        </ul>
+
+        <h3 class="sub-heading">Intellectual Property</h3>
+        <p class="text-slate-600 leading-relaxed mb-4">All content on ClickCodex — including but not limited to the logo, brand name, design, graphics, text, code, and product images — is the intellectual property of ClickCodex Retail Pvt. Ltd. or its licensors. Unauthorized reproduction, distribution, or modification is strictly prohibited and may result in legal action under the <strong>Copyright Act, 1957</strong> and <strong>Trademark Act, 1999</strong>.</p>
+
+        <h3 class="sub-heading">Limitation of Liability</h3>
+        <p class="text-slate-600 leading-relaxed mb-4">To the maximum extent permitted by law, ClickCodex shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the platform. Our total liability for any claim shall not exceed the amount paid by you for the specific product or service giving rise to the claim.</p>
+
+        <h3 class="sub-heading">Governing Law & Dispute Resolution</h3>
+        <ul class="policy-list mb-4">
+          <li>These terms are governed by the laws of <strong>India</strong>.</li>
+          <li>Any disputes shall be subject to the exclusive jurisdiction of the courts in <strong>Ratlam, Madhya Pradesh</strong>.</li>
+          <li>Before initiating legal proceedings, you agree to attempt resolution through our internal grievance mechanism for a period of 30 days.</li>
+        </ul>
+
+        <div class="highlight-box bg-cc-orange/5 border border-cc-orange/20 text-slate-700">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-orange text-[20px] mt-0.5 shrink-0">edit_note</span>
+            <span><strong>Modifications:</strong> ClickCodex reserves the right to update these Terms of Use at any time. Continued use of the platform after changes constitutes acceptance of the revised terms. Material changes will be notified via email or a prominent site notice at least 7 days before taking effect.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== 6. REFUND POLICY ===== -->
+      <section id="refund-policy" class="policy-section policy-card p-6 sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="policy-section-title">
+            <div class="icon-box bg-cc-yellow/20">
+              <span class="material-icons text-cc-yellow">payments</span>
+            </div>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold text-slate-900">Refund Policy</h2>
+              <p class="text-sm text-slate-500 mt-0.5">How and when you receive your refund</p>
+            </div>
+          </div>
+          <span class="updated-pill">
+            <span class="material-icons text-[14px]">schedule</span>
+            Updated: 12 Jan 2026
+          </span>
+        </div>
+
+        <div class="highlight-box bg-cc-yellow/5 border border-cc-yellow/30 text-slate-700 mb-6">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-cc-yellow text-[20px] mt-0.5 shrink-0">timer</span>
+            <span><strong>Refund Timeline:</strong> Refunds are initiated within <strong>48 hours</strong> of the returned product passing quality inspection. The actual credit to your account depends on your payment method (see table below).</span>
+          </p>
+        </div>
+
+        <h3 class="sub-heading">Refund Methods & Timelines</h3>
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-50">
+                <th class="text-left px-4 py-3 font-semibold text-slate-700 rounded-tl-lg">Payment Method</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-700">Refund To</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-700 rounded-tr-lg">Typical Timeline</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-600">
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">UPI (GPay, PhonePe, etc.)</td>
+                <td class="px-4 py-3">Same UPI ID</td>
+                <td class="px-4 py-3">1–2 business days</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">Credit / Debit Card</td>
+                <td class="px-4 py-3">Same Card</td>
+                <td class="px-4 py-3">5–7 business days</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">Net Banking</td>
+                <td class="px-4 py-3">Source Bank Account</td>
+                <td class="px-4 py-3">5–7 business days</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3">Cash on Delivery (COD)</td>
+                <td class="px-4 py-3">ClickCodex Wallet / Bank</td>
+                <td class="px-4 py-3">Wallet: Instant | Bank: 5–7 days</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3">ClickCodex Wallet</td>
+                <td class="px-4 py-3">Wallet Balance</td>
+                <td class="px-4 py-3 text-green-600 font-semibold">Instant</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="sub-heading">Refund Conditions</h3>
+        <ul class="policy-list mb-6">
+          <li>Products must be returned in their <strong>original condition</strong> — unused, unwashed, with all tags, accessories, and packaging intact.</li>
+          <li>Refunds for damaged or defective products are processed as <strong>full refunds</strong> including any shipping charges paid.</li>
+          <li>For buyer's remorse returns (no defect), a <strong>reverse shipping fee of ₹50–100</strong> may be deducted from the refund amount, depending on the product category and size.</li>
+          <li>If a replacement is not available, a full refund will be processed automatically.</li>
+          <li>Partial refunds may be issued if only part of the order is returned or if the returned product shows signs of use or damage not reported at the time of delivery.</li>
+        </ul>
+
+        <h3 class="sub-heading">ClickCodex Wallet Refunds</h3>
+        <p class="text-slate-600 leading-relaxed mb-4">Refunds credited to your ClickCodex Wallet are <strong>instant</strong> and can be used for any future purchase on the platform. Wallet balance has <strong>no expiry date</strong>. You can also transfer wallet balance to your bank account (NEFT) from the Wallet section — this transfer takes 3–5 business days.</p>
+
+        <div class="highlight-box bg-green-50 border border-green-200 text-slate-700">
+          <p class="flex items-start gap-2">
+            <span class="material-icons text-green-600 text-[20px] mt-0.5 shrink-0">verified</span>
+            <span><strong>Quality Check Guarantee:</strong> Every returned product undergoes a thorough quality inspection at our returns processing center. You'll receive an email and SMS notification once the inspection is complete and the refund is approved. If your refund is unexpectedly reduced, you can raise a concern within 7 days for a free re-inspection.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== CONTACT / GRIEVANCE SECTION ===== -->
+      <section class="policy-section policy-card overflow-hidden">
+        <div class="bg-gradient-to-r from-cc-dark to-slate-800 p-6 sm:p-8 text-white">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-cc-yellow text-3xl">contact_support</span>
+            <div>
+              <h2 class="font-heading text-xl sm:text-2xl font-bold">Still Have Questions?</h2>
+              <p class="text-white/60 text-sm mt-0.5">Our policy team is here to help</p>
+            </div>
+          </div>
+          <p class="text-white/80 leading-relaxed mb-6 max-w-2xl">If any part of our policies is unclear or if you have a specific concern about your order, account, or data — don't hesitate to reach out. We aim to respond within 2 hours during business hours.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <span class="material-icons text-cc-yellow mb-2">chat</span>
+              <p class="font-semibold text-sm">Live Chat</p>
+              <p class="text-white/60 text-xs mt-1">Available 24/7 on app & website</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <span class="material-icons text-cc-yellow mb-2">email</span>
+              <p class="font-semibold text-sm">Email Support</p>
+              <p class="text-white/60 text-xs mt-1">policies@clickcodex.in</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <span class="material-icons text-cc-yellow mb-2">phone</span>
+              <p class="font-semibold text-sm">Call Us</p>
+              <p class="text-white/60 text-xs mt-1">1800-233-4555 (Toll-Free)</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6 sm:p-8 bg-white">
+          <h3 class="font-heading font-bold text-slate-800 mb-4">Grievance Officer</h3>
+          <div class="flex flex-col sm:flex-row gap-6 text-sm text-slate-600">
+            <div>
+              <p class="font-semibold text-slate-800">Mr. Arvind Sharma</p>
+              <p>Nodal Officer – Customer Grievance</p>
+              <p>ClickCodex Retail Pvt. Ltd.</p>
+            </div>
+            <div>
+              <p class="flex items-center gap-2"><span class="material-icons text-[16px] text-slate-400">email</span> grievance@clickcodex.in</p>
+              <p class="flex items-center gap-2"><span class="material-icons text-[16px] text-slate-400">phone</span> +91-7462-233-455</p>
+              <p class="flex items-center gap-2"><span class="material-icons text-[16px] text-slate-400">location_on</span> 4th Floor, Tech Park, Ratlam, MP 457001</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-cc-dark text-white/80 text-sm relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 relative z-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 100 100">
+            <path d="M78 24 A38 38 0 1 0 78 76" fill="none" stroke="white" stroke-width="14" stroke-linecap="round"/>
+            <path d="M55 38 L44 50 L55 62" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          </svg>
+        </div>
+        <span class="font-heading font-bold text-white text-lg">Click<span class="text-cc-yellow">Codex</span></span>
+      </div>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">About Us</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Careers</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Press</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">ClickCodex Stories</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Help</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Payments</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Shipping</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Cancellation & Returns</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Policy</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#return-policy" class="hover:text-cc-orange transition">Return Policy</a></li>
+        <li><a href="#terms-of-use" class="hover:text-cc-orange transition">Terms of Use</a></li>
+        <li><a href="#privacy-policy" class="hover:text-cc-orange transition">Privacy Policy</a></li>
+        <li><a href="#refund-policy" class="hover:text-cc-orange transition">Refund Policy</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-heading font-semibold text-white mb-4">Sell With Us</h4>
+      <ul class="space-y-2.5">
+        <li><a href="#" class="hover:text-cc-orange transition">Register as Seller</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Seller Dashboard</a></li>
+        <li><a href="#" class="hover:text-cc-orange transition">Advertise</a></li>
+      </ul>
+    </div>
+    <div class="col-span-2 sm:col-span-1">
+      <h4 class="font-heading font-semibold text-white mb-4">Get in Touch</h4>
+      <ul class="space-y-2.5 text-white/60">
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">phone</span>1800-233-4555</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">email</span>support@clickcodex.in</li>
+        <li class="flex items-center gap-2"><span class="material-icons text-white/60 text-[18px]">location_on</span>Ratlam, Madhya Pradesh</li>
+      </ul>
+      <div class="flex gap-2.5 mt-5">
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">f</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">𝕏</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-blue flex items-center justify-center transition text-white text-sm font-bold">in</a>
+        <a href="#" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-cc-orange flex items-center justify-center transition text-white text-sm font-bold">yt</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-5 text-center text-xs text-white/40 relative z-10 pb-24 md:pb-5">
+    © 2026 ClickCodex Retail Pvt. Ltd. All rights reserved. &nbsp;|&nbsp; Made with <span class="material-icons text-red-500 text-[14px] align-middle select-none">favorite</span> in India
+  </div>
+</footer>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around py-2 shadow-xl">
+  <a href="#" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">home</span>
+    <span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <a href="#" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">grid_view</span>
+    <span class="text-[10px] font-semibold">Categories</span>
+  </a>
+  <a href="#" class="relative flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">shopping_cart</span>
+    <span class="text-[10px] font-semibold">Cart</span>
+  </a>
+  <a href="#" class="relative flex flex-col items-center justify-center text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">gavel</span>
+    <span class="text-[10px] font-semibold">Policies</span>
+  </a>
+  <a href="#" class="flex flex-col items-center justify-center text-slate-500 hover:text-cc-blue focus:outline-none py-1">
+    <span class="material-icons text-2xl">person_outline</span>
+    <span class="text-[10px] font-semibold">Profile</span>
+  </a>
+</div>
+
+<!-- ================= BACK TO TOP ================= -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="back-to-top fixed bottom-24 md:bottom-8 right-6 z-40 w-12 h-12 rounded-full bg-cc-blue text-white shadow-lg hover:bg-blue-600 transition flex items-center justify-center">
+  <span class="material-icons">keyboard_arrow_up</span>
+</button>
+
+<!-- ================= MOBILE CATEGORY DRAWER ================= -->
+<div id="mobile-sidebar" class="fixed inset-0 z-50 overflow-hidden transform translate-x-[-100%] transition-transform duration-300 ease-in-out pointer-events-none">
+  <div onclick="toggleMobileSidebar(false)" class="absolute inset-0 bg-black/40 pointer-events-auto cursor-pointer"></div>
+  <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col pointer-events-auto h-full z-10">
+    <div class="bg-cc-blue text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons">account_circle</span>
+        <span class="font-heading font-bold text-white">Hello, Sign In</span>
+      </div>
+      <button onclick="toggleMobileSidebar(false)" class="text-white hover:text-cc-yellow focus:outline-none">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Links</p>
+      <div class="grid grid-cols-1 gap-1">
+        <a href="#return-policy" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-cc-orange text-[20px]">autorenew</span> Return Policy
+        </a>
+        <a href="#shipping-policy" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-cc-blue text-[20px]">local_shipping</span> Shipping Policy
+        </a>
+        <a href="#cancellation-policy" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-cc-pink text-[20px]">cancel</span> Cancellation Policy
+        </a>
+        <a href="#privacy-policy" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-cc-purple text-[20px]">lock</span> Privacy Policy
+        </a>
+        <a href="#terms-of-use" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-slate-500 text-[20px]">description</span> Terms of Use
+        </a>
+        <a href="#refund-policy" onclick="toggleMobileSidebar(false)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm text-slate-700 transition">
+          <span class="material-icons text-cc-yellow text-[20px]">payments</span> Refund Policy
+        </a>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 p-4 bg-slate-50">
+      <p class="text-[10px] text-center text-slate-400">ClickCodex India v2.6</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mobile Sidebar Toggle
+  function toggleMobileSidebar(open) {
+    const sidebar = document.getElementById('mobile-sidebar');
+    if (open) {
+      sidebar.classList.remove('translate-x-[-100%]', 'pointer-events-none');
+      document.body.style.overflow = 'hidden';
+    } else {
+      sidebar.classList.add('translate-x-[-100%]', 'pointer-events-none');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Accordion Toggle
+  function toggleAccordion(btn) {
+    const content = btn.nextElementSibling;
+    const isOpen = content.classList.contains('open');
+    
+    // Close all accordions in the same parent
+    const parent = btn.closest('#privacy-accordion');
+    if (parent) {
+      parent.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+      parent.querySelectorAll('.accordion-trigger').forEach(t => t.classList.remove('open'));
+    }
+    
+    if (!isOpen) {
+      content.classList.add('open');
+      btn.classList.add('open');
+    }
+  }
+
+  // Sticky TOC Active State via IntersectionObserver
+  const sections = document.querySelectorAll('.policy-section[id]');
+  const tocLinks = document.querySelectorAll('.toc-link[data-section]');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '-120px 0px -60% 0px',
+    threshold: 0
+  };
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        tocLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('data-section') === id);
+        });
+      }
+    });
+  }, observerOptions);
+
+  sections.forEach(section => sectionObserver.observe(section));
+
+  // Fade-in on scroll for policy sections
+  const fadeObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        fadeObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.policy-section').forEach(el => fadeObserver.observe(el));
+
+  // Back to Top Button visibility
+  const backToTopBtn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      backToTopBtn.classList.add('visible');
+    } else {
+      backToTopBtn.classList.remove('visible');
+    }
+  });
+
+  // Smooth scroll offset for sticky header
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        const offset = 140;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
